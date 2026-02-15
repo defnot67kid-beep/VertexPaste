@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VertexPaste - Share Code & Text with Dashboard</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Highlight.js for syntax highlighting -->
@@ -76,6 +72,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: 1px;
+            cursor: pointer;
         }
 
         .nav-buttons {
@@ -129,6 +126,12 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-google {
@@ -256,6 +259,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
         .dashboard-tabs {
@@ -372,6 +377,7 @@
             font-size: 1.2rem;
             margin-bottom: 8px;
             padding-right: 100px;
+            word-break: break-word;
         }
 
         .paste-card-id {
@@ -391,6 +397,7 @@
             align-items: center;
             gap: 8px;
             margin-bottom: 10px;
+            padding: 0 20px;
         }
 
         .owner-avatar {
@@ -427,6 +434,8 @@
             background: rgba(0,0,0,0.2);
             font-size: 0.8rem;
             color: #64748b;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .paste-card-actions {
@@ -488,6 +497,7 @@
             color: #f1f5f9;
             font-size: 2rem;
             margin-bottom: 10px;
+            word-break: break-word;
         }
 
         .paste-meta {
@@ -507,6 +517,7 @@
         .paste-actions {
             display: flex;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
         .paste-content {
@@ -543,6 +554,7 @@
         .stat-card h3 {
             font-size: 36px;
             margin-bottom: 8px;
+            color: var(--primary);
         }
 
         .stat-label {
@@ -699,9 +711,10 @@
         .device-info {
             font-size: 12px;
             color: var(--text-dim);
-            margin-top: 8px;
-            padding-top: 8px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid var(--border);
+            text-align: center;
         }
 
         .per-device-stats {
@@ -718,12 +731,14 @@
     <div class="container">
         <!-- Navbar -->
         <nav class="navbar">
-            <div class="logo">VertexPaste</div>
+            <div class="logo" onclick="window.location.hash='#dashboard'">VertexPaste</div>
             <div class="nav-buttons" id="navButtons"></div>
         </nav>
 
         <!-- Main Content Area -->
-        <div id="mainContent"></div>
+        <div id="mainContent">
+            <div class="loading"></div>
+        </div>
 
         <!-- Share Modal -->
         <div id="shareModal" class="modal">
@@ -732,7 +747,7 @@
                 <div class="share-link">
                     <input type="text" id="shareLink" readonly>
                     <button class="copy-btn" onclick="copyShareLink()">
-                        <i class="fas fa-copy"></i>
+                        <i class="fas fa-copy"></i> Copy
                     </button>
                 </div>
                 <div style="text-align: right; margin-top: 20px;">
@@ -742,21 +757,27 @@
         </div>
     </div>
 
-    <script>
-        // Your Firebase configuration
-        
-  const firebaseConfig = {
-    apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
-    authDomain: "vertexpaste.firebaseapp.com",
-    projectId: "vertexpaste",
-    storageBucket: "vertexpaste.firebasestorage.app",
-    messagingSenderId: "255275350380",
-    appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
-  };
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, where, updateDoc, arrayUnion, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
+            authDomain: "vertexpaste.firebaseapp.com",
+            projectId: "vertexpaste",
+            storageBucket: "vertexpaste.firebasestorage.app",
+            messagingSenderId: "255275350380",
+            appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+        };
+
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
 
         // ============ APP STATE ============
         let currentUser = null;
@@ -780,18 +801,18 @@
             }
 
             // Auth state observer
-            auth.onAuthStateChanged(async (user) => {
+            onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     try {
                         // Check if user exists in Firestore
-                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        const userDoc = await getDoc(doc(db, 'users', user.uid));
                         
-                        if (!userDoc.exists) {
+                        if (!userDoc.exists()) {
                             // Create new user profile
-                            await db.collection('users').doc(user.uid).set({
+                            await setDoc(doc(db, 'users', user.uid), {
                                 displayName: user.displayName || user.email.split('@')[0],
                                 email: user.email,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                createdAt: new Date().toISOString(),
                                 totalPastes: 0,
                                 totalViews: 0
                             });
@@ -836,14 +857,16 @@
         // ============ LOAD ALL PASTES ============
         async function loadAllPastes() {
             try {
-                const pastesSnapshot = await db.collection('pastes')
-                    .orderBy('createdAt', 'desc')
-                    .get();
+                const pastesQuery = query(collection(db, 'pastes'), orderBy('createdAt', 'desc'));
+                const pastesSnapshot = await getDocs(pastesQuery);
                 
-                allPastes = pastesSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                allPastes = [];
+                pastesSnapshot.forEach((doc) => {
+                    allPastes.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
                 
                 console.log('Loaded', allPastes.length, 'pastes');
             } catch (error) {
@@ -862,13 +885,13 @@
                         <div class="user-avatar">${initial}</div>
                         <span>${user.displayName || user.email}</span>
                     </div>
-                    <button class="btn btn-logout" onclick="logout()">
+                    <button class="btn btn-logout" onclick="window.logout()">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 `;
             } else {
                 navButtons.innerHTML = `
-                    <button class="btn btn-primary" onclick="showAuth()">
+                    <button class="btn btn-primary" onclick="window.showAuth()">
                         <i class="fas fa-sign-in-alt"></i> Login
                     </button>
                 `;
@@ -903,13 +926,13 @@
         }
 
         // ============ SHOW AUTH ============
-        function showAuth() {
+        window.showAuth = function() {
             const container = document.getElementById('mainContent');
             container.innerHTML = `
                 <div class="auth-container">
                     <div class="auth-tabs">
-                        <div class="auth-tab active" onclick="switchTab('login')">Login</div>
-                        <div class="auth-tab" onclick="switchTab('signup')">Sign Up</div>
+                        <div class="auth-tab active" onclick="window.switchTab('login')">Login</div>
+                        <div class="auth-tab" onclick="window.switchTab('signup')">Sign Up</div>
                     </div>
 
                     <!-- Login Form -->
@@ -922,10 +945,10 @@
                             <label>Password</label>
                             <input type="password" id="loginPassword" placeholder="Enter your password">
                         </div>
-                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="loginWithEmail()">
+                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="window.loginWithEmail()">
                             <i class="fas fa-sign-in-alt"></i> Login
                         </button>
-                        <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()">
+                        <button class="btn btn-google" style="width: 100%;" onclick="window.loginWithGoogle()">
                             <i class="fab fa-google"></i> Login with Google
                         </button>
                     </div>
@@ -944,10 +967,10 @@
                             <label>Password</label>
                             <input type="password" id="signupPassword" placeholder="Enter your password">
                         </div>
-                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="signupWithEmail()">
+                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="window.signupWithEmail()">
                             <i class="fas fa-user-plus"></i> Sign Up
                         </button>
-                        <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()">
+                        <button class="btn btn-google" style="width: 100%;" onclick="window.loginWithGoogle()">
                             <i class="fab fa-google"></i> Sign up with Google
                         </button>
                     </div>
@@ -957,7 +980,7 @@
                     </div>
                 </div>
             `;
-        }
+        };
 
         // ============ SWITCH AUTH TABS ============
         window.switchTab = function(tab) {
@@ -974,44 +997,62 @@
         };
 
         // ============ AUTH FUNCTIONS ============
-        function signupWithEmail() {
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
+        window.signupWithEmail = async function() {
+            const name = document.getElementById('signupName')?.value;
+            const email = document.getElementById('signupEmail')?.value;
+            const password = document.getElementById('signupPassword')?.value;
 
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    return userCredential.user.updateProfile({
-                        displayName: name
-                    });
-                })
-                .catch((error) => {
-                    showNotification(error.message, true);
+            if (!email || !password || !name) {
+                showNotification('Please fill in all fields', true);
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, {
+                    displayName: name
                 });
-        }
+                showNotification('Account created successfully!');
+            } catch (error) {
+                showNotification(error.message, true);
+            }
+        };
 
-        function loginWithEmail() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+        window.loginWithEmail = async function() {
+            const email = document.getElementById('loginEmail')?.value;
+            const password = document.getElementById('loginPassword')?.value;
 
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    showNotification(error.message, true);
-                });
-        }
+            if (!email || !password) {
+                showNotification('Please fill in all fields', true);
+                return;
+            }
 
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .catch((error) => {
-                    showNotification(error.message, true);
-                });
-        }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showNotification('Login successful!');
+            } catch (error) {
+                showNotification(error.message, true);
+            }
+        };
 
-        function logout() {
-            auth.signOut();
-            window.location.hash = '';
-        }
+        window.loginWithGoogle = async function() {
+            try {
+                await signInWithPopup(auth, googleProvider);
+                showNotification('Login successful!');
+            } catch (error) {
+                showNotification(error.message, true);
+            }
+        };
+
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                window.location.hash = '';
+                showNotification('Logged out successfully');
+            } catch (error) {
+                showNotification(error.message, true);
+            }
+        };
 
         // ============ GENERATE PASTE ID ============
         function generatePasteId() {
@@ -1025,8 +1066,9 @@
 
         // ============ CHECK IF PASTE ID EXISTS ============
         async function checkPasteIdExists(pasteId) {
-            const doc = await db.collection('pastes').doc(pasteId).get();
-            return doc.exists;
+            const docRef = doc(db, 'pastes', pasteId);
+            const docSnap = await getDoc(docRef);
+            return docSnap.exists();
         }
 
         // ============ CREATE NEW PASTE ============
@@ -1036,69 +1078,77 @@
             const syntax = document.getElementById('pasteSyntax')?.value || 'plaintext';
             const visibility = document.getElementById('pasteVisibility')?.value || 'public';
             const expiry = parseInt(document.getElementById('pasteExpiry')?.value) || 0;
-            const user = auth.currentUser;
 
-            if (!content) {
+            if (!content || content.trim() === '') {
                 showNotification('Please enter some content for your paste', true);
                 return;
             }
 
-            // Generate unique ID
-            let pasteId = generatePasteId();
-            let exists = await checkPasteIdExists(pasteId);
-            while (exists) {
-                pasteId = generatePasteId();
-                exists = await checkPasteIdExists(pasteId);
-            }
-
-            const pasteData = {
-                pasteId: pasteId,
-                title: title,
-                content: content,
-                syntax: syntax,
-                visibility: visibility,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                views: {
-                    total: 0,
-                    unique: []  // Track unique device views
-                }
-            };
-
-            // Add user info if logged in
-            if (user) {
-                pasteData.userId = user.uid;
-                pasteData.authorName = user.displayName || user.email;
-                pasteData.authorEmail = user.email;
-            } else {
-                pasteData.userId = null;
-                pasteData.authorName = 'Anonymous';
-                pasteData.authorEmail = null;
-            }
-
-            // Add expiry if set
-            if (expiry > 0) {
-                const expiryDate = new Date();
-                expiryDate.setDate(expiryDate.getDate() + expiry);
-                pasteData.expiresAt = expiryDate;
+            // Disable the create button to prevent double submission
+            const createBtn = document.querySelector('button[onclick="window.createPaste()"]');
+            if (createBtn) {
+                createBtn.disabled = true;
+                createBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creating...';
             }
 
             try {
-                await db.collection('pastes').doc(pasteId).set(pasteData);
+                // Generate unique ID
+                let pasteId = generatePasteId();
+                let exists = await checkPasteIdExists(pasteId);
+                while (exists) {
+                    pasteId = generatePasteId();
+                    exists = await checkPasteIdExists(pasteId);
+                }
+
+                const pasteData = {
+                    pasteId: pasteId,
+                    title: title,
+                    content: content,
+                    syntax: syntax,
+                    visibility: visibility,
+                    createdAt: new Date().toISOString(),
+                    views: {
+                        total: 0,
+                        unique: []
+                    }
+                };
+
+                // Add user info if logged in
+                if (currentUser) {
+                    pasteData.userId = currentUser.uid;
+                    pasteData.authorName = currentUser.displayName || currentUser.email;
+                    pasteData.authorEmail = currentUser.email;
+                } else {
+                    pasteData.userId = null;
+                    pasteData.authorName = 'Anonymous';
+                    pasteData.authorEmail = null;
+                }
+
+                // Add expiry if set
+                if (expiry > 0) {
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + expiry);
+                    pasteData.expiresAt = expiryDate.toISOString();
+                }
+
+                // Save to Firestore
+                await setDoc(doc(db, 'pastes', pasteId), pasteData);
                 
                 // Clear form
                 document.getElementById('pasteTitle').value = '';
                 document.getElementById('pasteContent').value = '';
                 
                 // Update user's total pastes count
-                if (user) {
-                    await db.collection('users').doc(user.uid).update({
-                        totalPastes: firebase.firestore.FieldValue.increment(1)
+                if (currentUser) {
+                    const userRef = doc(db, 'users', currentUser.uid);
+                    await updateDoc(userRef, {
+                        totalPastes: increment(1)
                     });
                 }
                 
                 // Update URL and show the paste
                 window.location.hash = `paste-${pasteId}`;
-                viewPasteById(pasteId);
+                await viewPasteById(pasteId);
                 
                 showNotification('✅ Paste created successfully!');
                 
@@ -1106,7 +1156,14 @@
                 await loadAllPastes();
                 
             } catch (error) {
+                console.error('Error creating paste:', error);
                 showNotification('Error creating paste: ' + error.message, true);
+            } finally {
+                // Re-enable the create button
+                if (createBtn) {
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = '<i class="fas fa-save"></i> Create Paste';
+                }
             }
         };
 
@@ -1117,9 +1174,10 @@
             container.innerHTML = '<div class="loading"></div>';
 
             try {
-                const doc = await db.collection('pastes').doc(pasteId).get();
+                const docRef = doc(db, 'pastes', pasteId);
+                const docSnap = await getDoc(docRef);
                 
-                if (!doc.exists) {
+                if (!docSnap.exists()) {
                     container.innerHTML = `
                         <div class="auth-container" style="text-align: center;">
                             <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
@@ -1133,7 +1191,7 @@
                     return;
                 }
                 
-                const paste = doc.data();
+                const paste = docSnap.data();
                 
                 // Check visibility
                 if (paste.visibility === 'private' && (!currentUser || currentUser.uid !== paste.userId)) {
@@ -1153,9 +1211,9 @@
                 // Track view (only once per device)
                 if (!viewedPastes[pasteId]) {
                     // Update view count
-                    await db.collection('pastes').doc(pasteId).update({
-                        'views.total': firebase.firestore.FieldValue.increment(1),
-                        'views.unique': firebase.firestore.FieldValue.arrayUnion(deviceId)
+                    await updateDoc(docRef, {
+                        'views.total': increment(1),
+                        'views.unique': arrayUnion(deviceId)
                     });
                     
                     // Mark as viewed
@@ -1164,13 +1222,14 @@
                     
                     // Update author's total views if logged in
                     if (paste.userId) {
-                        await db.collection('users').doc(paste.userId).update({
-                            totalViews: firebase.firestore.FieldValue.increment(1)
+                        const userRef = doc(db, 'users', paste.userId);
+                        await updateDoc(userRef, {
+                            totalViews: increment(1)
                         }).catch(() => {});
                     }
                 }
                 
-                const date = paste.createdAt ? new Date(paste.createdAt.seconds * 1000).toLocaleString() : 'Unknown date';
+                const date = paste.createdAt ? new Date(paste.createdAt).toLocaleString() : 'Unknown date';
                 const shareableLink = window.location.href;
                 
                 container.innerHTML = `
@@ -1187,13 +1246,13 @@
                                 </div>
                             </div>
                             <div class="paste-actions">
-                                <button class="btn btn-primary btn-icon" onclick="copyPasteContent()">
+                                <button class="btn btn-primary btn-icon" onclick="window.copyPasteContent()">
                                     <i class="fas fa-copy"></i> Copy
                                 </button>
-                                <button class="btn btn-primary btn-icon" onclick="showShareModal('${shareableLink}')">
+                                <button class="btn btn-primary btn-icon" onclick="window.showShareModal('${shareableLink}')">
                                     <i class="fas fa-share-alt"></i> Share
                                 </button>
-                                <button class="btn btn-logout btn-icon" onclick="goToDashboard()">
+                                <button class="btn btn-logout btn-icon" onclick="window.goToDashboard()">
                                     <i class="fas fa-arrow-left"></i> Back
                                 </button>
                             </div>
@@ -1251,7 +1310,7 @@
             let pastesHTML = '';
             
             filteredPastes.forEach(paste => {
-                const date = paste.createdAt ? new Date(paste.createdAt.seconds * 1000).toLocaleDateString() : 'Recent';
+                const date = paste.createdAt ? new Date(paste.createdAt).toLocaleDateString() : 'Recent';
                 const isOwner = currentUser && paste.userId === currentUser.uid;
                 const hasViewed = viewedPastes[paste.pasteId];
                 const shareableLink = `${window.location.origin}${window.location.pathname}#paste-${paste.pasteId}`;
@@ -1276,7 +1335,7 @@
                         </div>
                         ${isOwner ? `
                         <div class="paste-card-actions" onclick="event.stopPropagation()">
-                            <button class="copy-btn" style="flex: 1;" onclick="copyToClipboard('${shareableLink}')">
+                            <button class="copy-btn" style="flex: 1;" onclick="window.copyToClipboard('${shareableLink}')">
                                 <i class="fas fa-share-alt"></i> Share
                             </button>
                         </div>
@@ -1293,11 +1352,11 @@
                     <div class="dashboard-header">
                         <h1><i class="fas fa-home"></i> VertexPaste Dashboard</h1>
                         <div class="dashboard-tabs">
-                            <button class="dashboard-tab ${filter === 'all' ? 'active' : ''}" onclick="renderDashboard('all')">
+                            <button class="dashboard-tab ${filter === 'all' ? 'active' : ''}" onclick="window.renderDashboard('all')">
                                 <i class="fas fa-globe"></i> Community
                             </button>
                             ${currentUser ? `
-                            <button class="dashboard-tab ${filter === 'mine' ? 'active' : ''}" onclick="renderDashboard('mine')">
+                            <button class="dashboard-tab ${filter === 'mine' ? 'active' : ''}" onclick="window.renderDashboard('mine')">
                                 <i class="fas fa-user"></i> My Pastes
                             </button>
                             ` : ''}
@@ -1347,7 +1406,7 @@
                             <input type="number" id="pasteExpiry" placeholder="Expiry (days, 0 = never)" min="0" value="0">
                         </div>
                         <textarea id="pasteContent" placeholder="Your paste content here..."></textarea>
-                        <button class="btn btn-primary" onclick="createPaste()">
+                        <button class="btn btn-primary" onclick="window.createPaste()">
                             <i class="fas fa-save"></i> Create Paste
                         </button>
                     </div>
@@ -1358,7 +1417,7 @@
                         </h2>
                         
                         <div class="filter-section">
-                            <select class="filter-select" id="filterSyntax" onchange="filterPastes()">
+                            <select class="filter-select" id="filterSyntax" onchange="window.filterPastes()">
                                 <option value="all">All Languages</option>
                                 <option value="javascript">JavaScript</option>
                                 <option value="python">Python</option>
@@ -1370,7 +1429,7 @@
                             
                             <input type="text" class="search-input" id="searchInput" 
                                    placeholder="Search pastes..." 
-                                   onkeyup="filterPastes()">
+                                   onkeyup="window.filterPastes()">
                         </div>
                         
                         <div class="pastes-grid" id="pastesGrid">
@@ -1391,15 +1450,17 @@
             const search = document.getElementById('searchInput')?.value?.toLowerCase() || '';
             
             const grid = document.getElementById('pastesGrid');
+            if (!grid) return;
+            
             const cards = grid.querySelectorAll('.paste-card');
             
             cards.forEach(card => {
                 const title = card.querySelector('.paste-card-title')?.textContent?.toLowerCase() || '';
                 const owner = card.querySelector('.owner-name')?.textContent?.toLowerCase() || '';
                 const content = card.querySelector('.paste-card-preview')?.textContent?.toLowerCase() || '';
-                const cardSyntax = card.querySelector('.badge')?.nextSibling?.textContent?.trim() || '';
+                const syntaxBadge = card.querySelector('.fa-code')?.parentElement?.textContent?.trim().toLowerCase() || '';
                 
-                const matchesSyntax = syntax === 'all' || cardSyntax === syntax;
+                const matchesSyntax = syntax === 'all' || syntaxBadge.includes(syntax);
                 const matchesSearch = title.includes(search) || owner.includes(search) || content.includes(search);
                 
                 card.style.display = matchesSyntax && matchesSearch ? 'block' : 'none';
@@ -1490,6 +1551,9 @@
                 closeShareModal();
             }
         };
+
+        // ============ EXPOSE FUNCTIONS TO WINDOW ============
+        window.renderDashboard = renderDashboard;
 
         // ============ INITIALIZE ============
         init();
