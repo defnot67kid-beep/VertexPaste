@@ -313,6 +313,16 @@
             margin-left: 5px;
         }
 
+        .admin-badge-user {
+            background: var(--accent);
+            color: black;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
         .boost-controls {
             background: #1e293b;
             border-radius: 12px;
@@ -1625,7 +1635,7 @@
             const navButtons = document.getElementById('navButtons');
             if (user) {
                 const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
-                const isAdmin = user.email === ADMIN_EMAIL;
+                const isAdmin = currentUser?.isAdmin || user.email === ADMIN_EMAIL;
                 navButtons.innerHTML = `
                     <div class="user-info">
                         <div class="user-avatar">${initial}</div>
@@ -1655,8 +1665,6 @@
             
             if (hash.startsWith('#paste-') && hash.endsWith('-raw')) {
                 const pasteId = hash.replace('#paste-', '').replace('-raw', '');
-                // Redirect to the raw URL format
-                window.location.href = `https://defnot67kid-beep.github.io/VertexPaste/#paste-${pasteId}-raw`;
                 viewRawPaste(pasteId);
                 return;
             }
@@ -1671,7 +1679,7 @@
                 if (currentUser) {
                     renderDashboard(hash === '#my-pastes' ? 'mine' : 'all');
                 } else {
-                    showAuth();
+                    renderDashboard('all'); // Allow non-logged in users to see community pastes
                 }
                 return;
             }
@@ -1685,12 +1693,8 @@
                 return;
             }
             
-            if (!currentUser) {
-                showAuth();
-            } else {
-                window.location.hash = '#dashboard';
-                renderDashboard('all');
-            }
+            // Default to dashboard
+            renderDashboard('all');
         }
 
         // ============ SHOW AUTH ============
@@ -2080,8 +2084,9 @@
                 
                 const paste = docSnap.data();
                 
-                // Check visibility
+                // Check visibility - FIXED: Allow public and unlisted pastes to be viewed by anyone
                 if (paste.visibility === 'private') {
+                    // For private pastes, check if user is owner or has password
                     if (!currentUser || currentUser.uid !== paste.userId) {
                         // Show password modal
                         pendingPasteId = pasteId;
@@ -2090,6 +2095,7 @@
                         return;
                     }
                 }
+                // Public and unlisted pastes are viewable by everyone - no need for additional checks
                 
                 // Check if user/device has already viewed (only count once)
                 const viewerId = currentUser ? currentUser.uid : deviceId;
@@ -2204,7 +2210,8 @@
             const date = paste.createdAt ? new Date(paste.createdAt).toLocaleString() : 'Unknown date';
             const shareableLink = window.location.href;
             const rawLink = `https://defnot67kid-beep.github.io/VertexPaste/#paste-${pasteId}-raw`;
-            const isOwner = currentUser && (currentUser.uid === paste.userId || currentUser.isAdmin);
+            const isOwner = currentUser && (currentUser.uid === paste.userId);
+            const isAdmin = currentUser && currentUser.isAdmin;
             
             // Get comments
             const comments = paste.comments || [];
@@ -2227,7 +2234,6 @@
                 return new Date(b.date) - new Date(a.date);
             }).forEach((comment, index) => {
                 const isCommentOwner = currentUser && (currentUser.uid === comment.authorId);
-                const isAdmin = currentUser && currentUser.isAdmin;
                 
                 commentsHTML += `
                     <div class="comment ${comment.isPinned ? 'pinned' : ''}" id="comment-${index}">
@@ -2286,18 +2292,18 @@
                             <button class="btn btn-primary btn-icon" onclick="window.showShareModal('${shareableLink}')">
                                 <i class="fas fa-share-alt"></i> Share
                             </button>
-                            ${isOwner ? `
+                            ${isOwner || isAdmin ? `
                                 <button class="btn btn-danger btn-icon" onclick="window.deletePaste('${pasteId}')">
                                     <i class="fas fa-trash"></i> Delete
                                 </button>
-                                ${currentUser.isAdmin ? `
-                                    <button class="btn btn-warning btn-icon" onclick="window.togglePinPaste('${pasteId}', ${!paste.isPinned})">
-                                        <i class="fas fa-thumbtack"></i> ${paste.isPinned ? 'Unpin' : 'Pin'}
-                                    </button>
-                                    <button class="btn btn-info btn-icon" onclick="window.showBoostModal('${pasteId}')">
-                                        <i class="fas fa-rocket"></i> Boost
-                                    </button>
-                                ` : ''}
+                            ` : ''}
+                            ${isAdmin ? `
+                                <button class="btn btn-warning btn-icon" onclick="window.togglePinPaste('${pasteId}', ${!paste.isPinned})">
+                                    <i class="fas fa-thumbtack"></i> ${paste.isPinned ? 'Unpin' : 'Pin'}
+                                </button>
+                                <button class="btn btn-info btn-icon" onclick="window.showBoostModal('${pasteId}')">
+                                    <i class="fas fa-rocket"></i> Boost
+                                </button>
                             ` : ''}
                             <button class="btn btn-logout btn-icon" onclick="window.goToDashboard()">
                                 <i class="fas fa-arrow-left"></i> Back
@@ -2357,7 +2363,7 @@
                 
                 const paste = docSnap.data();
                 
-                // Check visibility
+                // Check visibility - FIXED: Allow public and unlisted pastes in raw view
                 if (paste.visibility === 'private') {
                     if (!currentUser || currentUser.uid !== paste.userId) {
                         document.body.innerHTML = 'Private paste - authentication required';
@@ -2613,6 +2619,24 @@
             }
         };
 
+        // ============ TOGGLE USER ADMIN STATUS ============
+        window.toggleUserAdmin = async function(userId, makeAdmin) {
+            if (!currentUser || !currentUser.isAdmin) return;
+            
+            try {
+                const userRef = doc(db, 'users', userId);
+                await updateDoc(userRef, {
+                    isAdmin: makeAdmin
+                });
+                
+                showNotification(`User ${makeAdmin ? 'promoted to admin' : 'demoted from admin'}`);
+                await loadAllUsers();
+                renderAdminPanel();
+            } catch (error) {
+                showNotification('Error updating user admin status', true);
+            }
+        };
+
         // ============ SHOW ADMIN PANEL ============
         window.showAdminPanel = function() {
             window.location.hash = '#admin';
@@ -2630,6 +2654,7 @@
             const totalViews = allPastes.reduce((sum, p) => sum + (p.views?.total || 0), 0);
             const privatePastes = allPastes.filter(p => p.visibility === 'private').length;
             const boostedPastes = allPastes.filter(p => p.isBoosted).length;
+            const adminUsers = allUsers.filter(u => u.isAdmin).length;
             
             let usersTable = '';
             allUsers.forEach(user => {
@@ -2641,9 +2666,20 @@
                         <td>${user.totalViews || 0}</td>
                         <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                         <td>
-                            <button class="btn btn-danger btn-icon" onclick="window.adminDeleteUser('${user.uid}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            ${user.isAdmin ? '<span class="admin-badge-user">ADMIN</span>' : ''}
+                        </td>
+                        <td>
+                            ${user.email !== ADMIN_EMAIL ? `
+                                <button class="btn ${user.isAdmin ? 'btn-warning' : 'btn-primary'} btn-icon" onclick="window.toggleUserAdmin('${user.uid}', ${!user.isAdmin})">
+                                    <i class="fas ${user.isAdmin ? 'fa-user-minus' : 'fa-user-plus'}"></i> 
+                                    ${user.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                                </button>
+                            ` : '<span class="badge" style="background: var(--accent);">Master Admin</span>'}
+                            ${user.email !== ADMIN_EMAIL ? `
+                                <button class="btn btn-danger btn-icon" onclick="window.adminDeleteUser('${user.uid}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
                         </td>
                     </tr>
                 `;
@@ -2712,6 +2748,10 @@
                             <h3>${boostedPastes}</h3>
                             <div class="stat-label">Boosted Pastes</div>
                         </div>
+                        <div class="stat-card">
+                            <h3>${adminUsers}</h3>
+                            <div class="stat-label">Admins</div>
+                        </div>
                     </div>
                     
                     <div class="boost-controls">
@@ -2734,6 +2774,7 @@
                                     <th>Pastes</th>
                                     <th>Views</th>
                                     <th>Joined</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -3204,4 +3245,4 @@
         init();
     </script>
 </body>
-    </html>
+    </html> llp
