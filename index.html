@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VertexPaste - Share Code & Text</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Highlight.js for syntax highlighting -->
@@ -24,7 +28,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -67,6 +71,12 @@
             background: #1e293b;
             border-radius: 8px;
             border: 1px solid #334155;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-info:hover {
+            border-color: #60a5fa;
         }
 
         .user-avatar {
@@ -128,6 +138,11 @@
         .btn-icon {
             padding: 8px 12px;
             font-size: 13px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
         }
 
         /* Auth Forms */
@@ -199,13 +214,19 @@
             box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
         }
 
-        /* Dashboard */
-        .dashboard {
+        /* Main Layout */
+        .main-layout {
             display: none;
+            gap: 30px;
         }
 
-        .dashboard.active {
-            display: block;
+        .main-layout.active {
+            display: flex;
+        }
+
+        /* Dashboard (Left Side) */
+        .dashboard {
+            flex: 3;
         }
 
         .create-paste {
@@ -341,6 +362,121 @@
             color: white;
         }
 
+        /* Sidebar (Right Side) */
+        .sidebar {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #334155;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar h3 {
+            color: #f1f5f9;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .recent-pastes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .recent-paste-item {
+            padding: 12px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .recent-paste-item:hover {
+            border-color: #60a5fa;
+            transform: translateX(-4px);
+        }
+
+        .recent-paste-title {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .recent-paste-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        .recent-paste-stats {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Profile Page */
+        .profile-page {
+            display: none;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #334155;
+        }
+
+        .profile-page.active {
+            display: block;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa, #c084fc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .profile-info h1 {
+            color: #f1f5f9;
+            margin-bottom: 10px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            color: #94a3b8;
+        }
+
+        .profile-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         /* View Paste Page */
         .view-paste {
             display: none;
@@ -355,6 +491,14 @@
             display: block;
         }
 
+        .view-paste.raw-mode {
+            background: #0f172a;
+            border-radius: 0;
+            min-height: 100vh;
+            margin: -20px;
+            padding: 40px;
+        }
+
         .paste-header {
             display: flex;
             justify-content: space-between;
@@ -362,8 +506,6 @@
             margin-bottom: 20px;
             padding-bottom: 20px;
             border-bottom: 1px solid #334155;
-            flex-wrap: wrap;
-            gap: 20px;
         }
 
         .paste-info h1 {
@@ -380,11 +522,25 @@
             flex-wrap: wrap;
         }
 
+        .paste-meta span {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .paste-meta span:hover {
+            color: #60a5fa;
+        }
+
         .paste-content {
             background: #0f172a;
             border-radius: 12px;
             padding: 20px;
             overflow-x: auto;
+        }
+
+        .raw-mode .paste-content {
+            background: transparent;
+            padding: 0;
         }
 
         .paste-content pre {
@@ -396,6 +552,7 @@
             word-wrap: break-word;
         }
 
+        /* Notifications */
         .copy-notification {
             position: fixed;
             bottom: 20px;
@@ -483,11 +640,6 @@
             border: none;
             color: #60a5fa;
             font-family: 'Fira Code', monospace;
-            outline: none;
-        }
-
-        .hidden {
-            display: none;
         }
     </style>
 </head>
@@ -495,15 +647,15 @@
     <div class="container">
         <!-- Navbar -->
         <nav class="navbar">
-            <div class="logo" onclick="window.location.hash=''; location.reload()">VertexPaste</div>
+            <div class="logo" onclick="goHome()">VertexPaste</div>
             <div class="nav-buttons" id="navButtons"></div>
         </nav>
 
         <!-- Auth Container -->
         <div id="authContainer" class="auth-container">
             <div class="auth-tabs">
-                <div class="auth-tab active" onclick="window.switchTab('login')">Login</div>
-                <div class="auth-tab" onclick="window.switchTab('signup')">Sign Up</div>
+                <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+                <div class="auth-tab" onclick="switchTab('signup')">Sign Up</div>
             </div>
 
             <!-- Login Form -->
@@ -516,10 +668,10 @@
                     <label>Password</label>
                     <input type="password" id="loginPassword" placeholder="Enter your password">
                 </div>
-                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="window.loginWithEmail()">
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="loginWithEmail()">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
-                <button class="btn btn-google" style="width: 100%;" onclick="window.loginWithGoogle()">
+                <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()">
                     <i class="fab fa-google"></i> Login with Google
                 </button>
             </div>
@@ -538,46 +690,78 @@
                     <label>Password</label>
                     <input type="password" id="signupPassword" placeholder="Enter your password">
                 </div>
-                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="window.signupWithEmail()">
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="signupWithEmail()">
                     <i class="fas fa-user-plus"></i> Sign Up
                 </button>
-                <button class="btn btn-google" style="width: 100%;" onclick="window.loginWithGoogle()">
+                <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()">
                     <i class="fab fa-google"></i> Sign up with Google
                 </button>
             </div>
         </div>
 
-        <!-- Dashboard -->
-        <div id="dashboard" class="dashboard">
-            <div class="create-paste">
-                <h2><i class="fas fa-plus-circle"></i> Create New Paste</h2>
-                <input type="text" id="pasteTitle" placeholder="Paste Title (optional)">
-                <div class="paste-options">
-                    <select id="pasteSyntax">
-                        <option value="plaintext">Plain Text</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="python">Python</option>
-                        <option value="html">HTML</option>
-                        <option value="css">CSS</option>
-                        <option value="json">JSON</option>
-                        <option value="markdown">Markdown</option>
-                        <option value="bash">Bash</option>
-                    </select>
-                    <select id="pasteVisibility">
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
-                    </select>
-                    <input type="number" id="pasteExpiry" placeholder="Expiry (days, 0 = never)" min="0" value="0">
+        <!-- Main Layout (Dashboard + Sidebar) -->
+        <div id="mainLayout" class="main-layout">
+            <!-- Dashboard (Left Side) -->
+            <div class="dashboard">
+                <div class="create-paste">
+                    <h2><i class="fas fa-plus-circle"></i> Create New Paste</h2>
+                    <input type="text" id="pasteTitle" placeholder="Paste Title (optional)">
+                    <div class="paste-options">
+                        <select id="pasteSyntax">
+                            <option value="plaintext">Plain Text</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="json">JSON</option>
+                            <option value="markdown">Markdown</option>
+                            <option value="bash">Bash</option>
+                        </select>
+                        <select id="pasteVisibility">
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
+                    <textarea id="pasteContent" placeholder="Your paste content here..."></textarea>
+                    <button class="btn btn-primary" onclick="createPaste()">
+                        <i class="fas fa-save"></i> Create Paste
+                    </button>
                 </div>
-                <textarea id="pasteContent" placeholder="Your paste content here..."></textarea>
-                <button class="btn btn-primary" onclick="window.createPaste()">
-                    <i class="fas fa-save"></i> Create Paste
-                </button>
+
+                <div class="pastes-list">
+                    <h2><i class="fas fa-layer-group"></i> Your Pastes</h2>
+                    <div id="pastesContainer" class="pastes-grid"></div>
+                </div>
             </div>
 
+            <!-- Sidebar (Right Side) -->
+            <div class="sidebar">
+                <h3>
+                    <span><i class="fas fa-clock"></i> Recent Public Pastes</span>
+                    <span class="badge badge-public">Live</span>
+                </h3>
+                <div id="recentPastesList" class="recent-pastes-list">
+                    <div class="loading"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profilePage" class="profile-page">
+            <div class="profile-header">
+                <div class="profile-avatar-large" id="profileAvatar">U</div>
+                <div class="profile-info">
+                    <h1 id="profileName">Loading...</h1>
+                    <div class="profile-stats">
+                        <span id="profilePastes"><i class="fas fa-paste"></i> 0 pastes</span>
+                        <span id="profileViews"><i class="fas fa-eye"></i> 0 profile views</span>
+                        <span id="profileJoined"><i class="fas fa-calendar"></i> Joined: Unknown</span>
+                    </div>
+                </div>
+            </div>
             <div class="pastes-list">
-                <h2><i class="fas fa-history"></i> Your Recent Pastes</h2>
-                <div id="pastesContainer" class="pastes-grid"></div>
+                <h3><i class="fas fa-paste"></i> User's Pastes</h3>
+                <div id="profilePastesContainer" class="pastes-grid"></div>
             </div>
         </div>
 
@@ -587,27 +771,30 @@
                 <div class="paste-info">
                     <h1 id="viewPasteTitle">Loading...</h1>
                     <div class="paste-meta">
-                        <span id="viewPasteAuthor"></span>
-                        <span id="viewPasteDate"></span>
-                        <span id="viewPasteId"></span>
-                        <span id="viewPasteViews"></span>
+                        <span id="viewPasteAuthor" onclick="viewProfileFromPaste()"><i class="fas fa-user"></i> Loading...</span>
+                        <span id="viewPasteDate"><i class="fas fa-calendar"></i> Loading...</span>
+                        <span id="viewPasteId"><i class="fas fa-hashtag"></i> Loading...</span>
+                        <span id="viewPasteViews"><i class="fas fa-eye"></i> 0 views</span>
                         <span id="viewPasteVisibility"></span>
                     </div>
                 </div>
                 <div class="paste-actions">
-                    <button class="btn btn-primary btn-icon" onclick="window.copyCurrentPaste()">
+                    <button class="btn btn-primary btn-icon" onclick="copyCurrentPaste()">
                         <i class="fas fa-copy"></i> Copy
                     </button>
-                    <button class="btn btn-primary btn-icon" onclick="window.showShareModal()">
+                    <button class="btn btn-primary btn-icon" onclick="showShareModal()">
                         <i class="fas fa-share-alt"></i> Share
                     </button>
-                    <button class="btn btn-logout btn-icon" onclick="window.goToDashboard()">
+                    <button class="btn btn-primary btn-icon" onclick="viewRawVersion()">
+                        <i class="fas fa-file-code"></i> Raw
+                    </button>
+                    <button class="btn btn-logout btn-icon" onclick="goBack()">
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
                 </div>
             </div>
             <div class="paste-content">
-                <pre><code id="viewPasteContent" class="language-plaintext"></code></pre>
+                <pre id="viewPasteContent"><code class="language-plaintext"></code></pre>
             </div>
         </div>
 
@@ -617,74 +804,45 @@
                 <h3>Share this paste</h3>
                 <div class="share-link">
                     <input type="text" id="shareLink" readonly>
-                    <button class="btn btn-primary btn-icon" onclick="window.copyShareLink()">
+                    <button class="btn btn-primary btn-icon" onclick="copyShareLink()">
                         <i class="fas fa-copy"></i>
                     </button>
                 </div>
-                <div style="text-align: right;">
-                    <button class="btn btn-primary" onclick="window.closeShareModal()">Close</button>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-primary btn-small" onclick="copyRawLink()">
+                        <i class="fas fa-file-code"></i> Copy Raw Link
+                    </button>
+                    <button class="btn btn-primary" onclick="closeShareModal()">Close</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signInWithPopup, 
-            GoogleAuthProvider, 
-            updateProfile,
-            onAuthStateChanged,
-            signOut 
-        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            getDocs, 
-            query, 
-            where, 
-            orderBy, 
-            limit, 
-            updateDoc, 
-            increment,
-            serverTimestamp 
-        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
+    <script>
         // Your Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
-            authDomain: "vertexpaste.firebaseapp.com",
-            projectId: "vertexpaste",
-            storageBucket: "vertexpaste.firebasestorage.app",
-            messagingSenderId: "255275350380",
-            appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // Make functions available globally
-        window.switchTab = switchTab;
-        window.loginWithEmail = loginWithEmail;
-        window.loginWithGoogle = loginWithGoogle;
-        window.signupWithEmail = signupWithEmail;
-        window.logout = logout;
-        window.createPaste = createPaste;
-        window.copyCurrentPaste = copyCurrentPaste;
-        window.showShareModal = showShareModal;
-        window.closeShareModal = closeShareModal;
-        window.copyShareLink = copyShareLink;
-        window.goToDashboard = goToDashboard;
+        // Track viewed pastes for this device/session
+        let viewedPastes = JSON.parse(localStorage.getItem('viewedPastes')) || {};
+        let deviceId = localStorage.getItem('deviceId') || generateDeviceId();
+        localStorage.setItem('deviceId', deviceId);
+
+        // Generate unique device ID
+        function generateDeviceId() {
+            return 'device_' + Math.random().toString(36).substr(2, 9);
+        }
 
         // Generate custom ID for paste
         function generatePasteId() {
@@ -696,65 +854,96 @@
             return id;
         }
 
-        // Check URL for paste ID on load
+        // Check URL on load
         window.addEventListener('load', () => {
             const hash = window.location.hash;
-            if (hash && hash.startsWith('#paste-')) {
-                const pasteId = hash.replace('#paste-', '');
-                viewPasteById(pasteId);
-            }
-        });
-
-        // Listen for hash changes
-        window.addEventListener('hashchange', () => {
-            const hash = window.location.hash;
-            if (hash && hash.startsWith('#paste-')) {
-                const pasteId = hash.replace('#paste-', '');
-                viewPasteById(pasteId);
-            } else if (!hash || hash === '#') {
-                if (auth.currentUser) {
-                    showDashboard();
-                } else {
-                    showAuth();
+            if (hash) {
+                if (hash.startsWith('#paste-')) {
+                    const pasteId = hash.replace('#paste-', '');
+                    if (hash.endsWith('-raw')) {
+                        const rawId = pasteId.replace('-raw', '');
+                        viewPasteById(rawId, true);
+                    } else {
+                        viewPasteById(pasteId);
+                    }
+                } else if (hash.startsWith('#profile-')) {
+                    const userId = hash.replace('#profile-', '');
+                    viewProfile(userId);
                 }
             }
         });
 
         // Auth state observer
-        onAuthStateChanged(auth, (user) => {
+        auth.onAuthStateChanged((user) => {
             if (user) {
+                document.getElementById('authContainer').style.display = 'none';
                 const hash = window.location.hash;
-                if (hash && hash.startsWith('#paste-')) {
-                    const pasteId = hash.replace('#paste-', '');
-                    viewPasteById(pasteId);
+                if (hash) {
+                    if (hash.startsWith('#paste-')) {
+                        const pasteId = hash.replace('#paste-', '');
+                        if (hash.endsWith('-raw')) {
+                            const rawId = pasteId.replace('-raw', '');
+                            viewPasteById(rawId, true);
+                        } else {
+                            viewPasteById(pasteId);
+                        }
+                    } else if (hash.startsWith('#profile-')) {
+                        const userId = hash.replace('#profile-', '');
+                        viewProfile(userId);
+                    } else {
+                        showDashboard();
+                    }
                 } else {
                     showDashboard();
                 }
                 updateNavbar(user);
                 loadUserPastes();
             } else {
-                showAuth();
+                document.getElementById('authContainer').style.display = 'block';
+                document.getElementById('mainLayout').classList.remove('active');
+                document.getElementById('profilePage').classList.remove('active');
+                document.getElementById('viewPaste').classList.remove('active');
                 updateNavbar(null);
                 
                 // Check for public paste viewing
                 const hash = window.location.hash;
-                if (hash && hash.startsWith('#paste-')) {
-                    const pasteId = hash.replace('#paste-', '');
-                    viewPasteById(pasteId);
+                if (hash) {
+                    if (hash.startsWith('#paste-')) {
+                        const pasteId = hash.replace('#paste-', '');
+                        if (hash.endsWith('-raw')) {
+                            const rawId = pasteId.replace('-raw', '');
+                            viewPasteById(rawId, true);
+                        } else {
+                            viewPasteById(pasteId);
+                        }
+                    } else if (hash.startsWith('#profile-')) {
+                        const userId = hash.replace('#profile-', '');
+                        viewProfile(userId);
+                    }
                 }
             }
+            loadRecentPastes();
         });
 
+        // Show dashboard
         function showDashboard() {
-            document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('mainLayout').classList.add('active');
+            document.getElementById('profilePage').classList.remove('active');
             document.getElementById('viewPaste').classList.remove('active');
+            window.location.hash = '';
         }
 
-        function showAuth() {
-            document.getElementById('authContainer').style.display = 'block';
-            document.getElementById('dashboard').classList.remove('active');
-            document.getElementById('viewPaste').classList.remove('active');
+        // Go home
+        function goHome() {
+            if (auth.currentUser) {
+                showDashboard();
+            } else {
+                document.getElementById('authContainer').style.display = 'block';
+                document.getElementById('mainLayout').classList.remove('active');
+                document.getElementById('profilePage').classList.remove('active');
+                document.getElementById('viewPaste').classList.remove('active');
+                window.location.hash = '';
+            }
         }
 
         // Update navbar
@@ -763,11 +952,11 @@
             if (user) {
                 const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
                 navButtons.innerHTML = `
-                    <div class="user-info">
+                    <div class="user-info" onclick="viewProfile('${user.uid}')">
                         <div class="user-avatar">${initial}</div>
                         <span>${user.displayName || user.email}</span>
                     </div>
-                    <button class="btn btn-logout" onclick="window.logout()">
+                    <button class="btn btn-logout" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 `;
@@ -791,46 +980,64 @@
         }
 
         // Email signup
-        async function signupWithEmail() {
+        function signupWithEmail() {
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
 
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await updateProfile(userCredential.user, {
-                    displayName: name
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    return userCredential.user.updateProfile({
+                        displayName: name
+                    }).then(() => {
+                        // Create user profile
+                        return db.collection('users').doc(userCredential.user.uid).set({
+                            name: name,
+                            email: email,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            profileViews: 0
+                        });
+                    });
+                })
+                .catch((error) => {
+                    alert(error.message);
                 });
-            } catch (error) {
-                alert(error.message);
-            }
         }
 
         // Email login
-        async function loginWithEmail() {
+        function loginWithEmail() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert(error.message);
-            }
+            auth.signInWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    alert(error.message);
+                });
         }
 
         // Google login
-        async function loginWithGoogle() {
-            try {
-                await signInWithPopup(auth, googleProvider);
-            } catch (error) {
-                alert(error.message);
-            }
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    // Create/update user profile
+                    return db.collection('users').doc(result.user.uid).set({
+                        name: result.user.displayName,
+                        email: result.user.email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        profileViews: 0
+                    }, { merge: true });
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
         }
 
         // Logout
-        async function logout() {
-            await signOut(auth);
+        function logout() {
+            auth.signOut();
             window.location.hash = '';
+            showDashboard();
         }
 
         // Create new paste
@@ -839,7 +1046,6 @@
             const content = document.getElementById('pasteContent').value;
             const syntax = document.getElementById('pasteSyntax').value;
             const visibility = document.getElementById('pasteVisibility').value;
-            const expiry = parseInt(document.getElementById('pasteExpiry').value) || 0;
             const user = auth.currentUser;
 
             if (!content) {
@@ -861,8 +1067,9 @@
                 content: content,
                 syntax: syntax,
                 visibility: visibility,
-                createdAt: serverTimestamp(),
-                views: 0
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                views: 0,
+                uniqueViews: {}
             };
 
             // Add user info if logged in
@@ -874,43 +1081,45 @@
                 pasteData.authorName = 'Anonymous';
             }
 
-            // Add expiry if set
-            if (expiry > 0) {
-                const expiryDate = new Date();
-                expiryDate.setDate(expiryDate.getDate() + expiry);
-                pasteData.expiresAt = expiryDate;
-            }
-
-            try {
-                await setDoc(doc(db, 'pastes', pasteId), pasteData);
-                
-                document.getElementById('pasteTitle').value = '';
-                document.getElementById('pasteContent').value = '';
-                
-                // Update URL and show the paste
-                window.location.hash = `paste-${pasteId}`;
-                viewPasteById(pasteId);
-                
-                if (user) {
-                    loadUserPastes();
-                }
-            } catch (error) {
-                alert('Error creating paste: ' + error.message);
-            }
+            db.collection('pastes').doc(pasteId).set(pasteData)
+                .then(() => {
+                    document.getElementById('pasteTitle').value = '';
+                    document.getElementById('pasteContent').value = '';
+                    
+                    // Auto-redirect to the paste
+                    window.location.hash = `paste-${pasteId}`;
+                    viewPasteById(pasteId);
+                    
+                    if (user) {
+                        loadUserPastes();
+                    }
+                    loadRecentPastes();
+                })
+                .catch((error) => {
+                    alert('Error creating paste: ' + error.message);
+                });
         }
 
         // Check if paste ID exists
         async function checkPasteIdExists(pasteId) {
-            const docRef = doc(db, 'pastes', pasteId);
-            const docSnap = await getDoc(docRef);
-            return docSnap.exists();
+            const doc = await db.collection('pastes').doc(pasteId).get();
+            return doc.exists;
         }
 
         // View paste by ID
-        async function viewPasteById(pasteId) {
-            document.getElementById('dashboard').classList.remove('active');
+        function viewPasteById(pasteId, rawMode = false) {
+            document.getElementById('mainLayout').classList.remove('active');
+            document.getElementById('profilePage').classList.remove('active');
             document.getElementById('authContainer').style.display = 'none';
-            document.getElementById('viewPaste').classList.add('active');
+            
+            const viewPaste = document.getElementById('viewPaste');
+            viewPaste.classList.add('active');
+            
+            if (rawMode) {
+                viewPaste.classList.add('raw-mode');
+            } else {
+                viewPaste.classList.remove('raw-mode');
+            }
             
             const viewTitle = document.getElementById('viewPasteTitle');
             const viewContent = document.getElementById('viewPasteContent');
@@ -923,107 +1132,291 @@
             viewTitle.textContent = 'Loading...';
             viewContent.innerHTML = '<div class="loading"></div>';
 
-            try {
-                const docRef = doc(db, 'pastes', pasteId);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const paste = docSnap.data();
-                    
-                    // Check visibility
-                    if (paste.visibility === 'private' && (!auth.currentUser || auth.currentUser.uid !== paste.userId)) {
-                        alert('This paste is private');
-                        goToDashboard();
-                        return;
+            db.collection('pastes').doc(pasteId).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const paste = doc.data();
+                        
+                        // Check visibility
+                        if (paste.visibility === 'private' && (!auth.currentUser || auth.currentUser.uid !== paste.userId)) {
+                            alert('This paste is private');
+                            goBack();
+                            return;
+                        }
+                        
+                        // Update view count (1 per device/login)
+                        const viewKey = `${deviceId}_${auth.currentUser?.uid || 'anonymous'}`;
+                        if (!paste.uniqueViews || !paste.uniqueViews[viewKey]) {
+                            const updates = {
+                                views: firebase.firestore.FieldValue.increment(1)
+                            };
+                            updates[`uniqueViews.${viewKey}`] = true;
+                            
+                            db.collection('pastes').doc(pasteId).update(updates);
+                            
+                            // Update local storage
+                            viewedPastes[pasteId] = true;
+                            localStorage.setItem('viewedPastes', JSON.stringify(viewedPastes));
+                        }
+                        
+                        viewTitle.textContent = paste.title || 'Untitled';
+                        
+                        // Apply syntax highlighting
+                        const code = viewContent.querySelector('code');
+                        code.className = `language-${paste.syntax || 'plaintext'}`;
+                        code.textContent = paste.content;
+                        hljs.highlightElement(code);
+                        
+                        const date = paste.createdAt ? paste.createdAt.toDate().toLocaleString() : 'Unknown date';
+                        const authorId = paste.userId || 'anonymous';
+                        const authorName = paste.authorName || 'Anonymous';
+                        
+                        viewAuthor.innerHTML = `<i class="fas fa-user"></i> ${authorName}`;
+                        viewAuthor.setAttribute('onclick', `viewProfile('${authorId}')`);
+                        viewAuthor.style.cursor = 'pointer';
+                        
+                        viewDate.innerHTML = `<i class="fas fa-calendar"></i> ${date}`;
+                        viewId.innerHTML = `<i class="fas fa-hashtag"></i> ${paste.pasteId}`;
+                        viewViews.innerHTML = `<i class="fas fa-eye"></i> ${(paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0)} views`;
+                        
+                        const visibilityIcon = paste.visibility === 'private' ? 'lock' : 'globe';
+                        viewVisibility.innerHTML = `<i class="fas fa-${visibilityIcon}"></i> ${paste.visibility}`;
+                        
+                        // Update share modal
+                        document.getElementById('shareLink').value = window.location.origin + window.location.pathname + `#paste-${paste.pasteId}`;
+                    } else {
+                        alert('Paste not found');
+                        goBack();
                     }
-                    
-                    // Update view count
-                    await updateDoc(docRef, {
-                        views: increment(1)
-                    });
-                    
-                    viewTitle.textContent = paste.title || 'Untitled';
-                    
-                    // Apply syntax highlighting
-                    viewContent.className = `language-${paste.syntax || 'plaintext'}`;
-                    viewContent.textContent = paste.content;
-                    hljs.highlightElement(viewContent);
-                    
-                    const date = paste.createdAt ? new Date(paste.createdAt.seconds * 1000).toLocaleString() : 'Unknown date';
-                    viewAuthor.innerHTML = `<i class="fas fa-user"></i> ${paste.authorName || 'Anonymous'}`;
-                    viewDate.innerHTML = `<i class="fas fa-calendar"></i> ${date}`;
-                    viewId.innerHTML = `<i class="fas fa-hashtag"></i> ${paste.pasteId}`;
-                    viewViews.innerHTML = `<i class="fas fa-eye"></i> ${(paste.views || 0) + 1} views`;
-                    viewVisibility.innerHTML = `<i class="fas fa-${paste.visibility === 'private' ? 'lock' : 'globe'}"></i> ${paste.visibility}`;
-                    
-                    // Update share modal
-                    document.getElementById('shareLink').value = window.location.href;
-                } else {
-                    alert('Paste not found');
-                    goToDashboard();
-                }
-            } catch (error) {
-                console.error('Error loading paste:', error);
-                alert('Error loading paste');
-                goToDashboard();
+                })
+                .catch((error) => {
+                    console.error('Error loading paste:', error);
+                    alert('Error loading paste');
+                    goBack();
+                });
+        }
+
+        // View raw version
+        function viewRawVersion() {
+            const currentHash = window.location.hash;
+            if (currentHash.startsWith('#paste-')) {
+                const pasteId = currentHash.replace('#paste-', '').replace('-raw', '');
+                window.location.hash = `#paste-${pasteId}-raw`;
+                viewPasteById(pasteId, true);
             }
         }
 
         // Load user's pastes
-        async function loadUserPastes() {
+        function loadUserPastes() {
             const user = auth.currentUser;
             if (!user) return;
 
-            try {
-                const q = query(
-                    collection(db, 'pastes'),
-                    where('userId', '==', user.uid),
-                    orderBy('createdAt', 'desc'),
-                    limit(20)
-                );
-                
-                const querySnapshot = await getDocs(q);
-                const container = document.getElementById('pastesContainer');
-                container.innerHTML = '';
+            db.collection('pastes')
+                .where('userId', '==', user.uid)
+                .orderBy('createdAt', 'desc')
+                .limit(20)
+                .get()
+                .then((querySnapshot) => {
+                    const container = document.getElementById('pastesContainer');
+                    container.innerHTML = '';
 
-                querySnapshot.forEach((doc) => {
-                    const paste = doc.data();
-                    const date = paste.createdAt ? new Date(paste.createdAt.seconds * 1000).toLocaleString() : 'Just now';
-                    
-                    const card = document.createElement('div');
-                    card.className = 'paste-card';
-                    card.onclick = () => {
-                        window.location.hash = `paste-${paste.pasteId}`;
-                        viewPasteById(paste.pasteId);
-                    };
-                    
-                    card.innerHTML = `
-                        <div class="paste-card-header">
-                            <span class="paste-card-title">${escapeHtml(paste.title || 'Untitled')}</span>
-                            <span class="paste-card-id">${paste.pasteId}</span>
-                        </div>
-                        <div class="paste-card-preview">${escapeHtml(paste.content.substring(0, 100))}${paste.content.length > 100 ? '...' : ''}</div>
-                        <div class="paste-card-footer">
-                            <span><i class="fas fa-eye"></i> ${paste.views || 0}</span>
-                            <span><i class="fas fa-calendar"></i> ${date}</span>
-                            <span class="badge badge-${paste.visibility}">${paste.visibility}</span>
-                        </div>
-                    `;
-                    
-                    container.appendChild(card);
+                    querySnapshot.forEach((doc) => {
+                        const paste = doc.data();
+                        const date = paste.createdAt ? paste.createdAt.toDate().toLocaleString() : 'Just now';
+                        const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
+                        
+                        const card = document.createElement('div');
+                        card.className = 'paste-card';
+                        card.onclick = () => {
+                            window.location.hash = `paste-${paste.pasteId}`;
+                            viewPasteById(paste.pasteId);
+                        };
+                        
+                        card.innerHTML = `
+                            <div class="paste-card-header">
+                                <span class="paste-card-title">${escapeHtml(paste.title || 'Untitled')}</span>
+                                <span class="paste-card-id">${paste.pasteId}</span>
+                            </div>
+                            <div class="paste-card-preview">${escapeHtml(paste.content.substring(0, 100))}${paste.content.length > 100 ? '...' : ''}</div>
+                            <div class="paste-card-footer">
+                                <span><i class="fas fa-eye"></i> ${totalViews}</span>
+                                <span><i class="fas fa-calendar"></i> ${new Date(date).toLocaleDateString()}</span>
+                                <span class="badge badge-${paste.visibility}">${paste.visibility}</span>
+                            </div>
+                        `;
+                        
+                        container.appendChild(card);
+                    });
+
+                    if (querySnapshot.empty) {
+                        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #94a3b8;">No pastes yet. Create your first paste!</p>';
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading pastes:', error);
                 });
+        }
 
-                if (querySnapshot.empty) {
-                    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #94a3b8;">No pastes yet. Create your first paste!</p>';
+        // Load recent public pastes for sidebar
+        function loadRecentPastes() {
+            db.collection('pastes')
+                .where('visibility', '==', 'public')
+                .orderBy('createdAt', 'desc')
+                .limit(10)
+                .get()
+                .then((querySnapshot) => {
+                    const container = document.getElementById('recentPastesList');
+                    container.innerHTML = '';
+
+                    querySnapshot.forEach((doc) => {
+                        const paste = doc.data();
+                        const date = paste.createdAt ? paste.createdAt.toDate().toLocaleString() : 'Just now';
+                        const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
+                        
+                        const item = document.createElement('div');
+                        item.className = 'recent-paste-item';
+                        item.onclick = () => {
+                            window.location.hash = `paste-${paste.pasteId}`;
+                            viewPasteById(paste.pasteId);
+                        };
+                        
+                        item.innerHTML = `
+                            <div class="recent-paste-title">${escapeHtml(paste.title || 'Untitled')}</div>
+                            <div class="recent-paste-meta">
+                                <span><i class="fas fa-user"></i> ${escapeHtml(paste.authorName || 'Anonymous')}</span>
+                                <div class="recent-paste-stats">
+                                    <span><i class="fas fa-eye"></i> ${totalViews}</span>
+                                    <span><i class="fas fa-calendar"></i> ${new Date(date).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.appendChild(item);
+                    });
+
+                    if (querySnapshot.empty) {
+                        container.innerHTML = '<p style="text-align: center; color: #94a3b8;">No public pastes yet</p>';
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading recent pastes:', error);
+                });
+        }
+
+        // View profile
+        function viewProfile(userId) {
+            document.getElementById('mainLayout').classList.remove('active');
+            document.getElementById('viewPaste').classList.remove('active');
+            document.getElementById('profilePage').classList.add('active');
+            
+            window.location.hash = `profile-${userId}`;
+            
+            const profileName = document.getElementById('profileName');
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profilePastes = document.getElementById('profilePastes');
+            const profileViews = document.getElementById('profileViews');
+            const profileJoined = document.getElementById('profileJoined');
+            const container = document.getElementById('profilePastesContainer');
+            
+            profileName.textContent = 'Loading...';
+            container.innerHTML = '<div class="loading"></div>';
+            
+            // Update profile views
+            if (userId !== 'anonymous' && userId !== (auth.currentUser?.uid)) {
+                const viewKey = `${deviceId}_profile_${userId}`;
+                if (!localStorage.getItem(viewKey)) {
+                    db.collection('users').doc(userId).update({
+                        profileViews: firebase.firestore.FieldValue.increment(1)
+                    });
+                    localStorage.setItem(viewKey, 'true');
                 }
-            } catch (error) {
-                console.error('Error loading pastes:', error);
             }
+            
+            // Get user info
+            if (userId === 'anonymous') {
+                profileName.textContent = 'Anonymous User';
+                profileAvatar.textContent = 'A';
+                profilePastes.innerHTML = '<i class="fas fa-paste"></i> Loading pastes...';
+                profileViews.innerHTML = '<i class="fas fa-eye"></i> N/A';
+                profileJoined.innerHTML = '<i class="fas fa-calendar"></i> Unknown';
+            } else {
+                db.collection('users').doc(userId).get()
+                    .then((userDoc) => {
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            profileName.textContent = userData.name || 'Unknown User';
+                            profileAvatar.textContent = (userData.name || 'U').charAt(0).toUpperCase();
+                            
+                            const joinDate = userData.createdAt ? userData.createdAt.toDate().toLocaleDateString() : 'Unknown';
+                            profileJoined.innerHTML = `<i class="fas fa-calendar"></i> Joined: ${joinDate}`;
+                            profileViews.innerHTML = `<i class="fas fa-eye"></i> ${userData.profileViews || 0} profile views`;
+                        }
+                    });
+            }
+            
+            // Get user's pastes
+            let query = db.collection('pastes').where('visibility', '==', 'public').orderBy('createdAt', 'desc');
+            
+            if (userId !== 'anonymous') {
+                query = db.collection('pastes').where('userId', '==', userId).where('visibility', '==', 'public').orderBy('createdAt', 'desc');
+            } else {
+                query = db.collection('pastes').where('userId', '==', null).orderBy('createdAt', 'desc');
+            }
+            
+            query.limit(20).get()
+                .then((querySnapshot) => {
+                    container.innerHTML = '';
+
+                    querySnapshot.forEach((doc) => {
+                        const paste = doc.data();
+                        const date = paste.createdAt ? paste.createdAt.toDate().toLocaleString() : 'Just now';
+                        const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
+                        
+                        const card = document.createElement('div');
+                        card.className = 'paste-card';
+                        card.onclick = () => {
+                            window.location.hash = `paste-${paste.pasteId}`;
+                            viewPasteById(paste.pasteId);
+                        };
+                        
+                        card.innerHTML = `
+                            <div class="paste-card-header">
+                                <span class="paste-card-title">${escapeHtml(paste.title || 'Untitled')}</span>
+                                <span class="paste-card-id">${paste.pasteId}</span>
+                            </div>
+                            <div class="paste-card-preview">${escapeHtml(paste.content.substring(0, 100))}${paste.content.length > 100 ? '...' : ''}</div>
+                            <div class="paste-card-footer">
+                                <span><i class="fas fa-eye"></i> ${totalViews}</span>
+                                <span><i class="fas fa-calendar"></i> ${new Date(date).toLocaleDateString()}</span>
+                                <span class="badge badge-${paste.visibility}">${paste.visibility}</span>
+                            </div>
+                        `;
+                        
+                        container.appendChild(card);
+                    });
+
+                    if (querySnapshot.empty) {
+                        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #94a3b8;">No public pastes yet</p>';
+                    }
+                    
+                    profilePastes.innerHTML = `<i class="fas fa-paste"></i> ${querySnapshot.size} public pastes`;
+                })
+                .catch((error) => {
+                    console.error('Error loading user pastes:', error);
+                    container.innerHTML = '<p style="text-align: center; color: #94a3b8;">Error loading pastes</p>';
+                });
+        }
+
+        // View profile from paste author
+        function viewProfileFromPaste() {
+            const authorSpan = document.getElementById('viewPasteAuthor');
+            const authorText = authorSpan.textContent.replace(' ', '').replace('', '');
+            // This would need the actual userId - in a real implementation, store it in a data attribute
         }
 
         // Copy current paste
         function copyCurrentPaste() {
-            const content = document.getElementById('viewPasteContent').textContent;
+            const content = document.getElementById('viewPasteContent').querySelector('code').textContent;
             navigator.clipboard.writeText(content)
                 .then(() => {
                     showNotification('Paste copied to clipboard!');
@@ -1050,18 +1443,25 @@
             navigator.clipboard.writeText(link.value)
                 .then(() => {
                     showNotification('Link copied to clipboard!');
-                    closeShareModal();
                 });
         }
 
-        // Go back to dashboard
-        function goToDashboard() {
-            window.location.hash = '';
+        // Copy raw link
+        function copyRawLink() {
+            const currentLink = document.getElementById('shareLink').value;
+            const rawLink = currentLink + '-raw';
+            navigator.clipboard.writeText(rawLink)
+                .then(() => {
+                    showNotification('Raw link copied to clipboard!');
+                });
+        }
+
+        // Go back
+        function goBack() {
             if (auth.currentUser) {
                 showDashboard();
-                loadUserPastes();
             } else {
-                showAuth();
+                goHome();
             }
         }
 
