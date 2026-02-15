@@ -9,6 +9,12 @@
     <!-- Highlight.js for syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Open Graph meta tags for SEO -->
+    <meta property="og:title" content="VertexPaste - Code Sharing Platform">
+    <meta property="og:description" content="Share and discover code snippets with syntax highlighting">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="VertexPaste">
+    <meta name="twitter:card" content="summary_large_image">
     <style>
         * {
             margin: 0;
@@ -297,6 +303,42 @@
             font-weight: bold;
         }
 
+        .boost-badge {
+            background: var(--info);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .boost-controls {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #334155;
+        }
+
+        .boost-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .boost-input-group select,
+        .boost-input-group input {
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            flex: 1;
+            min-width: 200px;
+        }
+
         /* Auth Forms */
         .auth-container {
             background: rgba(30, 41, 59, 0.9);
@@ -349,7 +391,7 @@
             font-weight: 500;
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input, .form-group textarea, .form-group select {
             width: 100%;
             padding: 12px;
             background: #1e293b;
@@ -360,10 +402,41 @@
             transition: all 0.3s ease;
         }
 
-        .form-group input:focus, .form-group textarea:focus {
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none;
             border-color: #60a5fa;
             box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+        }
+
+        /* Thumbnail upload */
+        .thumbnail-preview {
+            width: 100%;
+            height: 150px;
+            background: #0f172a;
+            border: 2px dashed #334155;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .thumbnail-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-preview i {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .thumbnail-input {
+            display: none;
         }
 
         /* Password Modal */
@@ -572,10 +645,38 @@
             border: 2px solid var(--accent);
         }
 
+        .paste-card.boosted {
+            border: 2px solid var(--info);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
         .paste-card:hover {
             transform: translateY(-4px);
             border-color: #60a5fa;
             box-shadow: 0 8px 24px rgba(96, 165, 250, 0.2);
+        }
+
+        .paste-card-thumbnail {
+            width: 100%;
+            height: 120px;
+            background: #0f172a;
+            overflow: hidden;
+        }
+
+        .paste-card-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .paste-card-thumbnail .no-thumbnail {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            font-size: 12px;
         }
 
         .paste-card-header {
@@ -693,6 +794,19 @@
             margin-left: 8px;
         }
 
+        .badge-boosted {
+            background: var(--info);
+            color: white;
+            margin-left: 8px;
+        }
+
+        .badge-seo {
+            background: var(--success);
+            color: white;
+            margin-left: 8px;
+            font-size: 10px;
+        }
+
         /* View Paste Page */
         .view-paste {
             display: none;
@@ -743,6 +857,20 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+        }
+
+        .paste-thumbnail-large {
+            width: 100%;
+            max-height: 300px;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .paste-thumbnail-large img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
         }
 
         .paste-content {
@@ -1070,6 +1198,15 @@
             margin-left: 10px;
         }
 
+        .seo-score {
+            font-size: 11px;
+            color: var(--success);
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-left: 10px;
+        }
+
         .trending-badge {
             background: #ef4444;
             color: white;
@@ -1077,6 +1214,14 @@
             border-radius: 4px;
             font-size: 10px;
             margin-left: 5px;
+        }
+
+        .boost-timer {
+            font-size: 10px;
+            color: var(--info);
+            display: flex;
+            align-items: center;
+            gap: 3px;
         }
 
         @media (max-width: 768px) {
@@ -1137,6 +1282,38 @@
                 </div>
             </div>
         </div>
+
+        <!-- Boost Modal (Admin) -->
+        <div id="boostModal" class="modal">
+            <div class="modal-content">
+                <h3><i class="fas fa-rocket"></i> Boost Paste</h3>
+                <p style="margin: 20px 0; color: var(--text-dim);">Select boost duration:</p>
+                <div class="form-group">
+                    <select id="boostDuration">
+                        <option value="1m">1 Minute</option>
+                        <option value="5m">5 Minutes</option>
+                        <option value="15m">15 Minutes</option>
+                        <option value="30m">30 Minutes</option>
+                        <option value="1h">1 Hour</option>
+                        <option value="6h">6 Hours</option>
+                        <option value="12h">12 Hours</option>
+                        <option value="1d">1 Day</option>
+                        <option value="3d">3 Days</option>
+                        <option value="1w">1 Week</option>
+                        <option value="1M">1 Month</option>
+                        <option value="1y">1 Year</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-primary" onclick="window.applyBoost()">
+                        <i class="fas fa-rocket"></i> Apply Boost
+                    </button>
+                    <button class="btn btn-logout" onclick="window.closeBoostModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -1144,6 +1321,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, where, updateDoc, arrayUnion, arrayRemove, increment, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -1159,6 +1337,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         const googleProvider = new GoogleAuthProvider();
 
         // ============ APP STATE ============
@@ -1170,13 +1349,13 @@
         const ADMIN_EMAIL = "plastealme2@vertexpaste.com";
         let currentPasteId = null;
         let pendingPasteId = null;
+        let boostTargetPasteId = null;
         
         // Swear words list (comprehensive)
         const swearWords = [
             'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'dick', 'pussy', 'cock',
             'bastard', 'whore', 'slut', 'nigger', 'faggot', 'retard', 'gook',
             'spic', 'chink', 'kike', 'dyke', 'tranny', 'porn', 'sex', 'xxx',
-            // Add more as needed
         ];
 
         // ============ INITIALIZE ============
@@ -1263,6 +1442,37 @@
             // Check URL hash on load
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
+
+            // Start boost expiry checker
+            setInterval(checkBoostExpiry, 60000); // Check every minute
+        }
+
+        // ============ CHECK BOOST EXPIRY ============
+        async function checkBoostExpiry() {
+            const now = new Date();
+            let updatesNeeded = false;
+            
+            for (const paste of allPastes) {
+                if (paste.boostExpiresAt && new Date(paste.boostExpiresAt) <= now) {
+                    try {
+                        const docRef = doc(db, 'pastes', paste.id);
+                        await updateDoc(docRef, {
+                            isBoosted: false,
+                            boostExpiresAt: null
+                        });
+                        updatesNeeded = true;
+                    } catch (error) {
+                        console.error('Error removing boost:', error);
+                    }
+                }
+            }
+            
+            if (updatesNeeded) {
+                await loadAllPastes();
+                if (window.location.hash === '#dashboard' || window.location.hash === '#admin') {
+                    handleRouting();
+                }
+            }
         }
 
         // ============ LOAD ALL PASTES ============
@@ -1312,15 +1522,84 @@
                     score *= 2;
                 }
                 
+                // Boost multiplier (if boosted)
+                if (paste.isBoosted && paste.boostExpiresAt) {
+                    const timeLeft = new Date(paste.boostExpiresAt) - now;
+                    if (timeLeft > 0) {
+                        // Boost multiplier based on time left (higher boost when closer to expiry)
+                        const boostMultiplier = 2 + (timeLeft / (1000 * 60 * 60 * 24)); // Up to 3x
+                        score *= Math.min(3, boostMultiplier);
+                    }
+                }
+                
+                // SEO score based on title quality
+                const seoScore = calculateSEOScore(paste);
+                score += seoScore * 10;
+                
                 // Trending calculation (views in last 24 hours)
                 const isTrending = views > 10 && ageInHours < 24;
                 
                 return {
                     ...paste,
                     algorithmScore: Math.round(score * 100) / 100,
+                    seoScore: seoScore,
                     isTrending
                 };
-            }).sort((a, b) => b.algorithmScore - a.algorithmScore);
+            }).sort((a, b) => {
+                // Boosted pastes always come first
+                if (a.isBoosted && !b.isBoosted) return -1;
+                if (!a.isBoosted && b.isBoosted) return 1;
+                // Then sort by algorithm score
+                return b.algorithmScore - a.algorithmScore;
+            });
+        }
+
+        // ============ CALCULATE SEO SCORE ============
+        function calculateSEOScore(paste) {
+            let score = 0;
+            
+            // Title quality
+            if (paste.title && paste.title !== 'Untitled') {
+                const title = paste.title.toLowerCase();
+                
+                // Length score
+                if (title.length >= 5 && title.length <= 60) score += 2;
+                else if (title.length > 60) score += 1;
+                
+                // Keyword relevance (common programming terms)
+                const keywords = ['tutorial', 'guide', 'example', 'how to', 'code', 'api', 'function', 'class', 'react', 'vue', 'angular', 'node', 'python', 'javascript', 'html', 'css'];
+                for (const keyword of keywords) {
+                    if (title.includes(keyword)) {
+                        score += 1;
+                        break;
+                    }
+                }
+                
+                // Has numbers (often indicates version/tutorial)
+                if (/\d/.test(title)) score += 0.5;
+            }
+            
+            // Content quality
+            if (paste.content) {
+                // Length score
+                const contentLength = paste.content.length;
+                if (contentLength > 500) score += 3;
+                else if (contentLength > 200) score += 2;
+                else if (contentLength > 50) score += 1;
+                
+                // Code complexity (has functions, classes, etc.)
+                if (paste.content.includes('function') || paste.content.includes('class') || paste.content.includes('=>')) {
+                    score += 2;
+                }
+            }
+            
+            // Has syntax highlighting
+            if (paste.syntax && paste.syntax !== 'plaintext') score += 1;
+            
+            // Has thumbnail
+            if (paste.thumbnailUrl) score += 2;
+            
+            return Math.min(10, score); // Max score of 10
         }
 
         // ============ LOAD ALL USERS (ADMIN ONLY) ============
@@ -1376,6 +1655,8 @@
             
             if (hash.startsWith('#paste-') && hash.endsWith('-raw')) {
                 const pasteId = hash.replace('#paste-', '').replace('-raw', '');
+                // Redirect to the raw URL format
+                window.location.href = `https://defnot67kid-beep.github.io/VertexPaste/#paste-${pasteId}-raw`;
                 viewRawPaste(pasteId);
                 return;
             }
@@ -1607,6 +1888,24 @@
             return docSnap.exists();
         }
 
+        // ============ HANDLE THUMBNAIL UPLOAD ============
+        window.handleThumbnailUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('thumbnailPreview');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Thumbnail">`;
+                window.thumbnailData = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.triggerThumbnailUpload = function() {
+            document.getElementById('thumbnailInput').click();
+        };
+
         // ============ CREATE NEW PASTE ============
         window.createPaste = async function() {
             const title = document.getElementById('pasteTitle')?.value || 'Untitled';
@@ -1614,6 +1913,7 @@
             const syntax = document.getElementById('pasteSyntax')?.value || 'plaintext';
             const visibility = document.getElementById('pasteVisibility')?.value || 'public';
             const password = document.getElementById('pastePassword')?.value || '';
+            const thumbnailData = window.thumbnailData;
 
             if (!content || content.trim() === '') {
                 showNotification('Please enter some content for your paste', true);
@@ -1670,12 +1970,26 @@
                     },
                     comments: [],
                     isPinned: false,
-                    expiresAt: null // Never expires unless deleted by admin/owner
+                    isBoosted: false,
+                    boostExpiresAt: null,
+                    expiresAt: null,
+                    seoScore: calculateSEOScore({ title, content, syntax })
                 };
+
+                // Upload thumbnail if provided
+                if (thumbnailData) {
+                    try {
+                        const thumbnailRef = ref(storage, `thumbnails/${pasteId}`);
+                        await uploadString(thumbnailRef, thumbnailData, 'data_url');
+                        pasteData.thumbnailUrl = await getDownloadURL(thumbnailRef);
+                    } catch (error) {
+                        console.error('Error uploading thumbnail:', error);
+                    }
+                }
 
                 // Add password for private pastes
                 if (visibility === 'private') {
-                    pasteData.password = btoa(password); // Simple encoding, not secure for production
+                    pasteData.password = btoa(password);
                 }
 
                 // Add user info if logged in
@@ -1698,6 +2012,11 @@
                 if (document.getElementById('pastePassword')) {
                     document.getElementById('pastePassword').value = '';
                 }
+                document.getElementById('thumbnailPreview').innerHTML = `
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Click to upload thumbnail</span>
+                `;
+                window.thumbnailData = null;
                 
                 // Update user's total pastes count and daily count
                 if (currentUser && !currentUser.isAdmin) {
@@ -1772,7 +2091,7 @@
                     }
                 }
                 
-                // Check if user has already viewed (only count once per user)
+                // Check if user/device has already viewed (only count once)
                 const viewerId = currentUser ? currentUser.uid : deviceId;
                 if (!paste.views.unique.includes(viewerId)) {
                     // Update view count
@@ -1792,7 +2111,14 @@
                     // Mark as viewed in localStorage
                     viewedPastes[pasteId] = true;
                     localStorage.setItem('vertexpaste_views', JSON.stringify(viewedPastes));
+                    
+                    // Update paste data for rendering
+                    paste.views.total = (paste.views.total || 0) + 1;
+                    paste.views.unique.push(viewerId);
                 }
+                
+                // Update meta tags for SEO
+                updateMetaTags(paste);
                 
                 await renderPasteView(paste, pasteId);
                 
@@ -1811,17 +2137,88 @@
             }
         }
 
+        // ============ UPDATE META TAGS FOR SEO ============
+        function updateMetaTags(paste) {
+            // Update page title
+            document.title = `${paste.title || 'Untitled'} - VertexPaste`;
+            
+            // Update or create meta tags
+            let metaDescription = document.querySelector('meta[name="description"]');
+            if (!metaDescription) {
+                metaDescription = document.createElement('meta');
+                metaDescription.name = 'description';
+                document.head.appendChild(metaDescription);
+            }
+            metaDescription.content = paste.content.substring(0, 160) + (paste.content.length > 160 ? '...' : '');
+            
+            // Update Open Graph tags
+            let ogTitle = document.querySelector('meta[property="og:title"]');
+            if (!ogTitle) {
+                ogTitle = document.createElement('meta');
+                ogTitle.setAttribute('property', 'og:title');
+                document.head.appendChild(ogTitle);
+            }
+            ogTitle.content = `${paste.title || 'Untitled'} - VertexPaste`;
+            
+            let ogDescription = document.querySelector('meta[property="og:description"]');
+            if (!ogDescription) {
+                ogDescription = document.createElement('meta');
+                ogDescription.setAttribute('property', 'og:description');
+                document.head.appendChild(ogDescription);
+            }
+            ogDescription.content = paste.content.substring(0, 160) + (paste.content.length > 160 ? '...' : '');
+            
+            let ogUrl = document.querySelector('meta[property="og:url"]');
+            if (!ogUrl) {
+                ogUrl = document.createElement('meta');
+                ogUrl.setAttribute('property', 'og:url');
+                document.head.appendChild(ogUrl);
+            }
+            ogUrl.content = window.location.href;
+            
+            // Add thumbnail if available
+            if (paste.thumbnailUrl) {
+                let ogImage = document.querySelector('meta[property="og:image"]');
+                if (!ogImage) {
+                    ogImage = document.createElement('meta');
+                    ogImage.setAttribute('property', 'og:image');
+                    document.head.appendChild(ogImage);
+                }
+                ogImage.content = paste.thumbnailUrl;
+            }
+            
+            // Twitter cards
+            let twitterCard = document.querySelector('meta[name="twitter:card"]');
+            if (!twitterCard) {
+                twitterCard = document.createElement('meta');
+                twitterCard.name = 'twitter:card';
+                document.head.appendChild(twitterCard);
+            }
+            twitterCard.content = 'summary_large_image';
+        }
+
         // ============ RENDER PASTE VIEW ============
         async function renderPasteView(paste, pasteId) {
             const container = document.getElementById('mainContent');
             
             const date = paste.createdAt ? new Date(paste.createdAt).toLocaleString() : 'Unknown date';
             const shareableLink = window.location.href;
-            const rawLink = `${window.location.origin}${window.location.pathname}#paste-${pasteId}-raw`;
+            const rawLink = `https://defnot67kid-beep.github.io/VertexPaste/#paste-${pasteId}-raw`;
             const isOwner = currentUser && (currentUser.uid === paste.userId || currentUser.isAdmin);
             
             // Get comments
             const comments = paste.comments || [];
+            
+            // Calculate time left if boosted
+            let boostTimeLeft = '';
+            if (paste.isBoosted && paste.boostExpiresAt) {
+                const timeLeft = new Date(paste.boostExpiresAt) - new Date();
+                if (timeLeft > 0) {
+                    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    boostTimeLeft = `${hours}h ${minutes}m`;
+                }
+            }
             
             let commentsHTML = '';
             comments.sort((a, b) => {
@@ -1865,6 +2262,7 @@
                         <div class="paste-info">
                             <h1>${escapeHtml(paste.title || 'Untitled')} 
                                 ${paste.isPinned ? '<span class="badge-pinned"><i class="fas fa-thumbtack"></i> PINNED</span>' : ''}
+                                ${paste.isBoosted ? '<span class="badge-boosted"><i class="fas fa-rocket"></i> BOOSTED</span>' : ''}
                                 ${paste.isTrending ? '<span class="trending-badge"><i class="fas fa-fire"></i> TRENDING</span>' : ''}
                             </h1>
                             <div class="paste-meta">
@@ -1874,13 +2272,15 @@
                                 <span><i class="fas fa-${paste.visibility === 'private' ? 'lock' : 'globe'}"></i> ${paste.visibility}</span>
                                 <span><i class="fas fa-eye"></i> ${paste.views?.total || 0}</span>
                                 <span class="algorithm-score"><i class="fas fa-chart-line"></i> Score: ${paste.algorithmScore || 0}</span>
+                                <span class="seo-score"><i class="fas fa-search"></i> SEO: ${paste.seoScore || 0}/10</span>
+                                ${boostTimeLeft ? `<span class="boost-timer"><i class="fas fa-hourglass-half"></i> Boost: ${boostTimeLeft}</span>` : ''}
                             </div>
                         </div>
                         <div class="paste-actions">
                             <button class="btn btn-primary btn-icon" onclick="window.copyPasteContent()">
                                 <i class="fas fa-copy"></i> Copy
                             </button>
-                            <button class="btn btn-primary btn-icon" onclick="window.location.hash='${rawLink}'">
+                            <button class="btn btn-primary btn-icon" onclick="window.location.href='${rawLink}'">
                                 <i class="fas fa-file-code"></i> Raw
                             </button>
                             <button class="btn btn-primary btn-icon" onclick="window.showShareModal('${shareableLink}')">
@@ -1894,6 +2294,9 @@
                                     <button class="btn btn-warning btn-icon" onclick="window.togglePinPaste('${pasteId}', ${!paste.isPinned})">
                                         <i class="fas fa-thumbtack"></i> ${paste.isPinned ? 'Unpin' : 'Pin'}
                                     </button>
+                                    <button class="btn btn-info btn-icon" onclick="window.showBoostModal('${pasteId}')">
+                                        <i class="fas fa-rocket"></i> Boost
+                                    </button>
                                 ` : ''}
                             ` : ''}
                             <button class="btn btn-logout btn-icon" onclick="window.goToDashboard()">
@@ -1901,6 +2304,12 @@
                             </button>
                         </div>
                     </div>
+                    
+                    ${paste.thumbnailUrl ? `
+                    <div class="paste-thumbnail-large">
+                        <img src="${paste.thumbnailUrl}" alt="${escapeHtml(paste.title)}">
+                    </div>
+                    ` : ''}
                     
                     <div class="paste-content">
                         <pre><code class="language-${paste.syntax || 'plaintext'}">${escapeHtml(paste.content)}</code></pre>
@@ -2135,6 +2544,75 @@
             }
         };
 
+        // ============ BOOST FUNCTIONS ============
+        window.showBoostModal = function(pasteId) {
+            boostTargetPasteId = pasteId;
+            document.getElementById('boostModal').classList.add('active');
+        };
+
+        window.closeBoostModal = function() {
+            document.getElementById('boostModal').classList.remove('active');
+            boostTargetPasteId = null;
+        };
+
+        window.applyBoost = async function() {
+            if (!boostTargetPasteId || !currentUser || !currentUser.isAdmin) {
+                closeBoostModal();
+                return;
+            }
+            
+            const duration = document.getElementById('boostDuration').value;
+            const now = new Date();
+            let expiresAt = new Date(now);
+            
+            // Parse duration
+            const value = parseInt(duration.slice(0, -1));
+            const unit = duration.slice(-1);
+            
+            switch(unit) {
+                case 's': // seconds
+                    expiresAt.setSeconds(now.getSeconds() + value);
+                    break;
+                case 'm': // minutes
+                    expiresAt.setMinutes(now.getMinutes() + value);
+                    break;
+                case 'h': // hours
+                    expiresAt.setHours(now.getHours() + value);
+                    break;
+                case 'd': // days
+                    expiresAt.setDate(now.getDate() + value);
+                    break;
+                case 'w': // weeks
+                    expiresAt.setDate(now.getDate() + (value * 7));
+                    break;
+                case 'M': // months
+                    expiresAt.setMonth(now.getMonth() + value);
+                    break;
+                case 'y': // years
+                    expiresAt.setFullYear(now.getFullYear() + value);
+                    break;
+            }
+            
+            try {
+                const docRef = doc(db, 'pastes', boostTargetPasteId);
+                await updateDoc(docRef, {
+                    isBoosted: true,
+                    boostExpiresAt: expiresAt.toISOString()
+                });
+                
+                showNotification(`Paste boosted for ${document.getElementById('boostDuration').selectedOptions[0].text}!`);
+                closeBoostModal();
+                await loadAllPastes();
+                
+                // Refresh current view if on the boosted paste
+                if (window.location.hash === `#paste-${boostTargetPasteId}`) {
+                    await viewPasteById(boostTargetPasteId);
+                }
+            } catch (error) {
+                showNotification('Error boosting paste', true);
+            }
+        };
+
         // ============ SHOW ADMIN PANEL ============
         window.showAdminPanel = function() {
             window.location.hash = '#admin';
@@ -2151,6 +2629,7 @@
             const totalUsers = allUsers.length;
             const totalViews = allPastes.reduce((sum, p) => sum + (p.views?.total || 0), 0);
             const privatePastes = allPastes.filter(p => p.visibility === 'private').length;
+            const boostedPastes = allPastes.filter(p => p.isBoosted).length;
             
             let usersTable = '';
             allUsers.forEach(user => {
@@ -2172,6 +2651,9 @@
             
             let pastesTable = '';
             allPastes.forEach(paste => {
+                const boostTimeLeft = paste.isBoosted && paste.boostExpiresAt ? 
+                    new Date(paste.boostExpiresAt).toLocaleString() : 'None';
+                    
                 pastesTable += `
                     <tr>
                         <td>${escapeHtml(paste.title || 'Untitled')}</td>
@@ -2182,13 +2664,20 @@
                         <td>${new Date(paste.createdAt).toLocaleDateString()}</td>
                         <td>
                             ${paste.isPinned ? '<span class="pin-badge">PINNED</span>' : ''}
+                            ${paste.isBoosted ? '<span class="boost-badge">BOOSTED</span>' : ''}
                         </td>
+                        <td>${paste.seoScore || 0}/10</td>
+                        <td>${paste.algorithmScore || 0}</td>
+                        <td>${boostTimeLeft}</td>
                         <td>
                             <button class="btn btn-primary btn-icon" onclick="window.location.hash='#paste-${paste.id}'">
                                 <i class="fas fa-eye"></i>
                             </button>
                             <button class="btn btn-warning btn-icon" onclick="window.togglePinPaste('${paste.id}', ${!paste.isPinned})">
                                 <i class="fas fa-thumbtack"></i>
+                            </button>
+                            <button class="btn btn-info btn-icon" onclick="window.showBoostModal('${paste.id}')">
+                                <i class="fas fa-rocket"></i>
                             </button>
                             <button class="btn btn-danger btn-icon" onclick="window.adminDeletePaste('${paste.id}')">
                                 <i class="fas fa-trash"></i>
@@ -2219,6 +2708,15 @@
                             <h3>${privatePastes}</h3>
                             <div class="stat-label">Private Pastes</div>
                         </div>
+                        <div class="stat-card">
+                            <h3>${boostedPastes}</h3>
+                            <div class="stat-label">Boosted Pastes</div>
+                        </div>
+                    </div>
+                    
+                    <div class="boost-controls">
+                        <h3><i class="fas fa-rocket"></i> Boost Management</h3>
+                        <p style="color: var(--text-dim); margin: 10px 0;">Select a paste from the table below and click the rocket icon to boost it to the front page.</p>
                     </div>
                     
                     <div class="admin-tabs">
@@ -2257,6 +2755,9 @@
                                     <th>Unique</th>
                                     <th>Created</th>
                                     <th>Status</th>
+                                    <th>SEO</th>
+                                    <th>Score</th>
+                                    <th>Boost Until</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -2345,6 +2846,7 @@
             const myPastes = currentUser ? allPastes.filter(p => p.userId === currentUser.uid).length : 0;
             const totalViews = allPastes.reduce((sum, p) => sum + (p.views?.total || 0), 0);
             const uniqueViews = allPastes.reduce((sum, p) => sum + (p.views?.unique?.length || 0), 0);
+            const boostedPastes = allPastes.filter(p => p.isBoosted).length;
             
             let pastesHTML = '';
             
@@ -2353,13 +2855,32 @@
                 const isOwner = currentUser && paste.userId === currentUser.uid;
                 const hasViewed = viewedPastes[paste.pasteId];
                 const shareableLink = `${window.location.origin}${window.location.pathname}#paste-${paste.pasteId}`;
+                const rawLink = `https://defnot67kid-beep.github.io/VertexPaste/#paste-${paste.pasteId}-raw`;
+                
+                // Calculate time left if boosted
+                let boostTimeLeft = '';
+                if (paste.isBoosted && paste.boostExpiresAt) {
+                    const timeLeft = new Date(paste.boostExpiresAt) - new Date();
+                    if (timeLeft > 0) {
+                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        boostTimeLeft = `${hours}h ${minutes}m`;
+                    }
+                }
                 
                 pastesHTML += `
-                    <div class="paste-card ${paste.isPinned ? 'pinned' : ''}" onclick="window.location.hash='#paste-${paste.pasteId}'">
+                    <div class="paste-card ${paste.isPinned ? 'pinned' : ''} ${paste.isBoosted ? 'boosted' : ''}" onclick="window.location.hash='#paste-${paste.pasteId}'">
+                        ${paste.thumbnailUrl ? `
+                        <div class="paste-card-thumbnail">
+                            <img src="${paste.thumbnailUrl}" alt="${escapeHtml(paste.title)}">
+                        </div>
+                        ` : ''}
                         <div class="paste-card-header">
                             <div class="paste-card-title">${escapeHtml(paste.title || 'Untitled')} 
                                 ${paste.isPinned ? '<span class="badge-pinned"><i class="fas fa-thumbtack"></i></span>' : ''}
+                                ${paste.isBoosted ? '<span class="badge-boosted"><i class="fas fa-rocket"></i> BOOSTED</span>' : ''}
                                 ${paste.isTrending ? '<span class="trending-badge"><i class="fas fa-fire"></i> TRENDING</span>' : ''}
+                                ${paste.seoScore >= 7 ? '<span class="badge-seo"><i class="fas fa-star"></i> SEO</span>' : ''}
                             </div>
                             <span class="paste-card-id">${paste.pasteId}</span>
                         </div>
@@ -2375,13 +2896,20 @@
                             <span><i class="fas fa-code"></i> ${paste.syntax || 'text'}</span>
                             <span class="badge badge-${paste.visibility}">${paste.visibility}</span>
                             <span class="algorithm-score"><i class="fas fa-chart-line"></i> ${paste.algorithmScore || 0}</span>
+                            ${boostTimeLeft ? `<span class="boost-timer"><i class="fas fa-hourglass-half"></i> ${boostTimeLeft}</span>` : ''}
                         </div>
                         ${isOwner || (currentUser && currentUser.isAdmin) ? `
                         <div class="paste-card-actions" onclick="event.stopPropagation()">
                             <button class="copy-btn" style="flex: 1;" onclick="window.copyToClipboard('${shareableLink}')">
                                 <i class="fas fa-share-alt"></i> Share
                             </button>
+                            <button class="copy-btn" style="flex: 1;" onclick="window.location.href='${rawLink}'">
+                                <i class="fas fa-file-code"></i> Raw
+                            </button>
                             ${currentUser && currentUser.isAdmin ? `
+                                <button class="copy-btn" style="flex: 1; background: var(--info);" onclick="window.showBoostModal('${paste.id}')">
+                                    <i class="fas fa-rocket"></i> Boost
+                                </button>
                                 <button class="copy-btn" style="flex: 1;" onclick="window.togglePinPaste('${paste.id}', ${!paste.isPinned})">
                                     <i class="fas fa-thumbtack"></i> ${paste.isPinned ? 'Unpin' : 'Pin'}
                                 </button>
@@ -2441,6 +2969,10 @@
                             <h3>${uniqueViews}</h3>
                             <div class="stat-label">Unique Views</div>
                         </div>
+                        <div class="stat-card">
+                            <h3>${boostedPastes}</h3>
+                            <div class="stat-label">Boosted Pastes</div>
+                        </div>
                         ${currentUser ? `
                         <div class="stat-card">
                             <h3>${myPastes}</h3>
@@ -2473,9 +3005,18 @@
                             <div id="privatePasswordField" style="display: none;">
                                 <input type="text" id="pastePassword" placeholder="Password for private paste">
                             </div>
+                            
+                            <!-- Thumbnail Upload -->
+                            <div class="thumbnail-preview" id="thumbnailPreview" onclick="window.triggerThumbnailUpload()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Click to upload thumbnail (optional)</span>
+                            </div>
+                            <input type="file" id="thumbnailInput" class="thumbnail-input" accept="image/*" onchange="window.handleThumbnailUpload(event)">
+                            
                             <textarea id="pasteContent" placeholder="Your paste content here..."></textarea>
                             <div class="daily-limit">
                                 ${currentUser && !currentUser.isAdmin ? '5 pastes per day limit' : 'Unlimited pastes'}
+                                <span class="seo-score"><i class="fas fa-search"></i> Better title & content = higher SEO score!</span>
                             </div>
                             <button class="btn btn-primary" onclick="window.createPaste()">
                                 <i class="fas fa-save"></i> Create Paste
@@ -2491,6 +3032,7 @@
                     <div class="pastes-list">
                         <h2><i class="fas fa-${filter === 'mine' ? 'user' : 'globe'}"></i> 
                             ${filter === 'mine' ? 'My Pastes' : 'Community Pastes'}
+                            ${filter === 'all' && boostedPastes > 0 ? `<span style="font-size: 14px; margin-left: 10px; color: var(--info);"><i class="fas fa-rocket"></i> ${boostedPastes} boosted</span>` : ''}
                         </h2>
                         
                         <div class="filter-section">
@@ -2646,10 +3188,17 @@
             if (event.target === passwordModal) {
                 closePasswordModal();
             }
+            
+            const boostModal = document.getElementById('boostModal');
+            if (event.target === boostModal) {
+                closeBoostModal();
+            }
         };
 
         // ============ EXPOSE FUNCTIONS TO WINDOW ============
         window.renderDashboard = renderDashboard;
+        window.handleThumbnailUpload = handleThumbnailUpload;
+        window.triggerThumbnailUpload = triggerThumbnailUpload;
 
         // ============ INITIALIZE ============
         init();
