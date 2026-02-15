@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VertexPaste - Share Code & Text</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Font Awesome -->
+    <!-- Import Firebase modules -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js"></script>
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Highlight.js -->
+    <!-- Highlight.js for syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
@@ -22,19 +22,21 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f172a;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
             color: #e2e8f0;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
         }
 
         /* Navbar */
         .navbar {
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
             padding: 1rem 2rem;
             border-radius: 12px;
             border: 1px solid #334155;
@@ -42,6 +44,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .logo {
@@ -50,6 +53,7 @@
             background: linear-gradient(135deg, #60a5fa, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
             cursor: pointer;
         }
 
@@ -64,9 +68,15 @@
             align-items: center;
             gap: 10px;
             padding: 5px 15px;
-            background: #0f172a;
+            background: #1e293b;
             border-radius: 8px;
             border: 1px solid #334155;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-info:hover {
+            border-color: #60a5fa;
         }
 
         .user-avatar {
@@ -77,6 +87,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            font-weight: bold;
         }
 
         /* Buttons */
@@ -88,6 +100,7 @@
             font-size: 14px;
             font-weight: 600;
             transition: all 0.3s ease;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -109,19 +122,39 @@
             border: 1px solid #334155;
         }
 
+        .btn-google:hover {
+            background: #2d3a4f;
+        }
+
         .btn-logout {
             background: #ef4444;
             color: white;
         }
 
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
         /* Auth Forms */
         .auth-container {
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 40px;
             border: 1px solid #334155;
             max-width: 400px;
             margin: 50px auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .auth-tabs {
@@ -135,7 +168,9 @@
             padding: 10px;
             text-align: center;
             cursor: pointer;
+            font-weight: 600;
             color: #94a3b8;
+            transition: all 0.3s ease;
         }
 
         .auth-tab.active {
@@ -155,13 +190,28 @@
             margin-bottom: 20px;
         }
 
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
         .form-group input {
             width: 100%;
             padding: 12px;
-            background: #0f172a;
+            background: #1e293b;
             border: 1px solid #334155;
             border-radius: 8px;
+            font-size: 14px;
             color: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
         }
 
         /* Main Layout */
@@ -174,13 +224,14 @@
             display: flex;
         }
 
-        /* Dashboard */
+        /* Dashboard (Left Side) */
         .dashboard {
             flex: 3;
         }
 
         .create-paste {
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 30px;
             border: 1px solid #334155;
@@ -190,6 +241,7 @@
         .create-paste h2 {
             margin-bottom: 20px;
             color: #f1f5f9;
+            font-size: 1.5rem;
         }
 
         .create-paste input,
@@ -198,16 +250,17 @@
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
-            background: #0f172a;
+            background: #1e293b;
             border: 1px solid #334155;
             border-radius: 8px;
+            font-size: 14px;
             color: white;
         }
 
         .create-paste textarea {
             height: 200px;
             resize: vertical;
-            font-family: monospace;
+            font-family: 'Fira Code', monospace;
         }
 
         .paste-options {
@@ -216,13 +269,15 @@
             margin-bottom: 15px;
         }
 
-        .paste-options select {
+        .paste-options select,
+        .paste-options input {
             flex: 1;
             margin-bottom: 0;
         }
 
         .pastes-list {
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 30px;
             border: 1px solid #334155;
@@ -236,35 +291,38 @@
         }
 
         .paste-card {
-            background: #0f172a;
+            background: #1e293b;
             border: 1px solid #334155;
             border-radius: 12px;
             padding: 20px;
-            cursor: pointer;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .paste-card:hover {
+            transform: translateY(-4px);
             border-color: #60a5fa;
-            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(96, 165, 250, 0.2);
         }
 
         .paste-card-header {
             display: flex;
             justify-content: space-between;
+            align-items: start;
             margin-bottom: 12px;
         }
 
         .paste-card-title {
             font-weight: 600;
             color: #f1f5f9;
+            font-size: 1.1rem;
         }
 
         .paste-card-id {
-            font-family: monospace;
+            font-family: 'Fira Code', monospace;
             font-size: 0.8rem;
             color: #60a5fa;
-            background: #1e293b;
+            background: #0f172a;
             padding: 4px 8px;
             border-radius: 4px;
         }
@@ -275,11 +333,13 @@
             margin-bottom: 15px;
             max-height: 60px;
             overflow: hidden;
+            font-family: 'Fira Code', monospace;
         }
 
         .paste-card-footer {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 0.8rem;
             color: #64748b;
         }
@@ -288,6 +348,8 @@
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
         .badge-public {
@@ -300,20 +362,27 @@
             color: white;
         }
 
-        /* Sidebar */
+        /* Sidebar (Right Side) */
         .sidebar {
             flex: 1;
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 20px;
             border: 1px solid #334155;
             height: fit-content;
+            position: sticky;
+            top: 20px;
         }
 
         .sidebar h3 {
+            color: #f1f5f9;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .recent-pastes-list {
@@ -324,19 +393,22 @@
 
         .recent-paste-item {
             padding: 12px;
-            background: #0f172a;
+            background: #1e293b;
             border: 1px solid #334155;
             border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .recent-paste-item:hover {
             border-color: #60a5fa;
+            transform: translateX(-4px);
         }
 
         .recent-paste-title {
             font-weight: 600;
             color: #f1f5f9;
+            font-size: 0.9rem;
             margin-bottom: 5px;
         }
 
@@ -347,10 +419,16 @@
             color: #94a3b8;
         }
 
+        .recent-paste-stats {
+            display: flex;
+            gap: 10px;
+        }
+
         /* View Paste Page */
         .view-paste {
             display: none;
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 30px;
             border: 1px solid #334155;
@@ -387,11 +465,13 @@
             display: flex;
             gap: 20px;
             color: #94a3b8;
+            font-size: 0.9rem;
             flex-wrap: wrap;
         }
 
         .paste-meta span {
             cursor: pointer;
+            transition: color 0.3s ease;
         }
 
         .paste-meta span:hover {
@@ -405,19 +485,113 @@
             overflow-x: auto;
         }
 
-        .paste-content pre {
-            font-family: monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
         .raw-mode .paste-content {
             background: transparent;
             padding: 0;
         }
 
+        .paste-content pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .comments-section h3 {
+            color: #f1f5f9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-form {
+            margin-bottom: 20px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .comment-item {
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        .comment-date {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .comment-content {
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-delete-comment {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Notifications */
         .copy-notification {
             position: fixed;
             bottom: 20px;
@@ -442,9 +616,26 @@
         }
 
         .loading {
-            text-align: center;
-            padding: 40px;
-            color: #94a3b8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .loading::after {
+            content: "";
+            width: 40px;
+            height: 40px;
+            border: 4px solid #334155;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .modal {
@@ -487,7 +678,7 @@
             background: transparent;
             border: none;
             color: #60a5fa;
-            font-family: monospace;
+            font-family: 'Fira Code', monospace;
         }
     </style>
 </head>
@@ -495,15 +686,15 @@
     <div class="container">
         <!-- Navbar -->
         <nav class="navbar">
-            <div class="logo" onclick="goHome()">VertexPaste</div>
+            <div class="logo" onclick="window.location.reload()">VertexPaste</div>
             <div class="nav-buttons" id="navButtons"></div>
         </nav>
 
         <!-- Auth Container -->
         <div id="authContainer" class="auth-container">
             <div class="auth-tabs">
-                <div class="auth-tab active" onclick="switchTab('login')">Login</div>
-                <div class="auth-tab" onclick="switchTab('signup')">Sign Up</div>
+                <div class="auth-tab active" onclick="window.switchTab('login')">Login</div>
+                <div class="auth-tab" onclick="window.switchTab('signup')">Sign Up</div>
             </div>
 
             <!-- Login Form -->
@@ -516,10 +707,10 @@
                     <label>Password</label>
                     <input type="password" id="loginPassword" placeholder="Enter your password">
                 </div>
-                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="loginWithEmail()">
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="window.loginWithEmail()">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
-                <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()">
+                <button class="btn btn-google" style="width: 100%;" onclick="window.loginWithGoogle()">
                     <i class="fab fa-google"></i> Login with Google
                 </button>
             </div>
@@ -538,10 +729,10 @@
                     <label>Password</label>
                     <input type="password" id="signupPassword" placeholder="Enter your password">
                 </div>
-                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="signupWithEmail()">
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="window.signupWithEmail()">
                     <i class="fas fa-user-plus"></i> Sign Up
                 </button>
-                <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()">
+                <button class="btn btn-google" style="width: 100%;" onclick="window.loginWithGoogle()">
                     <i class="fab fa-google"></i> Sign up with Google
                 </button>
             </div>
@@ -549,7 +740,7 @@
 
         <!-- Main Layout (Dashboard + Sidebar) -->
         <div id="mainLayout" class="main-layout">
-            <!-- Dashboard -->
+            <!-- Dashboard (Left Side) -->
             <div class="dashboard">
                 <div class="create-paste">
                     <h2><i class="fas fa-plus-circle"></i> Create New Paste</h2>
@@ -562,6 +753,8 @@
                             <option value="html">HTML</option>
                             <option value="css">CSS</option>
                             <option value="json">JSON</option>
+                            <option value="markdown">Markdown</option>
+                            <option value="bash">Bash</option>
                         </select>
                         <select id="pasteVisibility">
                             <option value="public">Public</option>
@@ -569,7 +762,7 @@
                         </select>
                     </div>
                     <textarea id="pasteContent" placeholder="Your paste content here..."></textarea>
-                    <button class="btn btn-primary" onclick="createPaste()">
+                    <button class="btn btn-primary" onclick="window.createPaste()">
                         <i class="fas fa-save"></i> Create Paste
                     </button>
                 </div>
@@ -580,11 +773,14 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
+            <!-- Sidebar (Right Side) -->
             <div class="sidebar">
-                <h3><i class="fas fa-clock"></i> Recent Public Pastes</h3>
+                <h3>
+                    <span><i class="fas fa-clock"></i> Recent Public Pastes</span>
+                    <span class="badge badge-public">Live</span>
+                </h3>
                 <div id="recentPastesList" class="recent-pastes-list">
-                    <div class="loading">Loading...</div>
+                    <div class="loading"></div>
                 </div>
             </div>
         </div>
@@ -595,7 +791,7 @@
                 <div class="paste-info">
                     <h1 id="viewPasteTitle">Loading...</h1>
                     <div class="paste-meta">
-                        <span id="viewPasteAuthor" onclick="viewAuthorProfile()"><i class="fas fa-user"></i> Loading...</span>
+                        <span id="viewPasteAuthor"><i class="fas fa-user"></i> Loading...</span>
                         <span id="viewPasteDate"><i class="fas fa-calendar"></i> Loading...</span>
                         <span id="viewPasteId"><i class="fas fa-hashtag"></i> Loading...</span>
                         <span id="viewPasteViews"><i class="fas fa-eye"></i> 0 views</span>
@@ -603,22 +799,43 @@
                     </div>
                 </div>
                 <div class="paste-actions">
-                    <button class="btn btn-primary btn-icon" onclick="copyCurrentPaste()">
+                    <button class="btn btn-primary btn-icon" onclick="window.copyCurrentPaste()">
                         <i class="fas fa-copy"></i> Copy
                     </button>
-                    <button class="btn btn-primary btn-icon" onclick="showShareModal()">
+                    <button class="btn btn-primary btn-icon" onclick="window.downloadPaste()">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button class="btn btn-primary btn-icon" onclick="window.showShareModal()">
                         <i class="fas fa-share-alt"></i> Share
                     </button>
-                    <button class="btn btn-primary btn-icon" onclick="viewRawVersion()">
+                    <button class="btn btn-primary btn-icon" onclick="window.viewRawVersion()">
                         <i class="fas fa-file-code"></i> Raw
                     </button>
-                    <button class="btn btn-logout btn-icon" onclick="goBack()">
+                    <button class="btn btn-logout btn-icon" onclick="window.goBack()">
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
                 </div>
             </div>
             <div class="paste-content">
                 <pre id="viewPasteContent"><code class="language-plaintext"></code></pre>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comments-section">
+                <h3><i class="fas fa-comments"></i> Comments</h3>
+                
+                <!-- Comment Form -->
+                <div class="comment-form">
+                    <textarea id="commentContent" placeholder="Write a comment..."></textarea>
+                    <button class="btn btn-primary btn-small" onclick="window.addComment()">
+                        <i class="fas fa-paper-plane"></i> Post Comment
+                    </button>
+                </div>
+
+                <!-- Comments List -->
+                <div id="commentsList" class="comments-list">
+                    <div class="loading"></div>
+                </div>
             </div>
         </div>
 
@@ -628,39 +845,79 @@
                 <h3>Share this paste</h3>
                 <div class="share-link">
                     <input type="text" id="shareLink" readonly>
-                    <button class="btn btn-primary btn-icon" onclick="copyShareLink()">
+                    <button class="btn btn-primary btn-icon" onclick="window.copyShareLink()">
                         <i class="fas fa-copy"></i>
                     </button>
                 </div>
-                <div style="text-align: right;">
-                    <button class="btn btn-primary" onclick="closeShareModal()">Close</button>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-primary btn-small" onclick="window.copyRawLink()">
+                        <i class="fas fa-file-code"></i> Copy Raw Link
+                    </button>
+                    <button class="btn btn-primary" onclick="window.closeShareModal()">Close</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Firebase configuration
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            onAuthStateChanged,
+            signOut,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDoc,
+            getDocs,
+            query,
+            where,
+            orderBy,
+            limit,
+            updateDoc,
+            deleteDoc,
+            increment,
+            serverTimestamp,
+            arrayUnion,
+            arrayRemove
+        } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        // Your Firebase configuration
         const firebaseConfig = {
-  apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
-  authDomain: "vertexpaste.firebaseapp.com",
-  projectId: "vertexpaste",
-  storageBucket: "vertexpaste.firebasestorage.app",
-  messagingSenderId: "255275350380",
-  appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
-};
+            apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
+            authDomain: "vertexpaste.firebaseapp.com",
+            projectId: "vertexpaste",
+            storageBucket: "vertexpaste.firebasestorage.app",
+            messagingSenderId: "255275350380",
+            appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+        };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
 
-        // Track viewed pastes
+        // Track viewed pastes for this device/session
         let viewedPastes = JSON.parse(localStorage.getItem('viewedPastes')) || {};
-        let deviceId = localStorage.getItem('deviceId') || 'device_' + Math.random().toString(36).substr(2, 9);
+        let deviceId = localStorage.getItem('deviceId') || generateDeviceId();
         localStorage.setItem('deviceId', deviceId);
 
-        // Generate paste ID
+        // Generate unique device ID
+        function generateDeviceId() {
+            return 'device_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Generate custom ID for paste
         function generatePasteId() {
             const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let id = '';
@@ -672,32 +929,36 @@
 
         // Check URL on load
         window.addEventListener('load', () => {
-            const hash = window.location.hash.substring(1); // Remove the #
+            const hash = window.location.hash;
             if (hash) {
-                if (hash.startsWith('paste-')) {
-                    const pasteId = hash.replace('paste-', '').replace('-raw', '');
-                    const isRaw = hash.endsWith('-raw');
-                    viewPasteById(pasteId, isRaw);
+                if (hash.startsWith('#paste-')) {
+                    const pasteId = hash.replace('#paste-', '');
+                    if (hash.endsWith('-raw')) {
+                        const rawId = pasteId.replace('-raw', '');
+                        viewPasteById(rawId, true);
+                    } else {
+                        viewPasteById(pasteId);
+                    }
                 }
             }
         });
 
         // Auth state observer
-        auth.onAuthStateChanged((user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('authContainer').style.display = 'none';
-                
-                // Check if we're viewing a paste
-                const hash = window.location.hash.substring(1);
-                if (hash && hash.startsWith('paste-')) {
-                    const pasteId = hash.replace('paste-', '').replace('-raw', '');
-                    const isRaw = hash.endsWith('-raw');
-                    viewPasteById(pasteId, isRaw);
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#paste-')) {
+                    const pasteId = hash.replace('#paste-', '');
+                    if (hash.endsWith('-raw')) {
+                        const rawId = pasteId.replace('-raw', '');
+                        viewPasteById(rawId, true);
+                    } else {
+                        viewPasteById(pasteId);
+                    }
                 } else {
-                    document.getElementById('mainLayout').classList.add('active');
-                    document.getElementById('viewPaste').classList.remove('active');
+                    showDashboard();
                 }
-                
                 updateNavbar(user);
                 loadUserPastes();
             } else {
@@ -706,16 +967,27 @@
                 document.getElementById('viewPaste').classList.remove('active');
                 updateNavbar(null);
                 
-                // Check for public paste
-                const hash = window.location.hash.substring(1);
-                if (hash && hash.startsWith('paste-')) {
-                    const pasteId = hash.replace('paste-', '').replace('-raw', '');
-                    const isRaw = hash.endsWith('-raw');
-                    viewPasteById(pasteId, isRaw);
+                // Check for public paste viewing
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#paste-')) {
+                    const pasteId = hash.replace('#paste-', '');
+                    if (hash.endsWith('-raw')) {
+                        const rawId = pasteId.replace('-raw', '');
+                        viewPasteById(rawId, true);
+                    } else {
+                        viewPasteById(pasteId);
+                    }
                 }
             }
             loadRecentPastes();
         });
+
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('mainLayout').classList.add('active');
+            document.getElementById('viewPaste').classList.remove('active');
+            window.location.hash = '';
+        }
 
         // Update navbar
         function updateNavbar(user) {
@@ -727,7 +999,7 @@
                         <div class="user-avatar">${initial}</div>
                         <span>${user.displayName || user.email}</span>
                     </div>
-                    <button class="btn btn-logout" onclick="logout()">
+                    <button class="btn btn-logout" onclick="window.logout()">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 `;
@@ -737,7 +1009,7 @@
         }
 
         // Switch auth tabs
-        function switchTab(tab) {
+        window.switchTab = function(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
             
@@ -748,73 +1020,69 @@
                 document.querySelectorAll('.auth-tab')[1].classList.add('active');
                 document.getElementById('signupForm').classList.add('active');
             }
-        }
+        };
 
-        // Signup with email
-        function signupWithEmail() {
+        // Email signup
+        window.signupWithEmail = async function() {
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
 
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    return userCredential.user.updateProfile({
-                        displayName: name
-                    });
-                })
-                .catch((error) => alert(error.message));
-        }
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, {
+                    displayName: name
+                });
+                
+                // Create user profile
+                await setDoc(doc(db, 'users', userCredential.user.uid), {
+                    name: name,
+                    email: email,
+                    createdAt: serverTimestamp(),
+                    profileViews: 0
+                });
+            } catch (error) {
+                alert(error.message);
+            }
+        };
 
-        // Login with email
-        function loginWithEmail() {
+        // Email login
+        window.loginWithEmail = function() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((error) => alert(error.message));
-        }
 
-        // Login with Google
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .catch((error) => alert(error.message));
-        }
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    alert(error.message);
+                });
+        };
+
+        // Google login
+        window.loginWithGoogle = function() {
+            signInWithPopup(auth, provider)
+                .then(async (result) => {
+                    // Create/update user profile
+                    await setDoc(doc(db, 'users', result.user.uid), {
+                        name: result.user.displayName,
+                        email: result.user.email,
+                        createdAt: serverTimestamp(),
+                        profileViews: 0
+                    }, { merge: true });
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        };
 
         // Logout
-        function logout() {
-            auth.signOut();
+        window.logout = function() {
+            signOut(auth);
             window.location.hash = '';
-            goHome();
-        }
-
-        // Go home
-        function goHome() {
-            if (auth.currentUser) {
-                document.getElementById('mainLayout').classList.add('active');
-                document.getElementById('viewPaste').classList.remove('active');
-                document.getElementById('authContainer').style.display = 'none';
-                window.location.hash = '';
-            } else {
-                document.getElementById('authContainer').style.display = 'block';
-                document.getElementById('mainLayout').classList.remove('active');
-                document.getElementById('viewPaste').classList.remove('active');
-                window.location.hash = '';
-            }
-        }
-
-        // Go back
-        function goBack() {
-            if (auth.currentUser) {
-                document.getElementById('mainLayout').classList.add('active');
-                document.getElementById('viewPaste').classList.remove('active');
-                window.location.hash = '';
-            } else {
-                goHome();
-            }
-        }
+            showDashboard();
+        };
 
         // Create new paste
-        async function createPaste() {
+        window.createPaste = async function() {
             const title = document.getElementById('pasteTitle').value || 'Untitled';
             const content = document.getElementById('pasteContent').value;
             const syntax = document.getElementById('pasteSyntax').value;
@@ -822,16 +1090,19 @@
             const user = auth.currentUser;
 
             if (!content) {
-                alert('Please enter some content');
+                alert('Please enter some content for your paste');
                 return;
             }
 
             // Generate unique ID
             let pasteId = generatePasteId();
-            let doc = await db.collection('pastes').doc(pasteId).get();
-            while (doc.exists) {
+            let docRef = doc(db, 'pastes', pasteId);
+            let docSnap = await getDoc(docRef);
+            
+            while (docSnap.exists()) {
                 pasteId = generatePasteId();
-                doc = await db.collection('pastes').doc(pasteId).get();
+                docRef = doc(db, 'pastes', pasteId);
+                docSnap = await getDoc(docRef);
             }
 
             const pasteData = {
@@ -840,11 +1111,13 @@
                 content: content,
                 syntax: syntax,
                 visibility: visibility,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: serverTimestamp(),
                 views: 0,
-                uniqueViews: {}
+                uniqueViews: {},
+                comments: []
             };
 
+            // Add user info if logged in
             if (user) {
                 pasteData.userId = user.uid;
                 pasteData.authorName = user.displayName || user.email;
@@ -853,29 +1126,23 @@
                 pasteData.authorName = 'Anonymous';
             }
 
-            // Save to Firebase
-            await db.collection('pastes').doc(pasteId).set(pasteData);
+            await setDoc(doc(db, 'pastes', pasteId), pasteData);
             
-            // Clear form
             document.getElementById('pasteTitle').value = '';
             document.getElementById('pasteContent').value = '';
             
-            // Update URL and show the paste
+            // Auto-redirect to the paste
             window.location.hash = `paste-${pasteId}`;
             viewPasteById(pasteId);
             
-            // Reload user's pastes if logged in
             if (user) {
                 loadUserPastes();
             }
-            
-            // Reload recent pastes
             loadRecentPastes();
-        }
+        };
 
         // View paste by ID
-        function viewPasteById(pasteId, rawMode = false) {
-            // Hide other sections
+        async function viewPasteById(pasteId, rawMode = false) {
             document.getElementById('mainLayout').classList.remove('active');
             document.getElementById('authContainer').style.display = 'none';
             
@@ -884,24 +1151,31 @@
             
             if (rawMode) {
                 viewPaste.classList.add('raw-mode');
+                document.querySelector('.paste-header').style.display = 'none';
+                document.querySelector('.comments-section').style.display = 'none';
             } else {
                 viewPaste.classList.remove('raw-mode');
+                document.querySelector('.paste-header').style.display = 'flex';
+                document.querySelector('.comments-section').style.display = 'block';
             }
             
-            // Show loading
-            document.getElementById('viewPasteTitle').textContent = 'Loading...';
-            document.getElementById('viewPasteContent').innerHTML = '<div class="loading">Loading paste...</div>';
+            const viewTitle = document.getElementById('viewPasteTitle');
+            const viewContent = document.getElementById('viewPasteContent');
+            const viewAuthor = document.getElementById('viewPasteAuthor');
+            const viewDate = document.getElementById('viewPasteDate');
+            const viewId = document.getElementById('viewPasteId');
+            const viewViews = document.getElementById('viewPasteViews');
+            const viewVisibility = document.getElementById('viewPasteVisibility');
+            
+            viewTitle.textContent = 'Loading...';
+            viewContent.innerHTML = '<div class="loading"></div>';
 
-            // Get paste from Firebase
-            db.collection('pastes').doc(pasteId).get()
-                .then((doc) => {
-                    if (!doc.exists) {
-                        alert('Paste not found');
-                        goBack();
-                        return;
-                    }
-                    
-                    const paste = doc.data();
+            try {
+                const docRef = doc(db, 'pastes', pasteId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const paste = docSnap.data();
                     
                     // Check visibility
                     if (paste.visibility === 'private' && (!auth.currentUser || auth.currentUser.uid !== paste.userId)) {
@@ -910,195 +1184,350 @@
                         return;
                     }
                     
-                    // Update view count (1 per device/user)
-                    const viewerId = auth.currentUser ? auth.currentUser.uid : deviceId;
-                    if (!paste.uniqueViews || !paste.uniqueViews[viewerId]) {
+                    // Update view count (1 per device/login)
+                    const viewKey = `${deviceId}_${auth.currentUser?.uid || 'anonymous'}`;
+                    if (!paste.uniqueViews || !paste.uniqueViews[viewKey]) {
                         const updates = {
-                            views: firebase.firestore.FieldValue.increment(1)
+                            views: increment(1)
                         };
-                        updates[`uniqueViews.${viewerId}`] = true;
+                        updates[`uniqueViews.${viewKey}`] = true;
                         
-                        db.collection('pastes').doc(pasteId).update(updates);
+                        await updateDoc(docRef, updates);
+                        
+                        // Update local storage
+                        viewedPastes[pasteId] = true;
+                        localStorage.setItem('viewedPastes', JSON.stringify(viewedPastes));
                     }
                     
-                    // Display paste
-                    document.getElementById('viewPasteTitle').textContent = paste.title || 'Untitled';
+                    viewTitle.textContent = paste.title || 'Untitled';
                     
-                    const codeElement = document.getElementById('viewPasteContent').querySelector('code');
-                    if (!codeElement) {
-                        document.getElementById('viewPasteContent').innerHTML = `<pre><code class="language-${paste.syntax || 'plaintext'}"></code></pre>`;
-                    }
-                    
-                    const code = document.getElementById('viewPasteContent').querySelector('code');
+                    // Apply syntax highlighting
+                    const code = viewContent.querySelector('code');
                     code.className = `language-${paste.syntax || 'plaintext'}`;
                     code.textContent = paste.content;
                     hljs.highlightElement(code);
                     
-                    const date = paste.createdAt ? paste.createdAt.toDate().toLocaleString() : 'Unknown date';
+                    const date = paste.createdAt ? new Date(paste.createdAt.toDate()).toLocaleString() : 'Unknown date';
+                    const authorName = paste.authorName || 'Anonymous';
+                    
+                    viewAuthor.innerHTML = `<i class="fas fa-user"></i> ${authorName}`;
+                    viewDate.innerHTML = `<i class="fas fa-calendar"></i> ${date}`;
+                    viewId.innerHTML = `<i class="fas fa-hashtag"></i> ${paste.pasteId}`;
+                    
                     const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
-                    
-                    document.getElementById('viewPasteAuthor').innerHTML = `<i class="fas fa-user"></i> ${paste.authorName || 'Anonymous'}`;
-                    document.getElementById('viewPasteAuthor').setAttribute('data-userid', paste.userId || 'anonymous');
-                    
-                    document.getElementById('viewPasteDate').innerHTML = `<i class="fas fa-calendar"></i> ${date}`;
-                    document.getElementById('viewPasteId').innerHTML = `<i class="fas fa-hashtag"></i> ${paste.pasteId}`;
-                    document.getElementById('viewPasteViews').innerHTML = `<i class="fas fa-eye"></i> ${totalViews} views`;
+                    viewViews.innerHTML = `<i class="fas fa-eye"></i> ${totalViews} views`;
                     
                     const visibilityIcon = paste.visibility === 'private' ? 'lock' : 'globe';
-                    document.getElementById('viewPasteVisibility').innerHTML = `<i class="fas fa-${visibilityIcon}"></i> ${paste.visibility}`;
+                    viewVisibility.innerHTML = `<i class="fas fa-${visibilityIcon}"></i> ${paste.visibility}`;
                     
-                    // Update share link
-                    document.getElementById('shareLink').value = window.location.href.split('#')[0] + `#paste-${paste.pasteId}`;
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    alert('Error loading paste');
+                    // Update share modal
+                    document.getElementById('shareLink').value = window.location.origin + window.location.pathname + `#paste-${paste.pasteId}`;
+                    
+                    // Load comments
+                    loadComments(pasteId);
+                } else {
+                    alert('Paste not found');
                     goBack();
-                });
+                }
+            } catch (error) {
+                console.error('Error loading paste:', error);
+                alert('Error loading paste');
+                goBack();
+            }
         }
+
+        // Load comments for a paste
+        async function loadComments(pasteId) {
+            const commentsList = document.getElementById('commentsList');
+            
+            try {
+                const docRef = doc(db, 'pastes', pasteId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const paste = docSnap.data();
+                    const comments = paste.comments || [];
+                    
+                    if (comments.length === 0) {
+                        commentsList.innerHTML = '<p style="text-align: center; color: #94a3b8;">No comments yet. Be the first to comment!</p>';
+                        return;
+                    }
+                    
+                    commentsList.innerHTML = '';
+                    
+                    // Sort comments by date (newest first)
+                    comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    
+                    for (const comment of comments) {
+                        const commentElement = document.createElement('div');
+                        commentElement.className = 'comment-item';
+                        
+                        const date = new Date(comment.createdAt).toLocaleString();
+                        const canDelete = auth.currentUser && 
+                            (auth.currentUser.uid === comment.userId || auth.currentUser.uid === paste.userId);
+                        
+                        commentElement.innerHTML = `
+                            <div class="comment-header">
+                                <span class="comment-author">${escapeHtml(comment.authorName)}</span>
+                                <span class="comment-date">${date}</span>
+                            </div>
+                            <div class="comment-content">${escapeHtml(comment.content)}</div>
+                            ${canDelete ? `
+                                <div class="comment-actions">
+                                    <button class="btn-delete-comment" onclick="window.deleteComment('${pasteId}', '${comment.id}')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            ` : ''}
+                        `;
+                        
+                        commentsList.appendChild(commentElement);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading comments:', error);
+                commentsList.innerHTML = '<p style="text-align: center; color: #ef4444;">Error loading comments</p>';
+            }
+        }
+
+        // Add comment
+        window.addComment = async function() {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Please login to comment');
+                return;
+            }
+            
+            const content = document.getElementById('commentContent').value;
+            if (!content.trim()) {
+                alert('Please enter a comment');
+                return;
+            }
+            
+            const pasteId = window.location.hash.replace('#paste-', '').replace('-raw', '');
+            
+            const comment = {
+                id: Date.now().toString(),
+                userId: user.uid,
+                authorName: user.displayName || user.email,
+                content: content,
+                createdAt: new Date().toISOString()
+            };
+            
+            try {
+                const docRef = doc(db, 'pastes', pasteId);
+                await updateDoc(docRef, {
+                    comments: arrayUnion(comment)
+                });
+                
+                document.getElementById('commentContent').value = '';
+                loadComments(pasteId);
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                alert('Error adding comment');
+            }
+        };
+
+        // Delete comment
+        window.deleteComment = async function(pasteId, commentId) {
+            if (!confirm('Are you sure you want to delete this comment?')) return;
+            
+            try {
+                const docRef = doc(db, 'pastes', pasteId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const paste = docSnap.data();
+                    const comment = paste.comments.find(c => c.id === commentId);
+                    
+                    if (comment) {
+                        await updateDoc(docRef, {
+                            comments: arrayRemove(comment)
+                        });
+                        
+                        loadComments(pasteId);
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting comment:', error);
+                alert('Error deleting comment');
+            }
+        };
 
         // View raw version
-        function viewRawVersion() {
-            const hash = window.location.hash.substring(1);
-            if (hash.startsWith('paste-')) {
-                const pasteId = hash.replace('paste-', '').replace('-raw', '');
-                window.location.hash = `paste-${pasteId}-raw`;
+        window.viewRawVersion = function() {
+            const currentHash = window.location.hash;
+            if (currentHash.startsWith('#paste-')) {
+                const pasteId = currentHash.replace('#paste-', '').replace('-raw', '');
+                window.location.hash = `#paste-${pasteId}-raw`;
                 viewPasteById(pasteId, true);
             }
-        }
+        };
 
-        // View author profile
-        function viewAuthorProfile() {
-            const userId = document.getElementById('viewPasteAuthor').getAttribute('data-userid');
-            if (userId && userId !== 'anonymous') {
-                // You can implement profile viewing here
-                alert(`View profile for user: ${userId}`);
-            }
-        }
+        // Download paste
+        window.downloadPaste = function() {
+            const content = document.getElementById('viewPasteContent').querySelector('code').textContent;
+            const title = document.getElementById('viewPasteTitle').textContent;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
 
         // Load user's pastes
-        function loadUserPastes() {
+        async function loadUserPastes() {
             const user = auth.currentUser;
             if (!user) return;
 
-            db.collection('pastes')
-                .where('userId', '==', user.uid)
-                .orderBy('createdAt', 'desc')
-                .get()
-                .then((querySnapshot) => {
-                    const container = document.getElementById('pastesContainer');
-                    container.innerHTML = '';
+            try {
+                const q = query(
+                    collection(db, 'pastes'),
+                    where('userId', '==', user.uid),
+                    orderBy('createdAt', 'desc'),
+                    limit(20)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                const container = document.getElementById('pastesContainer');
+                container.innerHTML = '';
 
-                    if (querySnapshot.empty) {
-                        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #94a3b8;">No pastes yet. Create your first paste!</p>';
-                        return;
-                    }
-
-                    querySnapshot.forEach((doc) => {
-                        const paste = doc.data();
-                        const date = paste.createdAt ? paste.createdAt.toDate().toLocaleString() : 'Just now';
-                        const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
-                        
-                        const card = document.createElement('div');
-                        card.className = 'paste-card';
-                        card.onclick = () => {
-                            window.location.hash = `paste-${paste.pasteId}`;
-                            viewPasteById(paste.pasteId);
-                        };
-                        
-                        card.innerHTML = `
-                            <div class="paste-card-header">
-                                <span class="paste-card-title">${escapeHtml(paste.title || 'Untitled')}</span>
-                                <span class="paste-card-id">${paste.pasteId}</span>
-                            </div>
-                            <div class="paste-card-preview">${escapeHtml(paste.content.substring(0, 100))}${paste.content.length > 100 ? '...' : ''}</div>
-                            <div class="paste-card-footer">
-                                <span><i class="fas fa-eye"></i> ${totalViews}</span>
-                                <span><i class="fas fa-calendar"></i> ${new Date(date).toLocaleDateString()}</span>
-                                <span class="badge badge-${paste.visibility}">${paste.visibility}</span>
-                            </div>
-                        `;
-                        
-                        container.appendChild(card);
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error loading pastes:', error);
+                querySnapshot.forEach((doc) => {
+                    const paste = doc.data();
+                    const date = paste.createdAt ? new Date(paste.createdAt.toDate()).toLocaleString() : 'Just now';
+                    const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'paste-card';
+                    card.onclick = () => {
+                        window.location.hash = `paste-${paste.pasteId}`;
+                        viewPasteById(paste.pasteId);
+                    };
+                    
+                    card.innerHTML = `
+                        <div class="paste-card-header">
+                            <span class="paste-card-title">${escapeHtml(paste.title || 'Untitled')}</span>
+                            <span class="paste-card-id">${paste.pasteId}</span>
+                        </div>
+                        <div class="paste-card-preview">${escapeHtml(paste.content.substring(0, 100))}${paste.content.length > 100 ? '...' : ''}</div>
+                        <div class="paste-card-footer">
+                            <span><i class="fas fa-eye"></i> ${totalViews}</span>
+                            <span><i class="fas fa-calendar"></i> ${new Date(date).toLocaleDateString()}</span>
+                            <span class="badge badge-${paste.visibility}">${paste.visibility}</span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
                 });
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #94a3b8;">No pastes yet. Create your first paste!</p>';
+                }
+            } catch (error) {
+                console.error('Error loading pastes:', error);
+            }
         }
 
-        // Load recent public pastes
-        function loadRecentPastes() {
-            db.collection('pastes')
-                .where('visibility', '==', 'public')
-                .orderBy('createdAt', 'desc')
-                .limit(10)
-                .get()
-                .then((querySnapshot) => {
-                    const container = document.getElementById('recentPastesList');
-                    container.innerHTML = '';
+        // Load recent public pastes for sidebar
+        async function loadRecentPastes() {
+            try {
+                const q = query(
+                    collection(db, 'pastes'),
+                    where('visibility', '==', 'public'),
+                    orderBy('createdAt', 'desc'),
+                    limit(10)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                const container = document.getElementById('recentPastesList');
+                container.innerHTML = '';
 
-                    if (querySnapshot.empty) {
-                        container.innerHTML = '<p style="text-align: center; color: #94a3b8;">No public pastes yet</p>';
-                        return;
-                    }
-
-                    querySnapshot.forEach((doc) => {
-                        const paste = doc.data();
-                        const date = paste.createdAt ? paste.createdAt.toDate().toLocaleString() : 'Just now';
-                        const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
-                        
-                        const item = document.createElement('div');
-                        item.className = 'recent-paste-item';
-                        item.onclick = () => {
-                            window.location.hash = `paste-${paste.pasteId}`;
-                            viewPasteById(paste.pasteId);
-                        };
-                        
-                        item.innerHTML = `
-                            <div class="recent-paste-title">${escapeHtml(paste.title || 'Untitled')}</div>
-                            <div class="recent-paste-meta">
-                                <span><i class="fas fa-user"></i> ${escapeHtml(paste.authorName || 'Anonymous')}</span>
-                                <div>
-                                    <span><i class="fas fa-eye"></i> ${totalViews}</span>
-                                    <span style="margin-left: 10px;"><i class="fas fa-calendar"></i> ${new Date(date).toLocaleDateString()}</span>
-                                </div>
+                querySnapshot.forEach((doc) => {
+                    const paste = doc.data();
+                    const date = paste.createdAt ? new Date(paste.createdAt.toDate()).toLocaleString() : 'Just now';
+                    const totalViews = (paste.views || 0) + (paste.uniqueViews ? Object.keys(paste.uniqueViews).length : 0);
+                    
+                    const item = document.createElement('div');
+                    item.className = 'recent-paste-item';
+                    item.onclick = () => {
+                        window.location.hash = `paste-${paste.pasteId}`;
+                        viewPasteById(paste.pasteId);
+                    };
+                    
+                    item.innerHTML = `
+                        <div class="recent-paste-title">${escapeHtml(paste.title || 'Untitled')}</div>
+                        <div class="recent-paste-meta">
+                            <span><i class="fas fa-user"></i> ${escapeHtml(paste.authorName || 'Anonymous')}</span>
+                            <div class="recent-paste-stats">
+                                <span><i class="fas fa-eye"></i> ${totalViews}</span>
+                                <span><i class="fas fa-calendar"></i> ${new Date(date).toLocaleDateString()}</span>
                             </div>
-                        `;
-                        
-                        container.appendChild(item);
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error loading recent pastes:', error);
+                        </div>
+                    `;
+                    
+                    container.appendChild(item);
                 });
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<p style="text-align: center; color: #94a3b8;">No public pastes yet</p>';
+                }
+            } catch (error) {
+                console.error('Error loading recent pastes:', error);
+            }
         }
 
         // Copy current paste
-        function copyCurrentPaste() {
+        window.copyCurrentPaste = function() {
             const content = document.getElementById('viewPasteContent').querySelector('code').textContent;
             navigator.clipboard.writeText(content)
-                .then(() => showNotification('Paste copied to clipboard!'))
-                .catch(() => alert('Failed to copy'));
-        }
+                .then(() => {
+                    showNotification('Paste copied to clipboard!');
+                })
+                .catch(() => {
+                    alert('Failed to copy paste');
+                });
+        };
 
         // Show share modal
-        function showShareModal() {
+        window.showShareModal = function() {
             document.getElementById('shareModal').classList.add('active');
-        }
+        };
 
         // Close share modal
-        function closeShareModal() {
+        window.closeShareModal = function() {
             document.getElementById('shareModal').classList.remove('active');
-        }
+        };
 
         // Copy share link
-        function copyShareLink() {
+        window.copyShareLink = function() {
             const link = document.getElementById('shareLink');
             link.select();
             navigator.clipboard.writeText(link.value)
-                .then(() => showNotification('Link copied!'));
-        }
+                .then(() => {
+                    showNotification('Link copied to clipboard!');
+                });
+        };
+
+        // Copy raw link
+        window.copyRawLink = function() {
+            const currentLink = document.getElementById('shareLink').value;
+            const rawLink = currentLink + '-raw';
+            navigator.clipboard.writeText(rawLink)
+                .then(() => {
+                    showNotification('Raw link copied to clipboard!');
+                });
+        };
+
+        // Go back
+        window.goBack = function() {
+            if (auth.currentUser) {
+                showDashboard();
+            } else {
+                window.location.reload();
+            }
+        };
 
         // Show notification
         function showNotification(message) {
@@ -1106,7 +1535,10 @@
             notification.className = 'copy-notification';
             notification.textContent = message;
             document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
         }
 
         // Escape HTML
@@ -1125,7 +1557,11 @@
             if (event.target === modal) {
                 closeShareModal();
             }
-        }
+        };
+
+        // Make functions available globally
+        window.viewPasteById = viewPasteById;
+        window.loadComments = loadComments;
     </script>
 </body>
 </html>
