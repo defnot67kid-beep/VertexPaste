@@ -109,6 +109,13 @@
             background: #1e293b;
             border-radius: 8px;
             border: 1px solid #334155;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-info:hover {
+            border-color: var(--primary);
+            background: #2d3a4f;
         }
 
         .user-avatar {
@@ -131,6 +138,177 @@
             border-radius: 4px;
             margin-left: 8px;
             font-weight: bold;
+        }
+
+        /* Profile Page Styles */
+        .profile-container {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #334155;
+            margin-bottom: 30px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            border: 4px solid var(--primary-light);
+        }
+
+        .profile-info h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #f1f5f9;
+        }
+
+        .profile-meta {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .profile-stat {
+            text-align: center;
+            background: #1e293b;
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .profile-stat .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .profile-stat .label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 15px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .subscribe-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .subscribe-btn.subscribed {
+            background: #1e293b;
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .subscribe-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .subscribe-btn.subscribed:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+
+        .notification-permission-btn {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .notification-permission-btn.granted {
+            background: #1e293b;
+            border: 1px solid var(--info);
+            color: var(--info);
+        }
+
+        .profile-bio {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .profile-bio.editable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-bio.editable:hover {
+            border-color: var(--primary);
+            background: #2d3a4f;
+        }
+
+        .bio-edit {
+            display: none;
+        }
+
+        .bio-edit.active {
+            display: block;
+        }
+
+        .bio-edit textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .bio-display {
+            display: block;
+        }
+
+        .bio-display.hidden {
+            display: none;
         }
 
         /* Buttons */
@@ -295,54 +473,6 @@
             border-radius: 4px;
             font-size: 11px;
             font-weight: bold;
-        }
-
-        /* Admin Boost Controls */
-        .boost-controls {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #334155;
-        }
-
-        .boost-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .boost-input-group input {
-            flex: 1;
-            min-width: 200px;
-            padding: 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: white;
-        }
-
-        .boost-input-group select {
-            padding: 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: white;
-            min-width: 150px;
-        }
-
-        .boost-examples {
-            margin-top: 10px;
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        .boost-examples code {
-            background: #0f172a;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-right: 8px;
         }
 
         /* User Boost Section */
@@ -781,8 +911,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
-            padding: 0 20px;
+            margin: 10px 20px;
+            cursor: pointer;
+        }
+
+        .paste-card-owner:hover .owner-name {
+            color: var(--primary);
+            text-decoration: underline;
         }
 
         .owner-avatar {
@@ -800,6 +935,7 @@
         .owner-name {
             font-size: 13px;
             color: var(--text-dim);
+            transition: color 0.3s ease;
         }
 
         .paste-card-preview {
@@ -1225,6 +1361,12 @@
         .comment-author {
             font-weight: 600;
             color: #f1f5f9;
+            cursor: pointer;
+        }
+
+        .comment-author:hover {
+            color: var(--primary);
+            text-decoration: underline;
         }
 
         .comment-pin-badge {
@@ -1287,6 +1429,16 @@
                 flex-direction: column;
                 gap: 10px;
             }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-actions {
+                margin-left: 0;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -1338,32 +1490,18 @@
             </div>
         </div>
 
-        <!-- Admin Boost Modal -->
-        <div id="boostModal" class="modal">
+        <!-- Bio Edit Modal -->
+        <div id="bioModal" class="modal">
             <div class="modal-content">
-                <h3><i class="fas fa-rocket"></i> Boost Paste to Front Page</h3>
+                <h3><i class="fas fa-edit"></i> Edit Bio</h3>
                 <div class="form-group">
-                    <label>Select Paste</label>
-                    <select id="boostPasteSelect" class="filter-select" style="width: 100%;">
-                        <option value="">Select a paste...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Boost Duration</label>
-                    <input type="text" id="boostDuration" placeholder="e.g., 1h, 1d, 1w, 1m, 1y" style="width: 100%;">
-                    <div class="boost-examples">
-                        <code>1h</code> 1 hour
-                        <code>1d</code> 1 day
-                        <code>1w</code> 1 week
-                        <code>1m</code> 1 month
-                        <code>1y</code> 1 year
-                    </div>
+                    <textarea id="bioTextarea" rows="5" placeholder="Write something about yourself..."></textarea>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button class="btn btn-primary" onclick="window.applyBoost()">
-                        <i class="fas fa-rocket"></i> Apply Boost
+                    <button class="btn btn-primary" onclick="window.saveBio()">
+                        <i class="fas fa-save"></i> Save
                     </button>
-                    <button class="btn btn-logout" onclick="window.closeBoostModal()">
+                    <button class="btn btn-logout" onclick="window.closeBioModal()">
                         <i class="fas fa-times"></i> Cancel
                     </button>
                 </div>
@@ -1402,6 +1540,9 @@
         const ADMIN_EMAIL = "plastealme2@vertexpaste.com";
         let currentPasteId = null;
         let pendingPasteId = null;
+        
+        // Notification permission state
+        let notificationPermission = false;
         
         // Video boost tracking
         let videoWatchState = {};
@@ -1446,6 +1587,11 @@
                 pasteCommenters = JSON.parse(storedCommenters);
             }
 
+            // Check notification permission
+            if ('Notification' in window) {
+                notificationPermission = Notification.permission === 'granted';
+            }
+
             // Check for raw paste in URL path
             const path = window.location.pathname;
             if (path.includes('/raw/')) {
@@ -1471,17 +1617,24 @@
                                 createdAt: new Date().toISOString(),
                                 totalPastes: 0,
                                 totalViews: 0,
+                                profileViews: 0,
                                 pastesToday: 0,
                                 lastPasteDate: new Date().toISOString().split('T')[0],
                                 isAdmin: user.email === ADMIN_EMAIL,
-                                videoBoosts: {} // Track video boosts per paste
+                                videoBoosts: {}, // Track video boosts per paste
+                                subscribers: [], // Array of user IDs subscribed to this user
+                                subscribedTo: [], // Array of user IDs this user subscribes to
+                                bio: '' // User bio
                             });
                             
                             currentUser = {
                                 uid: user.uid,
                                 email: user.email,
                                 displayName: user.displayName || user.email.split('@')[0],
-                                isAdmin: user.email === ADMIN_EMAIL
+                                isAdmin: user.email === ADMIN_EMAIL,
+                                bio: '',
+                                subscribers: [],
+                                subscribedTo: []
                             };
                         } else {
                             const userData = userDoc.data();
@@ -1489,7 +1642,11 @@
                                 uid: user.uid,
                                 email: user.email,
                                 displayName: userData.displayName || user.displayName || user.email.split('@')[0],
-                                isAdmin: user.email === ADMIN_EMAIL || userData.isAdmin === true
+                                isAdmin: user.email === ADMIN_EMAIL || userData.isAdmin === true,
+                                bio: userData.bio || '',
+                                subscribers: userData.subscribers || [],
+                                subscribedTo: userData.subscribedTo || [],
+                                profileViews: userData.profileViews || 0
                             };
                             
                             // Reset daily counter if new day
@@ -1670,7 +1827,7 @@
                 const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
                 const isAdmin = user.email === ADMIN_EMAIL;
                 navButtons.innerHTML = `
-                    <div class="user-info">
+                    <div class="user-info" onclick="window.location.hash='#profile-${user.uid}'">
                         <div class="user-avatar">${initial}</div>
                         <span>${user.displayName || user.email} ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</span>
                     </div>
@@ -1708,6 +1865,12 @@
                 return;
             }
             
+            if (hash.startsWith('#profile-')) {
+                const userId = hash.replace('#profile-', '');
+                viewProfile(userId);
+                return;
+            }
+            
             if (hash.startsWith('#edit-')) {
                 const pasteId = hash.replace('#edit-', '');
                 editPaste(pasteId);
@@ -1739,6 +1902,350 @@
                 renderDashboard('all');
             }
         }
+
+        // ============ REQUEST NOTIFICATION PERMISSION ============
+        window.requestNotificationPermission = async function() {
+            if (!('Notification' in window)) {
+                showNotification('Notifications are not supported in this browser', true);
+                return false;
+            }
+            
+            try {
+                const permission = await Notification.requestPermission();
+                notificationPermission = permission === 'granted';
+                
+                if (notificationPermission) {
+                    showNotification('Notifications enabled! You will be notified when users you subscribe to post new pastes.');
+                } else {
+                    showNotification('Notification permission denied', true);
+                }
+                
+                return notificationPermission;
+            } catch (error) {
+                console.error('Error requesting notification permission:', error);
+                return false;
+            }
+        };
+
+        // ============ SEND NOTIFICATION ============
+        async function sendNotification(userId, title, body, url) {
+            if (!notificationPermission) return;
+            
+            // In a real app, you'd use Firebase Cloud Messaging here
+            // For demo, we'll use the Notification API (only works if user is on the page)
+            
+            if (document.hidden) {
+                // User is not on the page, can't send via web API
+                // This is where FCM would be used
+                console.log('Would send notification:', { userId, title, body, url });
+                return;
+            }
+            
+            try {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    data: { url: url }
+                });
+                
+                notification.onclick = function(event) {
+                    event.preventDefault();
+                    window.location.hash = url;
+                    window.focus();
+                    notification.close();
+                };
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
+        }
+
+        // ============ VIEW PROFILE ============
+        async function viewProfile(userId) {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                
+                if (!userDoc.exists()) {
+                    container.innerHTML = `
+                        <div class="auth-container" style="text-align: center;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
+                            <h2>User Not Found</h2>
+                            <p style="color: var(--text-dim); margin: 20px 0;">The user you're looking for doesn't exist.</p>
+                            <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
+                                <i class="fas fa-home"></i> Back to Dashboard
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const profileUser = {
+                    uid: userId,
+                    ...userDoc.data()
+                };
+                
+                // Get user's public pastes
+                const userPastes = allPastes.filter(p => 
+                    p.userId === userId && p.visibility === 'public'
+                );
+                
+                // Calculate total views from user's pastes
+                const totalPasteViews = userPastes.reduce((sum, p) => sum + (p.views?.total || 0), 0);
+                
+                // Check if current user is subscribed to this profile
+                const isSubscribed = currentUser && 
+                    profileUser.subscribers && 
+                    profileUser.subscribers.includes(currentUser.uid);
+                
+                // Check if this is the user's own profile
+                const isOwnProfile = currentUser && currentUser.uid === userId;
+                
+                // Increment profile view (unless it's the user viewing their own profile)
+                if (currentUser && currentUser.uid !== userId) {
+                    const viewerId = currentUser.uid;
+                    const uniqueViewers = profileUser.profileUniqueViewers || [];
+                    
+                    if (!uniqueViewers.includes(viewerId)) {
+                        await updateDoc(doc(db, 'users', userId), {
+                            profileViews: increment(1),
+                            profileUniqueViewers: arrayUnion(viewerId)
+                        });
+                    }
+                } else if (!currentUser) {
+                    // Anonymous user viewing profile
+                    const viewerId = deviceId;
+                    const uniqueViewers = profileUser.profileUniqueViewers || [];
+                    
+                    if (!uniqueViewers.includes(viewerId)) {
+                        await updateDoc(doc(db, 'users', userId), {
+                            profileViews: increment(1),
+                            profileUniqueViewers: arrayUnion(viewerId)
+                        });
+                    }
+                }
+                
+                await renderProfileView(profileUser, userPastes, totalPasteViews, isSubscribed, isOwnProfile);
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                container.innerHTML = `
+                    <div class="auth-container" style="text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
+                        <h2>Error Loading Profile</h2>
+                        <p style="color: var(--text-dim); margin: 20px 0;">Please try again.</p>
+                        <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
+                            <i class="fas fa-home"></i> Back to Dashboard
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // ============ RENDER PROFILE VIEW ============
+        async function renderProfileView(profileUser, userPastes, totalPasteViews, isSubscribed, isOwnProfile) {
+            const container = document.getElementById('mainContent');
+            
+            const joinDate = profileUser.createdAt ? new Date(profileUser.createdAt).toLocaleDateString() : 'Unknown';
+            const initial = (profileUser.displayName || 'U').charAt(0).toUpperCase();
+            
+            // Generate pastes HTML
+            let pastesHTML = '';
+            userPastes.forEach(paste => {
+                const date = paste.createdAt ? new Date(paste.createdAt).toLocaleDateString() : 'Recent';
+                const shareableLink = `${window.location.origin}${window.location.pathname}#paste-${paste.id}`;
+                
+                pastesHTML += `
+                    <div class="paste-card" onclick="window.location.hash='#paste-${paste.id}'">
+                        <div class="paste-card-header">
+                            <div class="paste-card-title">${escapeHtml(paste.title || 'Untitled')}</div>
+                            <span class="paste-card-id">${paste.id}</span>
+                        </div>
+                        <div class="paste-card-preview">${escapeHtml(paste.content.substring(0, 150))}${paste.content.length > 150 ? '...' : ''}</div>
+                        <div class="paste-card-footer">
+                            <span><i class="fas fa-calendar"></i> ${date}</span>
+                            <span><i class="fas fa-eye"></i> ${paste.views?.total || 0}</span>
+                            <span><i class="fas fa-code"></i> ${paste.syntax || 'text'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = `
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large">${initial}</div>
+                        <div class="profile-info">
+                            <h1>${escapeHtml(profileUser.displayName || 'Anonymous')} 
+                                ${profileUser.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
+                            </h1>
+                            <div class="profile-meta">
+                                <div class="profile-stat">
+                                    <div class="number">${profileUser.profileViews || 0}</div>
+                                    <div class="label">Profile Views</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="number">${userPastes.length}</div>
+                                    <div class="label">Public Pastes</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="number">${totalPasteViews}</div>
+                                    <div class="label">Total Views</div>
+                                </div>
+                                <div class="profile-stat">
+                                    <div class="number">${profileUser.subscribers?.length || 0}</div>
+                                    <div class="label">Subscribers</div>
+                                </div>
+                            </div>
+                            <div style="color: var(--text-dim); margin-top: 10px;">
+                                <i class="fas fa-calendar-alt"></i> Joined: ${joinDate}
+                            </div>
+                        </div>
+                        
+                        <div class="profile-actions">
+                            ${currentUser ? `
+                                ${!isOwnProfile ? `
+                                    <button class="subscribe-btn ${isSubscribed ? 'subscribed' : ''}" 
+                                            onclick="window.toggleSubscribe('${profileUser.uid}')">
+                                        <i class="fas ${isSubscribed ? 'fa-check' : 'fa-bell'}"></i>
+                                        ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                                    </button>
+                                ` : ''}
+                                <button class="notification-permission-btn ${notificationPermission ? 'granted' : ''}" 
+                                        onclick="window.requestNotificationPermission()">
+                                    <i class="fas ${notificationPermission ? 'fa-bell' : 'fa-bell-slash'}"></i>
+                                    ${notificationPermission ? 'Notifications On' : 'Enable Notifications'}
+                                </button>
+                            ` : `
+                                <button class="btn btn-primary" onclick="window.showAuth()">
+                                    <i class="fas fa-sign-in-alt"></i> Login to Subscribe
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <div class="profile-bio ${isOwnProfile ? 'editable' : ''}" 
+                         ${isOwnProfile ? 'onclick="window.openBioModal()"' : ''}>
+                        <div class="bio-display ${isOwnProfile && !profileUser.bio ? 'hidden' : ''}">
+                            <i class="fas fa-quote-left" style="color: var(--text-dim); margin-right: 8px;"></i>
+                            ${escapeHtml(profileUser.bio || 'No bio yet')}
+                            ${isOwnProfile ? '<span style="color: var(--text-dim); margin-left: 10px;"><i class="fas fa-pencil-alt"></i> Click to edit</span>' : ''}
+                        </div>
+                        ${isOwnProfile && !profileUser.bio ? `
+                            <div class="bio-display">
+                                <span style="color: var(--text-dim);"><i class="fas fa-plus-circle"></i> Add a bio</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <h2 style="margin: 30px 0 20px;"><i class="fas fa-code"></i> Public Pastes (${userPastes.length})</h2>
+                    
+                    <div class="pastes-grid">
+                        ${pastesHTML || '<p style="color: var(--text-dim); grid-column: 1/-1; text-align: center;">No public pastes yet.</p>'}
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
+                            <i class="fas fa-home"></i> Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============ TOGGLE SUBSCRIBE ============
+        window.toggleSubscribe = async function(targetUserId) {
+            if (!currentUser) {
+                showNotification('Please login to subscribe', true);
+                return;
+            }
+            
+            if (currentUser.uid === targetUserId) {
+                showNotification('You cannot subscribe to yourself', true);
+                return;
+            }
+            
+            try {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const targetRef = doc(db, 'users', targetUserId);
+                
+                const userDoc = await getDoc(userRef);
+                const targetDoc = await getDoc(targetRef);
+                
+                const userData = userDoc.data();
+                const targetData = targetDoc.data();
+                
+                const isSubscribed = targetData.subscribers?.includes(currentUser.uid) || false;
+                
+                if (isSubscribed) {
+                    // Unsubscribe
+                    await updateDoc(targetRef, {
+                        subscribers: arrayRemove(currentUser.uid)
+                    });
+                    
+                    await updateDoc(userRef, {
+                        subscribedTo: arrayRemove(targetUserId)
+                    });
+                    
+                    showNotification(`Unsubscribed from ${escapeHtml(targetData.displayName || 'user')}`);
+                } else {
+                    // Subscribe
+                    await updateDoc(targetRef, {
+                        subscribers: arrayUnion(currentUser.uid)
+                    });
+                    
+                    await updateDoc(userRef, {
+                        subscribedTo: arrayUnion(targetUserId)
+                    });
+                    
+                    showNotification(`Subscribed to ${escapeHtml(targetData.displayName || 'user')}! You will be notified when they post.`);
+                }
+                
+                // Refresh profile view
+                await viewProfile(targetUserId);
+                
+            } catch (error) {
+                console.error('Error toggling subscription:', error);
+                showNotification('Error updating subscription', true);
+            }
+        };
+
+        // ============ OPEN BIO MODAL ============
+        window.openBioModal = function() {
+            if (!currentUser) return;
+            
+            document.getElementById('bioTextarea').value = currentUser.bio || '';
+            document.getElementById('bioModal').classList.add('active');
+        };
+
+        window.closeBioModal = function() {
+            document.getElementById('bioModal').classList.remove('active');
+        };
+
+        window.saveBio = async function() {
+            const bio = document.getElementById('bioTextarea').value.trim();
+            
+            if (!currentUser) return;
+            
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    bio: bio
+                });
+                
+                currentUser.bio = bio;
+                showNotification('Bio updated successfully!');
+                closeBioModal();
+                
+                // Refresh profile view
+                await viewProfile(currentUser.uid);
+                
+            } catch (error) {
+                console.error('Error saving bio:', error);
+                showNotification('Error saving bio', true);
+            }
+        };
 
         // ============ SHOW AUTH ============
         window.showAuth = function() {
@@ -2043,6 +2550,29 @@
                     });
                 }
                 
+                // Notify subscribers about new paste (if public)
+                if (currentUser && visibility === 'public') {
+                    const userRef = doc(db, 'users', currentUser.uid);
+                    const userDoc = await getDoc(userRef);
+                    const userData = userDoc.data();
+                    
+                    if (userData.subscribers && userData.subscribers.length > 0) {
+                        // In a real app, you'd use Firebase Cloud Messaging here
+                        // For demo, we'll just log
+                        console.log(`Would notify ${userData.subscribers.length} subscribers about new paste`);
+                        
+                        // For users currently online with notifications enabled, we could send
+                        if (notificationPermission) {
+                            sendNotification(
+                                currentUser.uid,
+                                `New paste from ${currentUser.displayName}!`,
+                                title,
+                                `#paste-${pasteId}`
+                            );
+                        }
+                    }
+                }
+                
                 // Update URL and show the paste
                 window.location.hash = `paste-${pasteId}`;
                 await viewPasteById(pasteId);
@@ -2184,7 +2714,7 @@
                 commentsHTML += `
                     <div class="comment ${comment.isPinned ? 'pinned' : ''}" id="comment-${index}">
                         <div class="comment-header">
-                            <span class="comment-author">${escapeHtml(comment.author)} ${comment.isPinned ? '<span class="comment-pin-badge"><i class="fas fa-thumbtack"></i> PINNED</span>' : ''}</span>
+                            <span class="comment-author" onclick="window.location.hash='#profile-${comment.authorId}'">${escapeHtml(comment.author)} ${comment.isPinned ? '<span class="comment-pin-badge"><i class="fas fa-thumbtack"></i> PINNED</span>' : ''}</span>
                             <span>${new Date(comment.date).toLocaleString()}</span>
                         </div>
                         <div class="comment-content">${escapeHtml(comment.content)}</div>
@@ -2227,7 +2757,9 @@
                                 ${currentUser?.isAdmin && isBoosted ? '<span class="badge-boosted admin-only"><i class="fas fa-rocket"></i> BOOSTED</span>' : ''}
                             </h1>
                             <div class="paste-meta">
-                                <span><i class="fas fa-user"></i> ${escapeHtml(paste.authorName || 'Anonymous')}</span>
+                                <span class="clickable" onclick="window.location.hash='#profile-${paste.userId}'">
+                                    <i class="fas fa-user"></i> ${escapeHtml(paste.authorName || 'Anonymous')}
+                                </span>
                                 <span><i class="fas fa-calendar"></i> ${date}</span>
                                 <span><i class="fas fa-hashtag"></i> ${paste.pasteId}</span>
                                 <span><i class="fas fa-${paste.visibility === 'private' ? 'lock' : paste.visibility === 'unlisted' ? 'link' : 'globe'}"></i> ${paste.visibility}</span>
@@ -2972,86 +3504,6 @@
             }
         };
 
-        // ============ BOOST PASTE (ADMIN ONLY) ============
-        window.showBoostModal = async function() {
-            // Populate select with pastes
-            const select = document.getElementById('boostPasteSelect');
-            select.innerHTML = '<option value="">Select a paste...</option>';
-            
-            allPastes.forEach(paste => {
-                const option = document.createElement('option');
-                option.value = paste.id;
-                option.textContent = `${paste.title || 'Untitled'} (${paste.id}) - ${new Date(paste.createdAt).toLocaleDateString()}`;
-                select.appendChild(option);
-            });
-            
-            document.getElementById('boostModal').classList.add('active');
-        };
-
-        window.closeBoostModal = function() {
-            document.getElementById('boostModal').classList.remove('active');
-            document.getElementById('boostPasteSelect').value = '';
-            document.getElementById('boostDuration').value = '';
-        };
-
-        window.applyBoost = async function() {
-            const pasteId = document.getElementById('boostPasteSelect').value;
-            const duration = document.getElementById('boostDuration').value;
-            
-            if (!pasteId) {
-                showNotification('Please select a paste', true);
-                return;
-            }
-            
-            if (!duration) {
-                showNotification('Please enter a boost duration', true);
-                return;
-            }
-            
-            // Parse duration
-            const match = duration.match(/^(\d+)([hdwmy])$/);
-            if (!match) {
-                showNotification('Invalid duration format. Use: 1h, 1d, 1w, 1m, 1y', true);
-                return;
-            }
-            
-            const amount = parseInt(match[1]);
-            const unit = match[2];
-            
-            const now = new Date();
-            let expires = new Date(now);
-            
-            switch(unit) {
-                case 'h': expires.setHours(now.getHours() + amount); break;
-                case 'd': expires.setDate(now.getDate() + amount); break;
-                case 'w': expires.setDate(now.getDate() + (amount * 7)); break;
-                case 'm': expires.setMonth(now.getMonth() + amount); break;
-                case 'y': expires.setFullYear(now.getFullYear() + amount); break;
-            }
-            
-            try {
-                const docRef = doc(db, 'pastes', pasteId);
-                await updateDoc(docRef, {
-                    boosted: true,
-                    boostExpires: expires.toISOString()
-                });
-                
-                showNotification(`Paste boosted until ${expires.toLocaleDateString()}!`);
-                closeBoostModal();
-                await loadAllPastes();
-                
-                // Refresh current view if on admin panel
-                if (window.location.hash === '#admin') {
-                    renderAdminPanel();
-                } else {
-                    renderDashboard('all');
-                }
-                
-            } catch (error) {
-                showNotification('Error boosting paste', true);
-            }
-        };
-
         // ============ SHOW ADMIN PANEL ============
         window.showAdminPanel = function() {
             window.location.hash = '#admin';
@@ -3078,6 +3530,8 @@
                         <td>${escapeHtml(user.email)}</td>
                         <td>${user.totalPastes || 0}</td>
                         <td>${user.totalViews || 0}</td>
+                        <td>${user.profileViews || 0}</td>
+                        <td>${user.subscribers?.length || 0}</td>
                         <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                         <td>
                             <button class="btn btn-danger btn-icon" onclick="window.adminDeleteUser('${user.uid}')">
@@ -3154,29 +3608,6 @@
                         </div>
                     </div>
                     
-                    <div class="boost-controls">
-                        <h3 style="margin-bottom: 15px;"><i class="fas fa-rocket"></i> Boost Paste to Front Page</h3>
-                        <div class="boost-input-group">
-                            <select id="adminBoostPasteSelect" class="filter-select">
-                                <option value="">Select a paste...</option>
-                                ${allPastes.map(paste => `
-                                    <option value="${paste.id}">${escapeHtml(paste.title || 'Untitled')} (${paste.id}) - ${new Date(paste.createdAt).toLocaleDateString()}</option>
-                                `).join('')}
-                            </select>
-                            <input type="text" id="adminBoostDuration" placeholder="e.g., 1h, 1d, 1w, 1m, 1y" style="flex: 0.5;">
-                            <button class="btn btn-primary" onclick="window.applyBoostFromAdmin()">
-                                <i class="fas fa-rocket"></i> Apply Boost
-                            </button>
-                        </div>
-                        <div class="boost-examples">
-                            <code>1h</code> 1 hour
-                            <code>1d</code> 1 day
-                            <code>1w</code> 1 week
-                            <code>1m</code> 1 month
-                            <code>1y</code> 1 year
-                        </div>
-                    </div>
-                    
                     <div class="admin-tabs">
                         <button class="admin-tab active" onclick="window.switchAdminTab('users')">Users</button>
                         <button class="admin-tab" onclick="window.switchAdminTab('pastes')">Pastes</button>
@@ -3191,6 +3622,8 @@
                                     <th>Email</th>
                                     <th>Pastes</th>
                                     <th>Views</th>
+                                    <th>Profile Views</th>
+                                    <th>Subscribers</th>
                                     <th>Joined</th>
                                     <th>Actions</th>
                                 </tr>
@@ -3227,65 +3660,6 @@
                 </div>
             `;
         }
-
-        // ============ ADMIN BOOST FUNCTIONS ============
-        window.showBoostModalForPaste = function(pasteId) {
-            document.getElementById('boostPasteSelect').value = pasteId;
-            document.getElementById('boostModal').classList.add('active');
-        };
-
-        window.applyBoostFromAdmin = async function() {
-            const pasteId = document.getElementById('adminBoostPasteSelect').value;
-            const duration = document.getElementById('adminBoostDuration').value;
-            
-            if (!pasteId) {
-                showNotification('Please select a paste', true);
-                return;
-            }
-            
-            if (!duration) {
-                showNotification('Please enter a boost duration', true);
-                return;
-            }
-            
-            // Parse duration
-            const match = duration.match(/^(\d+)([hdwmy])$/);
-            if (!match) {
-                showNotification('Invalid duration format. Use: 1h, 1d, 1w, 1m, 1y', true);
-                return;
-            }
-            
-            const amount = parseInt(match[1]);
-            const unit = match[2];
-            
-            const now = new Date();
-            let expires = new Date(now);
-            
-            switch(unit) {
-                case 'h': expires.setHours(now.getHours() + amount); break;
-                case 'd': expires.setDate(now.getDate() + amount); break;
-                case 'w': expires.setDate(now.getDate() + (amount * 7)); break;
-                case 'm': expires.setMonth(now.getMonth() + amount); break;
-                case 'y': expires.setFullYear(now.getFullYear() + amount); break;
-            }
-            
-            try {
-                const docRef = doc(db, 'pastes', pasteId);
-                await updateDoc(docRef, {
-                    boosted: true,
-                    boostExpires: expires.toISOString()
-                });
-                
-                showNotification(`Paste boosted until ${expires.toLocaleDateString()}!`);
-                document.getElementById('adminBoostPasteSelect').value = '';
-                document.getElementById('adminBoostDuration').value = '';
-                await loadAllPastes();
-                renderAdminPanel();
-                
-            } catch (error) {
-                showNotification('Error boosting paste', true);
-            }
-        };
 
         // ============ SWITCH ADMIN TAB ============
         window.switchAdminTab = function(tab) {
@@ -3396,7 +3770,7 @@
                             </div>
                             <span class="paste-card-id">${paste.pasteId}</span>
                         </div>
-                        <div class="paste-card-owner">
+                        <div class="paste-card-owner" onclick="event.stopPropagation(); window.location.hash='#profile-${paste.userId}'">
                             <div class="owner-avatar">${(paste.authorName || 'A').charAt(0).toUpperCase()}</div>
                             <span class="owner-name">${escapeHtml(paste.authorName || 'Anonymous')}</span>
                             ${hasViewed ? '<span style="color: #10b981; margin-left: auto;"><i class="fas fa-eye"></i> Viewed</span>' : ''}
@@ -3686,14 +4060,18 @@
                 closePasswordModal();
             }
             
-            const boostModal = document.getElementById('boostModal');
-            if (event.target === boostModal) {
-                closeBoostModal();
+            const bioModal = document.getElementById('bioModal');
+            if (event.target === bioModal) {
+                closeBioModal();
             }
         };
 
         // ============ EXPOSE FUNCTIONS TO WINDOW ============
         window.renderDashboard = renderDashboard;
+        window.showBoostModalForPaste = function(pasteId) {
+            // Implementation for boost modal
+            console.log('Boost modal for:', pasteId);
+        };
 
         // ============ INITIALIZE ============
         init();
