@@ -1055,6 +1055,266 @@
             margin-left: 5px;
         }
 
+        /* New Comment System Styles */
+        .comment {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+
+        .comment.pinned {
+            border: 2px solid var(--accent);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comment-author-avatar {
+            width: 24px;
+            height: 24px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .comment-pin-badge {
+            background: var(--accent);
+            color: black;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .comment-content {
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+
+        .comment-content.collapsed {
+            max-height: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .comment-content.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, #1e293b);
+            pointer-events: none;
+        }
+
+        .comment-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .comment-action-btn {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .comment-action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .comment-action-btn.liked {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .comment-action-btn.disliked {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .reply-form {
+            margin: 15px 0 15px 30px;
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 8px;
+        }
+
+        .reply-form textarea {
+            width: 100%;
+            padding: 12px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .reply {
+            margin-left: 30px;
+            margin-top: 10px;
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .reply-author {
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .reply-content {
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+
+        .reply-content.collapsed {
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .reply-content.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(transparent, #0f172a);
+            pointer-events: none;
+        }
+
+        .reply-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .view-more-btn {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .view-more-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .view-replies-btn {
+            background: transparent;
+            border: 1px solid var(--text-dim);
+            color: var(--text-dim);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+
+        .view-replies-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .replies-container {
+            margin-left: 30px;
+            margin-top: 10px;
+        }
+
+        .replies-container.hidden {
+            display: none;
+        }
+
+        .comment-score-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--dark-light);
+            color: var(--text-dim);
+            margin-left: 8px;
+        }
+
+        body.admin-user .comment-score-badge {
+            display: inline-block;
+        }
+
+        .word-count {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .word-count.exceeded {
+            color: var(--danger);
+        }
+
         @media (max-width: 768px) {
             .main-content-area {
                 grid-template-columns: 1fr;
@@ -1062,6 +1322,15 @@
             
             .dashboard-tabs {
                 flex-wrap: wrap;
+            }
+            
+            .comment-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .reply {
+                margin-left: 15px;
             }
         }
     </style>
@@ -1184,8 +1453,10 @@
         let videoCheckInterval = null;
         let currentBoostPasteId = null;
         
-        // Commenters per paste tracking (for unique comment SEO)
-        let pasteCommenters = {};
+        // Comment tracking
+        let userVotes = {}; // Store user votes on comments
+        let expandedComments = {}; // Track expanded comments
+        let replyVisibility = {}; // Track reply visibility
         
         // Swear words list (comprehensive)
         const swearWords = [
@@ -1215,10 +1486,22 @@
                 videoWatchState = JSON.parse(storedVideoState);
             }
 
-            // Load commenters tracking
-            const storedCommenters = localStorage.getItem('vertexpaste_commenters');
-            if (storedCommenters) {
-                pasteCommenters = JSON.parse(storedCommenters);
+            // Load user votes from localStorage
+            const storedVotes = localStorage.getItem('vertexpaste_votes');
+            if (storedVotes) {
+                userVotes = JSON.parse(storedVotes);
+            }
+
+            // Load expanded comments from localStorage
+            const storedExpanded = localStorage.getItem('vertexpaste_expanded');
+            if (storedExpanded) {
+                expandedComments = JSON.parse(storedExpanded);
+            }
+
+            // Load reply visibility from localStorage
+            const storedReplies = localStorage.getItem('vertexpaste_replies');
+            if (storedReplies) {
+                replyVisibility = JSON.parse(storedReplies);
             }
 
             // Auth state observer
@@ -1400,6 +1683,29 @@
                     uniqueCommenters: uniqueCommentersCount
                 };
             });
+        }
+
+        // ============ CALCULATE COMMENT SCORE ============
+        function calculateCommentScore(comment) {
+            const likes = comment.likes || 0;
+            const dislikes = comment.dislikes || 0;
+            const replies = comment.replies?.length || 0;
+            const createdAt = new Date(comment.date || comment.createdAt || Date.now());
+            const ageInHours = (Date.now() - createdAt) / (1000 * 60 * 60);
+            
+            // Base score from likes (likes - dislikes * 0.5 to reduce impact of dislikes)
+            const netLikes = likes - (dislikes * 0.5);
+            
+            // Reply boost (each reply adds 2 points)
+            const replyBoost = replies * 2;
+            
+            // Recency boost (newer comments get higher score)
+            const recencyBoost = Math.max(0, 10 / (ageInHours + 1));
+            
+            // Pinned boost
+            const pinnedBoost = comment.isPinned ? 100 : 0;
+            
+            return netLikes + replyBoost + recencyBoost + pinnedBoost;
         }
 
         // ============ LOAD ALL USERS (ADMIN ONLY) ============
@@ -1912,8 +2218,38 @@
             // Check if paste is currently boosted
             const isBoosted = paste.boosted && paste.boostExpires && new Date(paste.boostExpires) > new Date();
             
-            // Get comments
-            const comments = paste.comments || [];
+            // Get comments with scores calculated
+            const comments = (paste.comments || []).map((comment, index) => {
+                const commentWithScore = {
+                    ...comment,
+                    commentIndex: index,
+                    score: calculateCommentScore(comment),
+                    likes: comment.likes || 0,
+                    dislikes: comment.dislikes || 0,
+                    replies: comment.replies || []
+                };
+                
+                // Calculate scores for replies
+                if (commentWithScore.replies) {
+                    commentWithScore.replies = commentWithScore.replies.map(reply => ({
+                        ...reply,
+                        score: calculateCommentScore(reply),
+                        likes: reply.likes || 0,
+                        dislikes: reply.dislikes || 0
+                    }));
+                    // Sort replies by score
+                    commentWithScore.replies.sort((a, b) => b.score - a.score);
+                }
+                
+                return commentWithScore;
+            });
+            
+            // Sort comments by score (pinned first, then by score)
+            comments.sort((a, b) => {
+                if (a.isPinned && !b.isPinned) return -1;
+                if (!a.isPinned && b.isPinned) return 1;
+                return b.score - a.score;
+            });
             
             // Track unique commenters for this paste
             const uniqueCommenters = new Set();
@@ -1923,38 +2259,178 @@
                 }
             });
             
+            // Generate comments HTML with new features
             let commentsHTML = '';
-            comments.sort((a, b) => {
-                if (a.isPinned && !b.isPinned) return -1;
-                if (!a.isPinned && b.isPinned) return 1;
-                return new Date(b.date) - new Date(a.date);
-            }).forEach((comment, index) => {
-                const isCommentOwner = currentUser && (currentUser.uid === comment.authorId);
-                const isAdmin = currentUser && currentUser.isAdmin;
+            comments.forEach((comment, displayIndex) => {
+                const commentId = `comment-${comment.commentIndex}`;
+                const isExpanded = expandedComments[`${pasteId}-${comment.commentIndex}`] || false;
+                const wordCount = comment.content.split(/\s+/).length;
+                const needsTruncation = wordCount > 200;
+                const showViewMore = needsTruncation && !isExpanded;
+                
+                // Calculate reply counts
+                const replyCount = comment.replies?.length || 0;
+                const showReplies = replyVisibility[`${pasteId}-${comment.commentIndex}`] || false;
+                
+                // Check if user has voted on this comment
+                const userVoteKey = `${currentUser?.uid || deviceId}-${pasteId}-${comment.commentIndex}`;
+                const userVote = userVotes[userVoteKey] || 'none';
+                
+                // Generate replies HTML
+                let repliesHTML = '';
+                if (comment.replies && comment.replies.length > 0) {
+                    comment.replies.forEach((reply, replyIndex) => {
+                        const replyWordCount = reply.content.split(/\s+/).length;
+                        const replyNeedsTruncation = replyWordCount > 200;
+                        const replyKey = `${pasteId}-${comment.commentIndex}-${replyIndex}`;
+                        const isReplyExpanded = expandedComments[replyKey] || false;
+                        
+                        // Check if user has voted on this reply
+                        const userReplyVoteKey = `${currentUser?.uid || deviceId}-${pasteId}-${comment.commentIndex}-${replyIndex}`;
+                        const userReplyVote = userVotes[userReplyVoteKey] || 'none';
+                        
+                        repliesHTML += `
+                            <div class="reply" id="reply-${comment.commentIndex}-${replyIndex}">
+                                <div class="reply-header">
+                                    <span class="reply-author">
+                                        <span class="comment-author-avatar">${(reply.author || 'A').charAt(0).toUpperCase()}</span>
+                                        ${escapeHtml(reply.author || 'Anonymous')}
+                                        ${reply.authorId === paste.userId ? '<span class="admin-badge" style="background: var(--primary);">OP</span>' : ''}
+                                        ${currentUser?.isAdmin ? `<span class="comment-score-badge">Score: ${Math.round(reply.score)}</span>` : ''}
+                                    </span>
+                                    <span>${new Date(reply.date || reply.createdAt || Date.now()).toLocaleString()}</span>
+                                </div>
+                                <div class="reply-content ${replyNeedsTruncation && !isReplyExpanded ? 'collapsed' : ''}">
+                                    ${escapeHtml(reply.content)}
+                                </div>
+                                ${replyNeedsTruncation ? `
+                                    <button class="view-more-btn" onclick="window.toggleCommentExpand('${replyKey}')">
+                                        ${isReplyExpanded ? 'Show Less' : 'View More'}
+                                    </button>
+                                ` : ''}
+                                <div class="reply-actions">
+                                    <button class="comment-action-btn ${userReplyVote === 'like' ? 'liked' : ''}" 
+                                            onclick="window.voteOnComment('${pasteId}', ${comment.commentIndex}, ${replyIndex}, 'like')">
+                                        <i class="fas fa-thumbs-up"></i> ${reply.likes || 0}
+                                    </button>
+                                    <button class="comment-action-btn ${userReplyVote === 'dislike' ? 'disliked' : ''}" 
+                                            onclick="window.voteOnComment('${pasteId}', ${comment.commentIndex}, ${replyIndex}, 'dislike')">
+                                        <i class="fas fa-thumbs-down"></i> ${reply.dislikes || 0}
+                                    </button>
+                                    ${currentUser ? `
+                                        <button class="comment-action-btn" onclick="window.showReplyForm('${pasteId}', ${comment.commentIndex}, ${replyIndex})">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </button>
+                                    ` : ''}
+                                    ${(currentUser && (currentUser.uid === reply.authorId || currentUser.isAdmin)) ? `
+                                        <button class="comment-action-btn" style="color: var(--danger);" 
+                                                onclick="window.deleteReply('${pasteId}', ${comment.commentIndex}, ${replyIndex})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                <!-- Nested reply form for this reply -->
+                                <div id="replyForm-${comment.commentIndex}-${replyIndex}" style="display: none;" class="reply-form">
+                                    <textarea id="replyContent-${comment.commentIndex}-${replyIndex}" placeholder="Write your reply... (max 200 words)" rows="2"></textarea>
+                                    <div class="word-count" id="wordCount-${comment.commentIndex}-${replyIndex}">0/200 words</div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button class="btn btn-primary btn-icon" onclick="window.submitReply('${pasteId}', ${comment.commentIndex}, ${replyIndex})">
+                                            <i class="fas fa-paper-plane"></i> Post
+                                        </button>
+                                        <button class="btn btn-logout btn-icon" onclick="window.hideReplyForm('${comment.commentIndex}-${replyIndex}')">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
                 
                 commentsHTML += `
-                    <div class="comment ${comment.isPinned ? 'pinned' : ''}" id="comment-${index}">
+                    <div class="comment ${comment.isPinned ? 'pinned' : ''}" id="comment-${comment.commentIndex}">
                         <div class="comment-header">
-                            <span class="comment-author">${escapeHtml(comment.author)} ${comment.isPinned ? '<span class="comment-pin-badge"><i class="fas fa-thumbtack"></i> PINNED</span>' : ''}</span>
-                            <span>${new Date(comment.date).toLocaleString()}</span>
+                            <span class="comment-author">
+                                <span class="comment-author-avatar">${(comment.author || 'A').charAt(0).toUpperCase()}</span>
+                                ${escapeHtml(comment.author || 'Anonymous')}
+                                ${comment.authorId === paste.userId ? '<span class="admin-badge" style="background: var(--primary);">OP</span>' : ''}
+                                ${comment.isPinned ? '<span class="comment-pin-badge"><i class="fas fa-thumbtack"></i> PINNED</span>' : ''}
+                                ${currentUser?.isAdmin ? `<span class="comment-score-badge">Score: ${Math.round(comment.score)}</span>` : ''}
+                            </span>
+                            <span>${new Date(comment.date || comment.createdAt || Date.now()).toLocaleString()}</span>
                         </div>
-                        <div class="comment-content">${escapeHtml(comment.content)}</div>
-                        ${(isAdmin) ? `
+                        <div class="comment-content ${needsTruncation && !isExpanded ? 'collapsed' : ''}">
+                            ${escapeHtml(comment.content)}
+                        </div>
+                        ${showViewMore ? `
+                            <button class="view-more-btn" onclick="window.toggleCommentExpand('${pasteId}-${comment.commentIndex}')">
+                                View More
+                            </button>
+                        ` : needsTruncation && isExpanded ? `
+                            <button class="view-more-btn" onclick="window.toggleCommentExpand('${pasteId}-${comment.commentIndex}')">
+                                Show Less
+                            </button>
+                        ` : ''}
+                        
+                        <div class="comment-stats">
+                            <span><i class="fas fa-thumbs-up"></i> ${comment.likes || 0}</span>
+                            <span><i class="fas fa-thumbs-down"></i> ${comment.dislikes || 0}</span>
+                            <span><i class="fas fa-reply"></i> ${replyCount} replies</span>
+                        </div>
+                        
                         <div class="comment-actions">
-                            <button class="btn btn-warning btn-icon" onclick="window.togglePinComment('${pasteId}', ${index}, ${!comment.isPinned})">
-                                <i class="fas fa-thumbtack"></i> ${comment.isPinned ? 'Unpin' : 'Pin'}
+                            <button class="comment-action-btn ${userVote === 'like' ? 'liked' : ''}" 
+                                    onclick="window.voteOnComment('${pasteId}', ${comment.commentIndex}, null, 'like')">
+                                <i class="fas fa-thumbs-up"></i> Like
                             </button>
-                            <button class="btn btn-danger btn-icon" onclick="window.deleteComment('${pasteId}', ${index})">
-                                <i class="fas fa-trash"></i>
+                            <button class="comment-action-btn ${userVote === 'dislike' ? 'disliked' : ''}" 
+                                    onclick="window.voteOnComment('${pasteId}', ${comment.commentIndex}, null, 'dislike')">
+                                <i class="fas fa-thumbs-down"></i> Dislike
                             </button>
+                            ${currentUser ? `
+                                <button class="comment-action-btn" onclick="window.showReplyForm('${pasteId}', ${comment.commentIndex})">
+                                    <i class="fas fa-reply"></i> Reply
+                                </button>
+                            ` : ''}
+                            ${(currentUser && currentUser.isAdmin) ? `
+                                <button class="comment-action-btn btn-warning" 
+                                        onclick="window.togglePinComment('${pasteId}', ${comment.commentIndex}, ${!comment.isPinned})">
+                                    <i class="fas fa-thumbtack"></i> ${comment.isPinned ? 'Unpin' : 'Pin'}
+                                </button>
+                            ` : ''}
+                            ${(currentUser && (currentUser.uid === comment.authorId || currentUser.isAdmin)) ? `
+                                <button class="comment-action-btn" style="color: var(--danger);" 
+                                        onclick="window.deleteComment('${pasteId}', ${comment.commentIndex})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            ` : ''}
                         </div>
-                        ` : (isCommentOwner ? `
-                        <div class="comment-actions">
-                            <button class="btn btn-danger btn-icon" onclick="window.deleteComment('${pasteId}', ${index})">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                        
+                        <!-- Reply form for this comment -->
+                        <div id="replyForm-${comment.commentIndex}" style="display: none;" class="reply-form">
+                            <textarea id="replyContent-${comment.commentIndex}" placeholder="Write your reply... (max 200 words)" rows="2" onkeyup="window.updateWordCount(this, 'wordCount-${comment.commentIndex}')"></textarea>
+                            <div class="word-count" id="wordCount-${comment.commentIndex}">0/200 words</div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary btn-icon" onclick="window.submitReply('${pasteId}', ${comment.commentIndex})">
+                                    <i class="fas fa-paper-plane"></i> Post
+                                </button>
+                                <button class="btn btn-logout btn-icon" onclick="window.hideReplyForm('${comment.commentIndex}')">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
-                        ` : '')}
+                        
+                        <!-- View replies button -->
+                        ${replyCount > 0 ? `
+                            <button class="view-replies-btn" onclick="window.toggleReplies('${pasteId}-${comment.commentIndex}')">
+                                <i class="fas fa-${showReplies ? 'chevron-up' : 'chevron-down'}"></i> 
+                                ${showReplies ? 'Hide' : 'View'} ${replyCount} ${replyCount === 1 ? 'Reply' : 'Replies'}
+                            </button>
+                            
+                            <div id="replies-${comment.commentIndex}" class="replies-container ${showReplies ? '' : 'hidden'}">
+                                ${repliesHTML}
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             });
@@ -2066,7 +2542,8 @@
                         
                         ${currentUser ? `
                         <div class="comment-form">
-                            <textarea id="commentContent" placeholder="Add a comment..." rows="3"></textarea>
+                            <textarea id="commentContent" placeholder="Add a comment... (max 200 words)" rows="3" onkeyup="window.updateWordCount(this, 'commentWordCount')"></textarea>
+                            <div class="word-count" id="commentWordCount">0/200 words</div>
                             <button class="btn btn-primary" onclick="window.addComment('${pasteId}')">
                                 <i class="fas fa-paper-plane"></i> Post Comment
                             </button>
@@ -2097,6 +2574,247 @@
                 startBoostTimer(pasteId, videoWatchedAt);
             }
         }
+
+        // ============ UPDATE WORD COUNT ============
+        window.updateWordCount = function(textarea, countId) {
+            const text = textarea.value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const countEl = document.getElementById(countId);
+            if (countEl) {
+                countEl.textContent = `${words}/200 words`;
+                if (words > 200) {
+                    countEl.classList.add('exceeded');
+                } else {
+                    countEl.classList.remove('exceeded');
+                }
+            }
+        };
+
+        // ============ TOGGLE COMMENT EXPAND ============
+        window.toggleCommentExpand = function(key) {
+            expandedComments[key] = !expandedComments[key];
+            localStorage.setItem('vertexpaste_expanded', JSON.stringify(expandedComments));
+            if (currentPasteId) {
+                viewPasteById(currentPasteId);
+            }
+        };
+
+        // ============ TOGGLE REPLIES ============
+        window.toggleReplies = function(key) {
+            replyVisibility[key] = !replyVisibility[key];
+            localStorage.setItem('vertexpaste_replies', JSON.stringify(replyVisibility));
+            if (currentPasteId) {
+                viewPasteById(currentPasteId);
+            }
+        };
+
+        // ============ SHOW REPLY FORM ============
+        window.showReplyForm = function(pasteId, commentIndex, replyIndex = null) {
+            const formId = replyIndex !== null ? `replyForm-${commentIndex}-${replyIndex}` : `replyForm-${commentIndex}`;
+            const form = document.getElementById(formId);
+            if (form) {
+                form.style.display = 'block';
+            }
+        };
+
+        // ============ HIDE REPLY FORM ============
+        window.hideReplyForm = function(formSuffix) {
+            const form = document.getElementById(`replyForm-${formSuffix}`);
+            if (form) {
+                form.style.display = 'none';
+                const textarea = form.querySelector('textarea');
+                if (textarea) textarea.value = '';
+            }
+        };
+
+        // ============ SUBMIT REPLY ============
+        window.submitReply = async function(pasteId, commentIndex, replyIndex = null) {
+            if (!currentUser) {
+                showNotification('Please login to reply', true);
+                return;
+            }
+            
+            const formId = replyIndex !== null ? `replyForm-${commentIndex}-${replyIndex}` : `replyForm-${commentIndex}`;
+            const contentId = replyIndex !== null ? `replyContent-${commentIndex}-${replyIndex}` : `replyContent-${commentIndex}`;
+            const content = document.getElementById(contentId)?.value;
+            
+            if (!content || content.trim() === '') {
+                showNotification('Please enter a reply', true);
+                return;
+            }
+            
+            // Check word count
+            const words = content.trim().split(/\s+/).length;
+            if (words > 200) {
+                showNotification('Reply exceeds 200 word limit', true);
+                return;
+            }
+            
+            // Check for swear words
+            if (containsSwearWords(content)) {
+                showNotification('Reply contains inappropriate language', true);
+                return;
+            }
+            
+            try {
+                const docRef = doc(db, 'pastes', pasteId);
+                const docSnap = await getDoc(docRef);
+                const paste = docSnap.data();
+                const comments = [...(paste.comments || [])];
+                
+                const reply = {
+                    author: currentUser.displayName || currentUser.email,
+                    authorId: currentUser.uid,
+                    content: content,
+                    date: new Date().toISOString(),
+                    likes: 0,
+                    dislikes: 0
+                };
+                
+                if (replyIndex !== null) {
+                    // Replying to a reply
+                    if (!comments[commentIndex].replies) {
+                        comments[commentIndex].replies = [];
+                    }
+                    comments[commentIndex].replies.push(reply);
+                } else {
+                    // Replying to a comment
+                    if (!comments[commentIndex].replies) {
+                        comments[commentIndex].replies = [];
+                    }
+                    comments[commentIndex].replies.push(reply);
+                }
+                
+                await updateDoc(docRef, { comments });
+                
+                showNotification('Reply posted!');
+                window.hideReplyForm(replyIndex !== null ? `${commentIndex}-${replyIndex}` : `${commentIndex}`);
+                
+                // Reload the paste view
+                await viewPasteById(pasteId);
+                
+            } catch (error) {
+                console.error('Error posting reply:', error);
+                showNotification('Error posting reply', true);
+            }
+        };
+
+        // ============ VOTE ON COMMENT/REPLY ============
+        window.voteOnComment = async function(pasteId, commentIndex, replyIndex, voteType) {
+            if (!currentUser) {
+                showNotification('Please login to vote', true);
+                return;
+            }
+            
+            const userVoteKey = replyIndex !== null 
+                ? `${currentUser.uid}-${pasteId}-${commentIndex}-${replyIndex}`
+                : `${currentUser.uid}-${pasteId}-${commentIndex}`;
+            
+            const previousVote = userVotes[userVoteKey] || 'none';
+            
+            try {
+                const docRef = doc(db, 'pastes', pasteId);
+                const docSnap = await getDoc(docRef);
+                const paste = docSnap.data();
+                const comments = [...(paste.comments || [])];
+                
+                if (replyIndex !== null) {
+                    // Voting on a reply
+                    const reply = comments[commentIndex].replies[replyIndex];
+                    
+                    // Remove previous vote if exists
+                    if (previousVote === 'like') {
+                        reply.likes = (reply.likes || 1) - 1;
+                    } else if (previousVote === 'dislike') {
+                        reply.dislikes = (reply.dislikes || 1) - 1;
+                    }
+                    
+                    // Add new vote
+                    if (voteType === 'like') {
+                        reply.likes = (reply.likes || 0) + 1;
+                    } else if (voteType === 'dislike') {
+                        reply.dislikes = (reply.dislikes || 0) + 1;
+                    }
+                    
+                    // If clicking the same vote type, toggle off
+                    if (previousVote === voteType) {
+                        if (voteType === 'like') {
+                            reply.likes = (reply.likes || 1) - 1;
+                        } else if (voteType === 'dislike') {
+                            reply.dislikes = (reply.dislikes || 1) - 1;
+                        }
+                        delete userVotes[userVoteKey];
+                    } else {
+                        userVotes[userVoteKey] = voteType;
+                    }
+                    
+                } else {
+                    // Voting on a comment
+                    const comment = comments[commentIndex];
+                    
+                    // Remove previous vote if exists
+                    if (previousVote === 'like') {
+                        comment.likes = (comment.likes || 1) - 1;
+                    } else if (previousVote === 'dislike') {
+                        comment.dislikes = (comment.dislikes || 1) - 1;
+                    }
+                    
+                    // Add new vote
+                    if (voteType === 'like') {
+                        comment.likes = (comment.likes || 0) + 1;
+                    } else if (voteType === 'dislike') {
+                        comment.dislikes = (comment.dislikes || 0) + 1;
+                    }
+                    
+                    // If clicking the same vote type, toggle off
+                    if (previousVote === voteType) {
+                        if (voteType === 'like') {
+                            comment.likes = (comment.likes || 1) - 1;
+                        } else if (voteType === 'dislike') {
+                            comment.dislikes = (comment.dislikes || 1) - 1;
+                        }
+                        delete userVotes[userVoteKey];
+                    } else {
+                        userVotes[userVoteKey] = voteType;
+                    }
+                }
+                
+                await updateDoc(docRef, { comments });
+                localStorage.setItem('vertexpaste_votes', JSON.stringify(userVotes));
+                
+                // Reload the paste view
+                await viewPasteById(pasteId);
+                
+            } catch (error) {
+                console.error('Error voting:', error);
+                showNotification('Error submitting vote', true);
+            }
+        };
+
+        // ============ DELETE REPLY ============
+        window.deleteReply = async function(pasteId, commentIndex, replyIndex) {
+            if (!confirm('Are you sure you want to delete this reply?')) {
+                return;
+            }
+            
+            try {
+                const docRef = doc(db, 'pastes', pasteId);
+                const docSnap = await getDoc(docRef);
+                const paste = docSnap.data();
+                const comments = [...(paste.comments || [])];
+                
+                comments[commentIndex].replies.splice(replyIndex, 1);
+                
+                await updateDoc(docRef, { comments });
+                
+                showNotification('Reply deleted');
+                await viewPasteById(pasteId);
+                
+            } catch (error) {
+                console.error('Error deleting reply:', error);
+                showNotification('Error deleting reply', true);
+            }
+        };
 
         // ============ INITIALIZE VIDEO TRACKING ============
         function initVideoTracking(pasteId) {
@@ -2375,38 +3093,38 @@
                 return;
             }
             
+            // Check word count
+            const words = content.trim().split(/\s+/).length;
+            if (words > 200) {
+                showNotification('Comment exceeds 200 word limit', true);
+                return;
+            }
+            
+            // Check for swear words
+            if (containsSwearWords(content)) {
+                showNotification('Comment contains inappropriate language', true);
+                return;
+            }
+            
             try {
                 const docRef = doc(db, 'pastes', pasteId);
                 const docSnap = await getDoc(docRef);
                 const paste = docSnap.data();
-                
-                // Check if this user has already commented on this paste
-                const existingComments = paste.comments || [];
-                const hasCommented = existingComments.some(c => c.authorId === currentUser.uid);
                 
                 const comment = {
                     author: currentUser.displayName || currentUser.email,
                     authorId: currentUser.uid,
                     content: content,
                     date: new Date().toISOString(),
-                    isPinned: false
+                    isPinned: false,
+                    likes: 0,
+                    dislikes: 0,
+                    replies: []
                 };
                 
                 await updateDoc(docRef, {
                     comments: arrayUnion(comment)
                 });
-                
-                // Track commenter for unique count (SEO only counts once per user)
-                if (!hasCommented) {
-                    // Update paste commenters tracking
-                    if (!pasteCommenters[pasteId]) {
-                        pasteCommenters[pasteId] = [];
-                    }
-                    if (!pasteCommenters[pasteId].includes(currentUser.uid)) {
-                        pasteCommenters[pasteId].push(currentUser.uid);
-                        localStorage.setItem('vertexpaste_commenters', JSON.stringify(pasteCommenters));
-                    }
-                }
                 
                 showNotification('Comment added!');
                 document.getElementById('commentContent').value = '';
@@ -2454,6 +3172,15 @@
                 const docSnap = await getDoc(docRef);
                 const paste = docSnap.data();
                 const comments = [...paste.comments];
+                
+                // Unpin any other pinned comments first
+                if (pin) {
+                    comments.forEach((c, i) => {
+                        if (i !== commentIndex) {
+                            c.isPinned = false;
+                        }
+                    });
+                }
                 
                 comments[commentIndex] = {
                     ...comments[commentIndex],
