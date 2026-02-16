@@ -371,7 +371,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: auto;
+            pointer-events: none; /* Disable iframe interactions */
         }
 
         .video-overlay {
@@ -385,7 +385,17 @@
             align-items: center;
             justify-content: center;
             z-index: 10;
-            pointer-events: none;
+            cursor: pointer;
+        }
+
+        .invisible-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 15;
+            cursor: pointer;
         }
 
         .video-overlay.active {
@@ -426,6 +436,20 @@
         .boost-active {
             border: 2px solid var(--success);
             animation: pulse 2s infinite;
+        }
+
+        /* Hide boost badges from non-admins */
+        .paste-card .badge-boosted:not(.admin-only),
+        .paste-header .badge-boosted:not(.admin-only) {
+            display: none;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        body.admin-user .admin-only {
+            display: inline-block;
         }
 
         /* Auth Forms */
@@ -848,14 +872,6 @@
         }
 
         /* SEO elements - hidden from normal users */
-        .admin-only {
-            display: none;
-        }
-
-        body.admin-user .admin-only {
-            display: inline-block;
-        }
-
         .seo-score, .algorithm-score, .admin-stats, .stat-card .admin-info {
             display: none;
         }
@@ -1391,6 +1407,7 @@
         let videoWatchState = {};
         let videoCheckInterval = null;
         let currentBoostPasteId = null;
+        let youtubePlayer = null;
         
         // Commenters per paste tracking (for unique comment SEO)
         let pasteCommenters = {};
@@ -1517,6 +1534,14 @@
             // Check URL hash on load
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
+            
+            // Handle browser back/forward for raw mode
+            window.addEventListener('popstate', function(event) {
+                if (!window.location.pathname.includes('/raw/')) {
+                    document.body.classList.remove('raw-mode');
+                }
+                handleRouting();
+            });
         }
 
         // ============ LOAD ALL PASTES ============
@@ -1595,7 +1620,7 @@
                     score *= 2;
                 }
                 
-                // Boosted boost (if not expired)
+                // Boosted boost (if not expired) - only visible to admins
                 if (paste.boosted && paste.boostExpires) {
                     const boostExpires = new Date(paste.boostExpires);
                     if (boostExpires > now) {
@@ -1614,7 +1639,7 @@
                     algorithmScore: Math.round(score * 100) / 100,
                     seoScore: Math.round(score * 100) / 100, // SEO score is same as algorithm score now
                     isTrending,
-                    isBoosted: paste.boosted && paste.boostExpires && new Date(paste.boostExpires) > now,
+                    isBoosted: paste.boosted && paste.boostExpires && new Date(paste.boostExpires) > new Date(),
                     uniqueCommenters: uniqueCommentersCount
                 };
             });
@@ -1689,9 +1714,9 @@
                 return;
             }
             
-            if (hash === '#dashboard' || hash === '#my-pastes') {
+            if (hash === '#dashboard' || hash === '#my-pastes' || hash === '#unlisted') {
                 if (currentUser) {
-                    renderDashboard(hash === '#my-pastes' ? 'mine' : 'all');
+                    renderDashboard(hash === '#my-pastes' ? 'mine' : hash === '#unlisted' ? 'unlisted' : 'all');
                 } else {
                     showAuth();
                 }
@@ -2199,13 +2224,13 @@
                             <h1>${escapeHtml(paste.title || 'Untitled')} 
                                 ${paste.isPinned ? '<span class="badge-pinned"><i class="fas fa-thumbtack"></i> PINNED</span>' : ''}
                                 ${paste.isTrending ? '<span class="trending-badge"><i class="fas fa-fire"></i> TRENDING</span>' : ''}
-                                ${isBoosted ? '<span class="badge-boosted"><i class="fas fa-rocket"></i> BOOSTED</span>' : ''}
+                                ${currentUser?.isAdmin && isBoosted ? '<span class="badge-boosted admin-only"><i class="fas fa-rocket"></i> BOOSTED</span>' : ''}
                             </h1>
                             <div class="paste-meta">
                                 <span><i class="fas fa-user"></i> ${escapeHtml(paste.authorName || 'Anonymous')}</span>
                                 <span><i class="fas fa-calendar"></i> ${date}</span>
                                 <span><i class="fas fa-hashtag"></i> ${paste.pasteId}</span>
-                                <span><i class="fas fa-${paste.visibility === 'private' ? 'lock' : 'globe'}"></i> ${paste.visibility}</span>
+                                <span><i class="fas fa-${paste.visibility === 'private' ? 'lock' : paste.visibility === 'unlisted' ? 'link' : 'globe'}"></i> ${paste.visibility}</span>
                                 <span><i class="fas fa-eye"></i> ${paste.views?.total || 0}</span>
                                 ${adminSEOInfo}
                             </div>
@@ -2248,13 +2273,14 @@
                             <div class="video-container" id="videoContainer">
                                 <iframe 
                                     id="youtubeVideo"
-                                    src="https://www.youtube.com/embed/QGMVv25zvy4?enablejsapi=1&controls=1&rel=0&modestbranding=1"
+                                    src="https://www.youtube.com/embed/QGMVv25zvy4?enablejsapi=1&controls=0&rel=0&modestbranding=1&showinfo=0&autoplay=0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowfullscreen>
                                 </iframe>
                                 <div class="video-overlay" id="videoOverlay">
                                     <i class="fas fa-play-circle" style="font-size: 64px; color: white;"></i>
                                 </div>
+                                <div class="invisible-frame" id="invisibleFrame"></div>
                             </div>
                             
                             <div class="video-progress">
@@ -2262,7 +2288,7 @@
                             </div>
                             
                             <div id="videoStatus" style="text-align: center; margin: 10px 0;">
-                                Watch the full video to boost your paste
+                                Click to start watching the video
                             </div>
                         ` : !boostExpired ? `
                             <div class="boost-status">
@@ -2317,7 +2343,7 @@
             hljs.highlightAll();
             
             // Initialize video tracking if user can boost
-            if (canBoost && !hasVideoWatched && !boostExpired) {
+            if (canBoost && (!hasVideoWatched || boostExpired)) {
                 initVideoTracking(pasteId);
             } else if (canBoost && !boostExpired && hasVideoWatched) {
                 // Start boost timer display
@@ -2497,6 +2523,7 @@
             const videoContainer = document.getElementById('videoContainer');
             const iframe = document.getElementById('youtubeVideo');
             const overlay = document.getElementById('videoOverlay');
+            const invisibleFrame = document.getElementById('invisibleFrame');
             const progressBar = document.getElementById('videoProgress');
             const statusDiv = document.getElementById('videoStatus');
             
@@ -2515,6 +2542,9 @@
                 if (document.hidden && videoStarted) {
                     visibilityDetected = true;
                     showNotification('Please keep the tab visible while watching the video!', true);
+                    if (youtubePlayer && youtubePlayer.pauseVideo) {
+                        youtubePlayer.pauseVideo();
+                    }
                 }
             });
             
@@ -2523,11 +2553,14 @@
                 if (videoStarted) {
                     visibilityDetected = true;
                     showNotification('Please stay on this tab to watch the video!', true);
+                    if (youtubePlayer && youtubePlayer.pauseVideo) {
+                        youtubePlayer.pauseVideo();
+                    }
                 }
             });
             
-            // Disable right-click on video
-            iframe.addEventListener('contextmenu', (e) => {
+            // Disable right-click on video container
+            videoContainer.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 return false;
             });
@@ -2541,7 +2574,7 @@
             }
             
             window.onYouTubeIframeAPIReady = function() {
-                const player = new YT.Player('youtubeVideo', {
+                youtubePlayer = new YT.Player('youtubeVideo', {
                     events: {
                         'onReady': onPlayerReady,
                         'onStateChange': onPlayerStateChange,
@@ -2553,6 +2586,11 @@
             function onPlayerReady(event) {
                 videoDuration = event.target.getDuration();
                 console.log('Video ready, duration:', videoDuration);
+                
+                // Hide YouTube controls
+                try {
+                    event.target.setOption('controls', 0);
+                } catch (e) {}
             }
             
             function onPlayerStateChange(event) {
@@ -2560,6 +2598,11 @@
                 if (event.data === YT.PlayerState.PLAYING) {
                     videoStarted = true;
                     overlay.style.display = 'none';
+                    
+                    // Force fullscreen
+                    if (videoContainer.requestFullscreen) {
+                        videoContainer.requestFullscreen();
+                    }
                     
                     // Start monitoring
                     if (!checkInterval) {
@@ -2588,9 +2631,11 @@
                         }, 1000);
                     }
                 } else if (event.data === YT.PlayerState.PAUSED) {
-                    // Disallow pausing
-                    event.target.playVideo();
-                    showNotification('Please do not pause the video', true);
+                    // Disallow pausing - force play
+                    setTimeout(() => {
+                        event.target.playVideo();
+                    }, 100);
+                    showNotification('Video cannot be paused', true);
                 }
             }
             
@@ -2599,10 +2644,17 @@
                 showNotification('Error playing video. Please refresh and try again.', true);
             }
             
-            // Handle overlay click
+            // Handle invisible frame click
+            invisibleFrame.addEventListener('click', () => {
+                if (youtubePlayer && youtubePlayer.playVideo) {
+                    youtubePlayer.playVideo();
+                }
+            });
+            
+            // Also handle overlay click
             overlay.addEventListener('click', () => {
-                if (window.player && typeof window.player.playVideo === 'function') {
-                    window.player.playVideo();
+                if (youtubePlayer && youtubePlayer.playVideo) {
+                    youtubePlayer.playVideo();
                 }
             });
         }
@@ -2705,6 +2757,26 @@
                 // Set raw mode style
                 document.body.className = 'raw-mode';
                 document.body.innerHTML = `<pre>${escapeHtml(paste.content)}</pre>`;
+                
+                // Add a back button
+                const backButton = document.createElement('button');
+                backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back';
+                backButton.style.position = 'fixed';
+                backButton.style.top = '20px';
+                backButton.style.left = '20px';
+                backButton.style.zIndex = '1000';
+                backButton.style.padding = '10px 20px';
+                backButton.style.background = '#6366f1';
+                backButton.style.color = 'white';
+                backButton.style.border = 'none';
+                backButton.style.borderRadius = '8px';
+                backButton.style.cursor = 'pointer';
+                backButton.style.fontWeight = '600';
+                backButton.onclick = function() {
+                    window.location.hash = `#paste-${pasteId}`;
+                    window.location.reload();
+                };
+                document.body.appendChild(backButton);
                 
             } catch (error) {
                 console.error('Error loading raw paste:', error);
@@ -3276,19 +3348,27 @@
             
             const container = document.getElementById('mainContent');
             
-            // Filter pastes (only public and unlisted show in community, private don't show)
-            let filteredPastes = allPastes.filter(p => p.visibility !== 'private');
+            // Filter pastes based on visibility and filter type
+            let filteredPastes = [];
             
-            if (filter === 'mine' && currentUser) {
+            if (filter === 'all') {
+                // Community tab - only show public pastes
+                filteredPastes = allPastes.filter(p => p.visibility === 'public');
+            } else if (filter === 'mine' && currentUser) {
+                // My pastes - show all user's pastes regardless of visibility
                 filteredPastes = allPastes.filter(p => p.userId === currentUser.uid);
+            } else if (filter === 'unlisted' && currentUser) {
+                // Unlisted tab - show user's unlisted pastes only
+                filteredPastes = allPastes.filter(p => p.userId === currentUser.uid && p.visibility === 'unlisted');
             }
             
-            // Get recent pastes for sidebar (last 10)
-            const recentPastes = allPastes.slice(0, 10);
+            // Get recent pastes for sidebar (last 10 public pastes)
+            const recentPastes = allPastes.filter(p => p.visibility === 'public').slice(0, 10);
             
-            // Calculate stats (hide detailed stats from normal users)
+            // Calculate stats
             const totalPastes = allPastes.length;
             const myPastes = currentUser ? allPastes.filter(p => p.userId === currentUser.uid).length : 0;
+            const myUnlisted = currentUser ? allPastes.filter(p => p.userId === currentUser.uid && p.visibility === 'unlisted').length : 0;
             
             let pastesHTML = '';
             
@@ -3311,7 +3391,7 @@
                         <div class="paste-card-header">
                             <div class="paste-card-title">${escapeHtml(paste.title || 'Untitled')} 
                                 ${paste.isPinned ? '<span class="badge-pinned"><i class="fas fa-thumbtack"></i></span>' : ''}
-                                ${isBoosted ? '<span class="badge-boosted"><i class="fas fa-rocket"></i> BOOSTED</span>' : ''}
+                                ${currentUser?.isAdmin && isBoosted ? '<span class="badge-boosted admin-only"><i class="fas fa-rocket"></i> BOOSTED</span>' : ''}
                                 ${paste.isTrending ? '<span class="trending-badge"><i class="fas fa-fire"></i> TRENDING</span>' : ''}
                             </div>
                             <span class="paste-card-id">${paste.pasteId}</span>
@@ -3383,6 +3463,9 @@
                             <button class="dashboard-tab ${filter === 'mine' ? 'active' : ''}" onclick="window.renderDashboard('mine')">
                                 <i class="fas fa-user"></i> My Pastes
                             </button>
+                            <button class="dashboard-tab ${filter === 'unlisted' ? 'active' : ''}" onclick="window.renderDashboard('unlisted')">
+                                <i class="fas fa-link"></i> Unlisted
+                            </button>
                             ` : ''}
                         </div>
                     </div>
@@ -3396,6 +3479,10 @@
                         <div class="stat-card">
                             <h3>${myPastes}</h3>
                             <div class="stat-label">My Pastes</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>${myUnlisted}</h3>
+                            <div class="stat-label">Unlisted</div>
                         </div>
                         ` : ''}
                     </div>
@@ -3434,14 +3521,14 @@
                         </div>
                         
                         <div class="new-pastes-sidebar">
-                            <h3><i class="fas fa-clock"></i> New Pastes</h3>
+                            <h3><i class="fas fa-clock"></i> New Public Pastes</h3>
                             ${sidebarHTML || '<p style="color: var(--text-dim);">No recent pastes</p>'}
                         </div>
                     </div>
                     
                     <div class="pastes-list">
-                        <h2><i class="fas fa-${filter === 'mine' ? 'user' : 'globe'}"></i> 
-                            ${filter === 'mine' ? 'My Pastes' : 'Community Pastes'}
+                        <h2><i class="fas fa-${filter === 'mine' ? 'user' : filter === 'unlisted' ? 'link' : 'globe'}"></i> 
+                            ${filter === 'mine' ? 'My Pastes' : filter === 'unlisted' ? 'My Unlisted Pastes' : 'Community Pastes'}
                             ${filter === 'all' ? '<span style="font-size: 14px; color: var(--text-dim); margin-left: 10px;">(Sorted by popularity)</span>' : ''}
                         </h2>
                         
@@ -3612,4 +3699,4 @@
         init();
     </script>
 </body>
-            </html>
+    </html>
