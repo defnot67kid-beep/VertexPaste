@@ -1044,7 +1044,7 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, deleteDoc, increment, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // Firebase configuration with API key and secret
+        // Firebase configuration (safe to expose)
         const firebaseConfig = {
             apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
             authDomain: "vertexpaste.firebaseapp.com",
@@ -1060,15 +1060,12 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // API Secret for additional Firebase services (use with caution - client-side exposure is not recommended)
-        const FIREBASE_API_SECRET = "4YroGoXPGaiaiLQb0yPsRsxqSgM";
-
-        // Cloudinary configuration (using demo account)
+        // Cloudinary configuration with API credentials
         const CLOUDINARY_CONFIG = {
-            cloudName: 'demo', // Using demo cloud for testing
+            cloudName: 'demo', // Using demo cloud - replace with your cloud name
             uploadPreset: 'ml_default', // Default unsigned preset
-            apiKey: '725361572671118', // Cloudinary API key
-            apiSecret: '4YroGoXPGaiaiLQb0yPsRsxqSgM' // Cloudinary API secret
+            apiKey: '725361572671118',
+            apiSecret: '4YroGoXPGaiaiLQb0yPsRsxqSgM' // WARNING: API secret exposed in client-side code
         };
 
         // ============ APP STATE ============
@@ -1370,7 +1367,7 @@
             }
             
             try {
-                // Simulate progress (Cloudinary doesn't provide progress events in basic API)
+                // Simulate progress
                 let progress = 0;
                 const interval = setInterval(() => {
                     progress += 10;
@@ -1684,7 +1681,7 @@
                 }
                 
                 const portfolio = {
-                    uid: doc.id,
+                    uid: userDoc.id,
                     ...userDoc.data()
                 };
                 
