@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PortfolioHub Pro - Create Your Digital Identity</title>
+    <title>PortfolioHub Pro - Privacy Controls & Dashboard</title>
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
         * {
             margin: 0;
@@ -26,6 +24,7 @@
             --success: #10b981;
             --danger: #ef4444;
             --info: #3b82f6;
+            --warning: #f97316;
             --dark: #0f0f1e;
             --darker: #0a0a14;
             --dark-card: #1a1a2e;
@@ -42,7 +41,7 @@
             --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
             --gradient-success: linear-gradient(135deg, #10b981, #34d399);
             --gradient-danger: linear-gradient(135deg, #ef4444, #f87171);
-            --gradient-dark: linear-gradient(135deg, #1a1a2e, #16213e);
+            --gradient-warning: linear-gradient(135deg, #f59e0b, #fbbf24);
             --glass-effect: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --blur: blur(10px);
@@ -174,6 +173,7 @@
             color: white;
             font-weight: bold;
             font-size: 1.1rem;
+            object-fit: cover;
         }
 
         /* Buttons */
@@ -232,9 +232,43 @@
             color: white;
         }
 
+        .btn-warning {
+            background: var(--gradient-warning);
+            color: white;
+        }
+
         .btn-icon {
             padding: 12px;
             border-radius: 12px;
+        }
+
+        /* Privacy Badges */
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .privacy-public {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .privacy-private {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .privacy-unlisted {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         /* Auth Container */
@@ -274,23 +308,99 @@
             color: white;
         }
 
+        /* Dashboard */
+        .dashboard {
+            animation: fadeIn 0.6s ease;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .dashboard-tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--darker);
+            padding: 5px;
+            border-radius: 50px;
+        }
+
+        .dashboard-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-tab.active {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .dashboard-tab:hover:not(.active) {
+            color: var(--primary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: var(--blur);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 1rem;
+        }
+
         /* Create Portfolio Form */
         .create-portfolio {
-            background: rgba(26, 26, 46, 0.9);
+            background: rgba(26, 26, 46, 0.95);
             backdrop-filter: var(--blur);
             border-radius: 24px;
             padding: 40px;
             border: 1px solid var(--glass-border);
             margin-bottom: 30px;
             animation: fadeIn 0.6s ease;
-        }
-
-        .create-portfolio h2 {
-            font-size: 2rem;
-            margin-bottom: 30px;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .form-grid {
@@ -308,7 +418,6 @@
             margin-bottom: 8px;
             color: var(--text-dim);
             font-weight: 500;
-            font-size: 0.95rem;
         }
 
         .form-group input,
@@ -333,6 +442,43 @@
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
         }
 
+        /* Privacy Selector */
+        .privacy-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .privacy-option {
+            flex: 1;
+            padding: 15px;
+            background: var(--darker);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .privacy-option:hover {
+            border-color: var(--primary);
+        }
+
+        .privacy-option.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .privacy-option i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .privacy-option.public i { color: #10b981; }
+        .privacy-option.private i { color: #ef4444; }
+        .privacy-option.unlisted i { color: #f59e0b; }
+
         /* Image Upload */
         .image-upload-area {
             border: 3px dashed var(--border);
@@ -349,12 +495,6 @@
             background: rgba(99, 102, 241, 0.1);
         }
 
-        .image-upload-area i {
-            font-size: 48px;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
         .image-preview {
             width: 150px;
             height: 150px;
@@ -366,6 +506,20 @@
         }
 
         .image-preview.show {
+            display: block;
+        }
+
+        .cover-preview {
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            margin: 20px 0;
+            display: none;
+        }
+
+        .cover-preview.show {
             display: block;
         }
 
@@ -381,7 +535,7 @@
             gap: 10px;
             align-items: center;
             background: var(--darker);
-            padding: 10px;
+            padding: 15px;
             border-radius: 12px;
             border: 1px solid var(--border);
             transition: all 0.3s ease;
@@ -392,7 +546,7 @@
         }
 
         .link-input-group select {
-            width: 120px;
+            width: 140px;
             padding: 10px;
             background: var(--dark-card);
             border: 1px solid var(--border);
@@ -413,8 +567,8 @@
             background: var(--danger);
             color: white;
             border: none;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -423,23 +577,6 @@
         .remove-link:hover {
             background: #dc2626;
             transform: scale(1.1);
-        }
-
-        .add-link-btn {
-            background: var(--dark-card);
-            border: 2px dashed var(--border);
-            padding: 15px;
-            border-radius: 12px;
-            color: var(--text-dim);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .add-link-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
         }
 
         /* Portfolio Grid */
@@ -452,7 +589,7 @@
 
         /* Portfolio Card */
         .portfolio-card {
-            background: rgba(26, 26, 46, 0.9);
+            background: rgba(26, 26, 46, 0.95);
             backdrop-filter: var(--blur);
             border-radius: 20px;
             border: 1px solid var(--glass-border);
@@ -463,110 +600,104 @@
         }
 
         .portfolio-card:hover {
-            transform: translateY(-10px) scale(1.02);
+            transform: translateY(-10px);
             border-color: var(--primary);
-            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            box-shadow: var(--shadow-lg);
         }
 
-        .portfolio-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 20px;
-            padding: 2px;
-            background: var(--gradient-primary);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .portfolio-card:hover::before {
-            opacity: 1;
+        .portfolio-card.private {
+            opacity: 0.8;
+            filter: grayscale(0.3);
         }
 
         .portfolio-header {
-            padding: 30px;
+            padding: 25px;
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             position: relative;
-            text-align: center;
+        }
+
+        .privacy-badge-card {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: var(--blur);
         }
 
         .portfolio-avatar {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 4px solid white;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
+            display: block;
             object-fit: cover;
-            background: white;
         }
 
         .portfolio-name {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 8px;
+            text-align: center;
+            margin-bottom: 5px;
         }
 
         .portfolio-username {
             color: rgba(255,255,255,0.9);
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 0.9rem;
+            text-align: center;
         }
 
         .portfolio-body {
-            padding: 25px;
+            padding: 20px;
         }
 
         .portfolio-bio {
             color: var(--text-dim);
-            margin-bottom: 20px;
-            line-height: 1.8;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 0.95rem;
         }
 
-        .social-links {
+        .portfolio-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-dimmer);
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .social-links-preview {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 8px;
         }
 
-        .social-link {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px;
+        .social-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
             background: var(--darker);
-            border: 1px solid var(--border);
-            border-radius: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            color: var(--text);
-            text-decoration: none;
-            font-size: 0.9rem;
+            color: var(--text-dim);
             transition: all 0.3s ease;
         }
 
-        .social-link:hover {
-            background: var(--gradient-primary);
-            border-color: transparent;
-            transform: translateY(-3px);
+        .social-icon:hover {
+            background: var(--primary);
             color: white;
         }
 
-        .social-link i {
-            font-size: 1.1rem;
-        }
-
         .portfolio-footer {
-            padding: 20px 25px;
+            padding: 15px 20px;
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -574,14 +705,9 @@
             background: var(--darker);
         }
 
-        .portfolio-views {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
         /* Portfolio Detail View */
         .portfolio-detail {
-            background: rgba(26, 26, 46, 0.95);
+            background: rgba(26, 26, 46, 0.98);
             backdrop-filter: var(--blur);
             border-radius: 30px;
             border: 1px solid var(--glass-border);
@@ -601,13 +727,13 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             padding: 40px;
         }
 
         .portfolio-detail-avatar {
-            width: 180px;
-            height: 180px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             border: 5px solid var(--primary);
             object-fit: cover;
@@ -615,18 +741,27 @@
         }
 
         .portfolio-detail-name {
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 800;
             margin-bottom: 10px;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: white;
         }
 
         .portfolio-detail-username {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--text-dim);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+
+        .portfolio-detail-privacy {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: var(--blur);
+            border-radius: 50px;
+            font-size: 0.9rem;
         }
 
         .portfolio-detail-bio {
@@ -636,7 +771,6 @@
             padding: 30px;
             margin: 30px;
             line-height: 1.8;
-            font-size: 1.1rem;
         }
 
         .links-grid {
@@ -659,23 +793,6 @@
             overflow: hidden;
         }
 
-        .link-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-primary);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 0;
-        }
-
-        .link-card:hover::before {
-            opacity: 0.1;
-        }
-
         .link-card:hover {
             transform: translateY(-5px);
             border-color: var(--primary);
@@ -693,8 +810,6 @@
             font-size: 24px;
             color: white;
             margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
         }
 
         .link-title {
@@ -702,25 +817,29 @@
             font-weight: 600;
             color: white;
             margin-bottom: 5px;
-            position: relative;
-            z-index: 1;
         }
 
         .link-url {
             color: var(--primary-light);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-bottom: 10px;
             word-break: break-all;
-            position: relative;
-            z-index: 1;
         }
 
-        .link-description {
-            color: var(--text-dim);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            position: relative;
-            z-index: 1;
+        /* Access Denied */
+        .access-denied {
+            text-align: center;
+            padding: 60px;
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: var(--blur);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .access-denied i {
+            font-size: 80px;
+            color: var(--danger);
+            margin-bottom: 20px;
         }
 
         /* Modal */
@@ -731,12 +850,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: var(--blur);
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
@@ -747,7 +865,7 @@
             background: var(--dark-card);
             padding: 40px;
             border-radius: 24px;
-            max-width: 600px;
+            max-width: 500px;
             width: 90%;
             border: 1px solid var(--border);
             animation: slideInUp 0.4s ease;
@@ -778,54 +896,8 @@
             border-left-color: var(--danger);
         }
 
-        /* Animations */
-        @keyframes slideInDown {
-            from {
-                transform: translateY(-100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideInUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .notification.warning {
+            border-left-color: var(--warning);
         }
 
         /* Loading */
@@ -850,24 +922,67 @@
             to { transform: rotate(360deg); }
         }
 
+        @keyframes slideInDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
             .portfolio-detail-name {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
             
             .portfolio-detail-avatar {
-                width: 120px;
-                height: 120px;
+                width: 100px;
+                height: 100px;
             }
             
             .form-grid {
                 grid-template-columns: 1fr;
             }
             
-            .navbar {
+            .privacy-selector {
                 flex-direction: column;
-                gap: 15px;
+            }
+            
+            .link-input-group {
+                flex-direction: column;
+            }
+            
+            .link-input-group select,
+            .link-input-group input {
+                width: 100%;
             }
         }
     </style>
@@ -877,7 +992,7 @@
     
     <div class="container">
         <!-- Navbar -->
-        <nav class="navbar animate__animated animate__fadeInDown">
+        <nav class="navbar">
             <div class="logo" onclick="window.location.hash='#dashboard'">PortfolioHub Pro</div>
             <div class="nav-buttons" id="navButtons"></div>
         </nav>
@@ -892,13 +1007,16 @@
     <div id="shareModal" class="modal">
         <div class="modal-content">
             <h2 style="margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Share Portfolio</h2>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="shareLink" readonly style="flex: 1; padding: 12px; background: var(--darker); border: 1px solid var(--border); border-radius: 8px; color: white;">
-                <button class="btn btn-primary" onclick="copyShareLink()">
-                    <i class="fas fa-copy"></i>
-                </button>
+            <div style="margin-bottom: 20px;">
+                <p style="color: var(--text-dim); margin-bottom: 10px;">Portfolio URL:</p>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="shareLink" readonly style="flex: 1; padding: 12px; background: var(--darker); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    <button class="btn btn-primary" onclick="copyShareLink()">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="btn btn-danger" onclick="closeShareModal()">Close</button>
             </div>
         </div>
@@ -908,7 +1026,7 @@
         // ============ APP STATE ============
         let portfolios = JSON.parse(localStorage.getItem('portfolios')) || [];
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-        let currentView = 'dashboard';
+        let currentFilter = 'all';
 
         // ============ INITIALIZATION ============
         function init() {
@@ -924,7 +1042,7 @@
                 const username = hash.replace('#portfolio-', '');
                 viewPortfolio(username);
             } else if (hash === '#dashboard' || hash === '') {
-                showDashboard();
+                showDashboard('all');
             } else if (hash === '#create') {
                 if (currentUser) {
                     showCreatePortfolio();
@@ -932,8 +1050,14 @@
                     showNotification('Please login to create a portfolio', 'error');
                     showAuth();
                 }
+            } else if (hash === '#my-portfolios') {
+                if (currentUser) {
+                    showDashboard('mine');
+                } else {
+                    showAuth();
+                }
             } else {
-                showDashboard();
+                showDashboard('all');
             }
         }
 
@@ -953,7 +1077,10 @@
                         <span>${currentUser.name}</span>
                     </div>
                     <button class="btn btn-primary" onclick="window.location.hash='#create'">
-                        <i class="fas fa-plus"></i> Edit Portfolio
+                        <i class="fas fa-plus"></i> Create
+                    </button>
+                    <button class="btn btn-success" onclick="window.location.hash='#my-portfolios'">
+                        <i class="fas fa-folder"></i> My Portfolios
                     </button>
                     <button class="btn btn-danger" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i> Logout
@@ -978,7 +1105,7 @@
                         <div class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</div>
                     </div>
 
-                    <div id="loginForm" class="auth-form">
+                    <div id="loginForm">
                         <div class="form-group">
                             <label><i class="fas fa-envelope"></i> Email</label>
                             <input type="email" id="loginEmail" placeholder="Enter your email">
@@ -992,7 +1119,7 @@
                         </button>
                     </div>
 
-                    <div id="signupForm" class="auth-form" style="display: none;">
+                    <div id="signupForm" style="display: none;">
                         <div class="form-group">
                             <label><i class="fas fa-user"></i> Name</label>
                             <input type="text" id="signupName" placeholder="Your full name">
@@ -1019,7 +1146,7 @@
 
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
+            document.querySelectorAll('#loginForm, #signupForm').forEach(f => f.style.display = 'none');
             
             if (tab === 'login') {
                 document.querySelectorAll('.auth-tab')[0].classList.add('active');
@@ -1039,8 +1166,7 @@
                 return;
             }
             
-            // Simple authentication (in real app, use proper auth)
-            const user = portfolios.find(p => p.email === email);
+            const user = portfolios.find(p => p.email === email && p.password === password);
             
             if (user) {
                 currentUser = user;
@@ -1064,25 +1190,30 @@
                 return;
             }
             
-            // Check if username exists
             if (portfolios.some(p => p.username === username)) {
                 showNotification('Username already taken', 'error');
                 return;
             }
             
-            // Create new user
+            if (portfolios.some(p => p.email === email)) {
+                showNotification('Email already registered', 'error');
+                return;
+            }
+            
             const newUser = {
                 id: Date.now().toString(),
                 name,
                 username,
                 email,
-                password, // In real app, never store plain password
+                password,
                 bio: '',
                 avatar: null,
                 cover: null,
                 links: [],
+                privacy: 'public',
                 views: 0,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             };
             
             portfolios.push(newUser);
@@ -1116,7 +1247,7 @@
             
             container.innerHTML = `
                 <div class="create-portfolio">
-                    <h2><i class="fas fa-magic"></i> Create Your Portfolio</h2>
+                    <h2><i class="fas fa-magic"></i> Create/Edit Portfolio</h2>
                     
                     <div class="form-grid">
                         <div>
@@ -1138,6 +1269,27 @@
                         
                         <div>
                             <div class="form-group">
+                                <label><i class="fas fa-lock"></i> Privacy Settings</label>
+                                <div class="privacy-selector">
+                                    <div class="privacy-option public ${user.privacy === 'public' ? 'selected' : ''}" onclick="selectPrivacy('public')">
+                                        <i class="fas fa-globe"></i>
+                                        <strong>Public</strong>
+                                        <small style="display: block; color: var(--text-dim);">Anyone can see</small>
+                                    </div>
+                                    <div class="privacy-option private ${user.privacy === 'private' ? 'selected' : ''}" onclick="selectPrivacy('private')">
+                                        <i class="fas fa-lock"></i>
+                                        <strong>Private</strong>
+                                        <small style="display: block; color: var(--text-dim);">Only you can see</small>
+                                    </div>
+                                    <div class="privacy-option unlisted ${user.privacy === 'unlisted' ? 'selected' : ''}" onclick="selectPrivacy('unlisted')">
+                                        <i class="fas fa-eye-slash"></i>
+                                        <strong>Unlisted</strong>
+                                        <small style="display: block; color: var(--text-dim);">Only with link</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
                                 <label><i class="fas fa-camera"></i> Profile Picture</label>
                                 <div class="image-upload-area" onclick="document.getElementById('avatarInput').click()">
                                     <i class="fas fa-cloud-upload-alt"></i>
@@ -1152,9 +1304,9 @@
                                 <div class="image-upload-area" onclick="document.getElementById('coverInput').click()">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <p>Click to upload cover image</p>
-                                    <input type="file" id="coverInput" accept="image/*" style="display: none;" onchange="previewImage(this, 'coverPreview')">
+                                    <input type="file" id="coverInput" accept="image/*" style="display: none;" onchange="previewCover(this, 'coverPreview')">
                                 </div>
-                                <img id="coverPreview" class="image-preview ${user.cover ? 'show' : ''}" src="${user.cover || ''}" alt="Preview">
+                                <img id="coverPreview" class="cover-preview ${user.cover ? 'show' : ''}" src="${user.cover || ''}" alt="Preview">
                             </div>
                         </div>
                     </div>
@@ -1165,17 +1317,21 @@
                         ${user.links && user.links.map((link, index) => `
                             <div class="link-input-group" data-index="${index}">
                                 <select onchange="updateLinkType(${index}, this.value)">
-                                    <option value="website" ${link.type === 'website' ? 'selected' : ''}><i class="fas fa-globe"></i> Website</option>
-                                    <option value="github" ${link.type === 'github' ? 'selected' : ''}><i class="fab fa-github"></i> GitHub</option>
-                                    <option value="linkedin" ${link.type === 'linkedin' ? 'selected' : ''}><i class="fab fa-linkedin"></i> LinkedIn</option>
-                                    <option value="twitter" ${link.type === 'twitter' ? 'selected' : ''}><i class="fab fa-twitter"></i> Twitter</option>
-                                    <option value="instagram" ${link.type === 'instagram' ? 'selected' : ''}><i class="fab fa-instagram"></i> Instagram</option>
-                                    <option value="youtube" ${link.type === 'youtube' ? 'selected' : ''}><i class="fab fa-youtube"></i> YouTube</option>
-                                    <option value="facebook" ${link.type === 'facebook' ? 'selected' : ''}><i class="fab fa-facebook"></i> Facebook</option>
-                                    <option value="tiktok" ${link.type === 'tiktok' ? 'selected' : ''}><i class="fab fa-tiktok"></i> TikTok</option>
+                                    <option value="website" ${link.type === 'website' ? 'selected' : ''}>🌐 Website</option>
+                                    <option value="github" ${link.type === 'github' ? 'selected' : ''}>🐙 GitHub</option>
+                                    <option value="linkedin" ${link.type === 'linkedin' ? 'selected' : ''}>🔗 LinkedIn</option>
+                                    <option value="twitter" ${link.type === 'twitter' ? 'selected' : ''}>🐦 Twitter</option>
+                                    <option value="instagram" ${link.type === 'instagram' ? 'selected' : ''}>📷 Instagram</option>
+                                    <option value="youtube" ${link.type === 'youtube' ? 'selected' : ''}>▶️ YouTube</option>
+                                    <option value="facebook" ${link.type === 'facebook' ? 'selected' : ''}>📘 Facebook</option>
+                                    <option value="tiktok" ${link.type === 'tiktok' ? 'selected' : ''}>🎵 TikTok</option>
+                                    <option value="behance" ${link.type === 'behance' ? 'selected' : ''}>🎨 Behance</option>
+                                    <option value="dribbble" ${link.type === 'dribbble' ? 'selected' : ''}>🏀 Dribbble</option>
+                                    <option value="medium" ${link.type === 'medium' ? 'selected' : ''}>📝 Medium</option>
+                                    <option value="devto" ${link.type === 'devto' ? 'selected' : ''}>👨‍💻 Dev.to</option>
                                 </select>
-                                <input type="url" value="${escapeHtml(link.url)}" placeholder="https://..." onchange="updateLinkUrl(${index}, this.value)">
-                                <input type="text" value="${escapeHtml(link.title)}" placeholder="Link title" onchange="updateLinkTitle(${index}, this.value)">
+                                <input type="url" value="${escapeHtml(link.url || '')}" placeholder="https://..." onchange="updateLinkUrl(${index}, this.value)">
+                                <input type="text" value="${escapeHtml(link.title || '')}" placeholder="Link title" onchange="updateLinkTitle(${index}, this.value)">
                                 <button class="remove-link" onclick="removeLink(${index})">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -1183,12 +1339,12 @@
                         `).join('') || ''}
                     </div>
                     
-                    <button class="add-link-btn" onclick="addLinkField()">
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="addLinkField()">
                         <i class="fas fa-plus-circle"></i> Add Social Link
                     </button>
                     
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
-                        <button class="btn btn-primary" style="flex: 1;" onclick="savePortfolio()">
+                        <button class="btn btn-success" style="flex: 1;" onclick="savePortfolio()">
                             <i class="fas fa-save"></i> Save Portfolio
                         </button>
                         <button class="btn btn-danger" style="flex: 1;" onclick="window.location.hash='#dashboard'">
@@ -1199,35 +1355,18 @@
             `;
         }
 
-        // ============ LINK MANAGEMENT ============
-        let tempLinks = [];
+        // ============ PRIVACY SELECTION ============
+        function selectPrivacy(privacy) {
+            document.querySelectorAll('.privacy-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector(`.privacy-option.${privacy}`).classList.add('selected');
+            currentUser.privacy = privacy;
+        }
 
+        // ============ LINK MANAGEMENT ============
         function addLinkField() {
-            const container = document.getElementById('linksContainer');
-            const index = container.children.length;
-            
-            const div = document.createElement('div');
-            div.className = 'link-input-group';
-            div.dataset.index = index;
-            div.innerHTML = `
-                <select onchange="updateLinkType(${index}, this.value)">
-                    <option value="website">🌐 Website</option>
-                    <option value="github">🐙 GitHub</option>
-                    <option value="linkedin">🔗 LinkedIn</option>
-                    <option value="twitter">🐦 Twitter</option>
-                    <option value="instagram">📷 Instagram</option>
-                    <option value="youtube">▶️ YouTube</option>
-                    <option value="facebook">📘 Facebook</option>
-                    <option value="tiktok">🎵 TikTok</option>
-                </select>
-                <input type="url" placeholder="https://..." onchange="updateLinkUrl(${index}, this.value)">
-                <input type="text" placeholder="Link title" onchange="updateLinkTitle(${index}, this.value)">
-                <button class="remove-link" onclick="removeLink(${index})">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            container.appendChild(div);
+            if (!currentUser.links) currentUser.links = [];
+            currentUser.links.push({ type: 'website', url: '', title: '' });
+            showCreatePortfolio();
         }
 
         function updateLinkType(index, type) {
@@ -1265,13 +1404,23 @@
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.classList.add('show');
-                    
-                    // Store in currentUser
-                    if (previewId === 'avatarPreview') {
-                        currentUser.avatar = e.target.result;
-                    } else {
-                        currentUser.cover = e.target.result;
-                    }
+                    currentUser.avatar = e.target.result;
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewCover(input, previewId) {
+            const preview = document.getElementById(previewId);
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.add('show');
+                    currentUser.cover = e.target.result;
                 }
                 
                 reader.readAsDataURL(input.files[0]);
@@ -1300,7 +1449,7 @@
             currentUser.name = name;
             currentUser.username = username;
             currentUser.bio = bio;
-            currentUser.links = currentUser.links || [];
+            currentUser.updatedAt = new Date().toISOString();
             
             // Update in portfolios array
             const index = portfolios.findIndex(p => p.id === currentUser.id);
@@ -1324,8 +1473,8 @@
             
             if (!portfolio) {
                 container.innerHTML = `
-                    <div class="auth-container" style="text-align: center;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger); margin-bottom: 20px;"></i>
+                    <div class="access-denied">
+                        <i class="fas fa-exclamation-triangle"></i>
                         <h2>Portfolio Not Found</h2>
                         <p style="color: var(--text-dim); margin: 20px 0;">The portfolio you're looking for doesn't exist.</p>
                         <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
@@ -1336,21 +1485,47 @@
                 return;
             }
             
+            // Check privacy settings
+            const isOwner = currentUser && currentUser.id === portfolio.id;
+            
+            if (portfolio.privacy === 'private' && !isOwner) {
+                container.innerHTML = `
+                    <div class="access-denied">
+                        <i class="fas fa-lock" style="color: var(--danger);"></i>
+                        <h2>Private Portfolio</h2>
+                        <p style="color: var(--text-dim); margin: 20px 0;">This portfolio is private. Only the owner can view it.</p>
+                        <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
+                            <i class="fas fa-home"></i> Back to Dashboard
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
             // Increment views (if not the owner)
-            if (!currentUser || currentUser.id !== portfolio.id) {
+            if (!isOwner && portfolio.privacy !== 'private') {
                 portfolio.views = (portfolio.views || 0) + 1;
                 localStorage.setItem('portfolios', JSON.stringify(portfolios));
             }
             
             const coverStyle = portfolio.cover ? `background-image: url('${portfolio.cover}');` : 'background: linear-gradient(135deg, #6366f1, #8b5cf6);';
             
+            const privacyIcon = {
+                'public': '<i class="fas fa-globe"></i> Public',
+                'private': '<i class="fas fa-lock"></i> Private',
+                'unlisted': '<i class="fas fa-eye-slash"></i> Unlisted'
+            };
+            
             container.innerHTML = `
                 <div class="portfolio-detail">
                     <div class="portfolio-cover" style="${coverStyle}">
                         <div class="portfolio-cover-overlay">
-                            <img src="${portfolio.avatar || 'https://via.placeholder.com/180'}" class="portfolio-detail-avatar" alt="Avatar">
+                            <img src="${portfolio.avatar || 'https://via.placeholder.com/150'}" class="portfolio-detail-avatar" alt="Avatar">
                             <h1 class="portfolio-detail-name">${escapeHtml(portfolio.name)}</h1>
                             <div class="portfolio-detail-username">@${escapeHtml(portfolio.username)}</div>
+                            <div class="portfolio-detail-privacy ${portfolio.privacy}">
+                                ${privacyIcon[portfolio.privacy]}
+                            </div>
                         </div>
                     </div>
                     
@@ -1359,7 +1534,13 @@
                         ${escapeHtml(portfolio.bio || 'No bio yet.')}
                     </div>
                     
-                    <h2 style="padding: 0 30px; margin-top: 30px;"><i class="fas fa-link"></i> Links</h2>
+                    <div style="padding: 0 30px; display: flex; justify-content: space-between; align-items: center;">
+                        <h2><i class="fas fa-link"></i> Links</h2>
+                        <div style="display: flex; gap: 15px;">
+                            <span><i class="fas fa-eye"></i> ${portfolio.views || 0} views</span>
+                            <span><i class="fas fa-calendar"></i> ${new Date(portfolio.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    </div>
                     
                     <div class="links-grid">
                         ${portfolio.links && portfolio.links.map(link => `
@@ -1369,7 +1550,6 @@
                                 </div>
                                 <div class="link-title">${escapeHtml(link.title || getLinkTitle(link.type))}</div>
                                 <div class="link-url">${escapeHtml(link.url)}</div>
-                                ${link.description ? `<div class="link-description">${escapeHtml(link.description)}</div>` : ''}
                             </a>
                         `).join('')}
                         
@@ -1382,63 +1562,110 @@
                         <button class="btn btn-primary" onclick="sharePortfolio('${portfolio.username}')">
                             <i class="fas fa-share-alt"></i> Share Portfolio
                         </button>
+                        ${isOwner ? `
+                            <button class="btn btn-success" style="margin-left: 15px;" onclick="window.location.hash='#create'">
+                                <i class="fas fa-edit"></i> Edit Portfolio
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
         }
 
         // ============ DASHBOARD ============
-        function showDashboard() {
+        function showDashboard(filter = 'all') {
+            currentFilter = filter;
             const container = document.getElementById('mainContent');
+            
+            // Filter portfolios based on privacy and ownership
+            let filteredPortfolios = portfolios.filter(p => {
+                if (p.privacy === 'private') {
+                    return currentUser && currentUser.id === p.id;
+                }
+                if (p.privacy === 'unlisted' && filter !== 'mine') {
+                    return currentUser && currentUser.id === p.id;
+                }
+                return true;
+            });
+            
+            // Apply filter
+            if (filter === 'mine' && currentUser) {
+                filteredPortfolios = filteredPortfolios.filter(p => p.id === currentUser.id);
+            }
+            
+            const totalPortfolios = portfolios.length;
+            const publicPortfolios = portfolios.filter(p => p.privacy === 'public').length;
+            const totalViews = portfolios.reduce((sum, p) => sum + (p.views || 0), 0);
+            const myPortfolios = currentUser ? portfolios.filter(p => p.id === currentUser.id).length : 0;
             
             container.innerHTML = `
                 <div class="dashboard">
-                    <div style="text-align: center; margin-bottom: 50px;">
-                        <h1 style="font-size: 4rem; font-weight: 800; margin-bottom: 20px; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                            PortfolioHub Pro
-                        </h1>
-                        <p style="font-size: 1.3rem; color: var(--text-dim); max-width: 600px; margin: 0 auto;">
-                            Create your professional portfolio in minutes. Showcase your work and connect with the world.
-                        </p>
+                    <div class="dashboard-header">
+                        <h1><i class="fas fa-home"></i> Portfolio Dashboard</h1>
+                        <div class="dashboard-tabs">
+                            <button class="dashboard-tab ${filter === 'all' ? 'active' : ''}" onclick="showDashboard('all')">
+                                <i class="fas fa-globe"></i> All Portfolios
+                            </button>
+                            ${currentUser ? `
+                                <button class="dashboard-tab ${filter === 'mine' ? 'active' : ''}" onclick="showDashboard('mine')">
+                                    <i class="fas fa-user"></i> My Portfolios
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                     
-                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 50px;">
-                        <div style="background: rgba(26, 26, 46, 0.8); backdrop-filter: var(--blur); border-radius: 20px; padding: 30px; text-align: center; border: 1px solid var(--border);">
-                            <i class="fas fa-users" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
-                            <h3 style="font-size: 2.5rem; color: var(--primary);">${portfolios.length}</h3>
-                            <p style="color: var(--text-dim);">Total Portfolios</p>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-users stat-icon"></i>
+                            <div class="stat-number">${totalPortfolios}</div>
+                            <div class="stat-label">Total Portfolios</div>
                         </div>
                         
-                        <div style="background: rgba(26, 26, 46, 0.8); backdrop-filter: var(--blur); border-radius: 20px; padding: 30px; text-align: center; border: 1px solid var(--border);">
-                            <i class="fas fa-eye" style="font-size: 40px; color: var(--success); margin-bottom: 15px;"></i>
-                            <h3 style="font-size: 2.5rem; color: var(--success);">${portfolios.reduce((sum, p) => sum + (p.views || 0), 0)}</h3>
-                            <p style="color: var(--text-dim);">Total Views</p>
+                        <div class="stat-card">
+                            <i class="fas fa-globe stat-icon" style="color: #10b981;"></i>
+                            <div class="stat-number" style="color: #10b981;">${publicPortfolios}</div>
+                            <div class="stat-label">Public Portfolios</div>
                         </div>
                         
-                        <div style="background: rgba(26, 26, 46, 0.8); backdrop-filter: var(--blur); border-radius: 20px; padding: 30px; text-align: center; border: 1px solid var(--border);">
-                            <i class="fas fa-link" style="font-size: 40px; color: var(--accent); margin-bottom: 15px;"></i>
-                            <h3 style="font-size: 2.5rem; color: var(--accent);">${portfolios.reduce((sum, p) => sum + (p.links?.length || 0), 0)}</h3>
-                            <p style="color: var(--text-dim);">Total Links</p>
+                        <div class="stat-card">
+                            <i class="fas fa-eye stat-icon" style="color: #f59e0b;"></i>
+                            <div class="stat-number" style="color: #f59e0b;">${totalViews}</div>
+                            <div class="stat-label">Total Views</div>
                         </div>
+                        
+                        ${currentUser ? `
+                        <div class="stat-card">
+                            <i class="fas fa-folder stat-icon" style="color: #8b5cf6;"></i>
+                            <div class="stat-number" style="color: #8b5cf6;">${myPortfolios}</div>
+                            <div class="stat-label">My Portfolios</div>
+                        </div>
+                        ` : ''}
                     </div>
                     
                     ${!currentUser ? `
-                    <div style="background: var(--gradient-primary); border-radius: 30px; padding: 60px; text-align: center; margin-bottom: 50px;">
-                        <h2 style="font-size: 2.5rem; color: white; margin-bottom: 20px;">Ready to create your portfolio?</h2>
-                        <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin-bottom: 30px;">Join thousands of professionals showcasing their work.</p>
+                    <div style="background: var(--gradient-primary); border-radius: 30px; padding: 60px; text-align: center; margin-bottom: 40px;">
+                        <h2 style="font-size: 2.5rem; color: white; margin-bottom: 20px;">Create Your Portfolio Today!</h2>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin-bottom: 30px;">Choose between public, private, or unlisted portfolios.</p>
                         <button class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.1rem; padding: 15px 40px;" onclick="showAuth()">
                             <i class="fas fa-rocket"></i> Get Started
                         </button>
                     </div>
                     ` : ''}
                     
-                    <h2 style="font-size: 2rem; margin-bottom: 30px;"><i class="fas fa-star"></i> Featured Portfolios</h2>
+                    <h2 style="margin-bottom: 20px;">
+                        <i class="fas ${filter === 'mine' ? 'fa-folder' : 'fa-star'}"></i> 
+                        ${filter === 'mine' ? 'My Portfolios' : 'Featured Portfolios'}
+                    </h2>
                     
                     <div class="portfolio-grid">
-                        ${portfolios.sort((a, b) => (b.views || 0) - (a.views || 0)).map(portfolio => `
-                            <div class="portfolio-card" onclick="window.location.hash='#portfolio-${portfolio.username}'">
-                                <div class="portfolio-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
-                                    <img src="${portfolio.avatar || 'https://via.placeholder.com/120'}" class="portfolio-avatar" alt="Avatar">
+                        ${filteredPortfolios.sort((a, b) => (b.views || 0) - (a.views || 0)).map(portfolio => `
+                            <div class="portfolio-card ${portfolio.privacy}" onclick="window.location.hash='#portfolio-${portfolio.username}'">
+                                <div class="portfolio-header">
+                                    <div class="privacy-badge-card privacy-${portfolio.privacy}">
+                                        <i class="fas ${portfolio.privacy === 'public' ? 'fa-globe' : portfolio.privacy === 'private' ? 'fa-lock' : 'fa-eye-slash'}"></i>
+                                        ${portfolio.privacy}
+                                    </div>
+                                    <img src="${portfolio.avatar || 'https://via.placeholder.com/100'}" class="portfolio-avatar" alt="Avatar">
                                     <div class="portfolio-name">${escapeHtml(portfolio.name)}</div>
                                     <div class="portfolio-username">@${escapeHtml(portfolio.username)}</div>
                                 </div>
@@ -1447,25 +1674,38 @@
                                         ${escapeHtml((portfolio.bio || 'No bio yet').substring(0, 100))}${portfolio.bio?.length > 100 ? '...' : ''}
                                     </div>
                                     
-                                    <div class="social-links">
-                                        ${portfolio.links && portfolio.links.slice(0, 3).map(link => `
-                                            <a href="${escapeHtml(link.url)}" class="social-link" onclick="event.stopPropagation()" target="_blank">
+                                    <div class="portfolio-meta">
+                                        <span><i class="fas fa-eye"></i> ${portfolio.views || 0} views</span>
+                                        <span><i class="fas fa-link"></i> ${portfolio.links?.length || 0} links</span>
+                                    </div>
+                                    
+                                    <div class="social-links-preview">
+                                        ${portfolio.links && portfolio.links.slice(0, 5).map(link => `
+                                            <div class="social-icon" title="${link.title || link.type}">
                                                 <i class="${getLinkIcon(link.type)}"></i>
-                                                <span>${link.title || getLinkTitle(link.type)}</span>
-                                            </a>
+                                            </div>
                                         `).join('')}
                                     </div>
                                 </div>
                                 <div class="portfolio-footer">
-                                    <div class="portfolio-views">
-                                        <i class="fas fa-eye"></i> ${portfolio.views || 0} views
-                                    </div>
-                                    <div class="portfolio-views">
-                                        <i class="fas fa-calendar"></i> ${new Date(portfolio.createdAt).toLocaleDateString()}
-                                    </div>
+                                    <span><i class="fas fa-calendar"></i> ${new Date(portfolio.createdAt).toLocaleDateString()}</span>
+                                    ${portfolio.id === currentUser?.id ? '<span><i class="fas fa-star" style="color: gold;"></i> Owner</span>' : ''}
                                 </div>
                             </div>
                         `).join('')}
+                        
+                        ${filteredPortfolios.length === 0 ? `
+                            <div style="grid-column: 1/-1; text-align: center; padding: 60px; background: var(--dark-card); border-radius: 20px;">
+                                <i class="fas fa-folder-open" style="font-size: 60px; color: var(--text-dim); margin-bottom: 20px;"></i>
+                                <h3>No portfolios found</h3>
+                                <p style="color: var(--text-dim); margin: 20px 0;">${filter === 'mine' ? 'You haven\'t created any portfolios yet.' : 'No portfolios available.'}</p>
+                                ${filter === 'mine' ? `
+                                    <button class="btn btn-primary" onclick="window.location.hash='#create'">
+                                        <i class="fas fa-plus"></i> Create Portfolio
+                                    </button>
+                                ` : ''}
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -1501,7 +1741,11 @@
                 instagram: 'fab fa-instagram',
                 youtube: 'fab fa-youtube',
                 facebook: 'fab fa-facebook',
-                tiktok: 'fab fa-tiktok'
+                tiktok: 'fab fa-tiktok',
+                behance: 'fab fa-behance',
+                dribbble: 'fab fa-dribbble',
+                medium: 'fab fa-medium',
+                devto: 'fab fa-dev'
             };
             return icons[type] || 'fas fa-link';
         }
@@ -1515,7 +1759,11 @@
                 instagram: 'Instagram',
                 youtube: 'YouTube',
                 facebook: 'Facebook',
-                tiktok: 'TikTok'
+                tiktok: 'TikTok',
+                behance: 'Behance',
+                dribbble: 'Dribbble',
+                medium: 'Medium',
+                devto: 'Dev.to'
             };
             return titles[type] || 'Link';
         }
@@ -1568,10 +1816,13 @@
         window.updateLinkTitle = updateLinkTitle;
         window.removeLink = removeLink;
         window.previewImage = previewImage;
+        window.previewCover = previewCover;
+        window.selectPrivacy = selectPrivacy;
         window.savePortfolio = savePortfolio;
         window.sharePortfolio = sharePortfolio;
         window.closeShareModal = closeShareModal;
         window.copyShareLink = copyShareLink;
+        window.showDashboard = showDashboard;
     </script>
 </body>
 </html>
