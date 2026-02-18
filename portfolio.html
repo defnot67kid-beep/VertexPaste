@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PortfolioHub Pro - Privacy Controls & Dashboard</title>
+    <title>PortfolioHub Pro - Create Your Digital Identity</title>
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
         * {
             margin: 0;
@@ -24,7 +26,6 @@
             --success: #10b981;
             --danger: #ef4444;
             --info: #3b82f6;
-            --warning: #f97316;
             --dark: #0f0f1e;
             --darker: #0a0a14;
             --dark-card: #1a1a2e;
@@ -41,7 +42,7 @@
             --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
             --gradient-success: linear-gradient(135deg, #10b981, #34d399);
             --gradient-danger: linear-gradient(135deg, #ef4444, #f87171);
-            --gradient-warning: linear-gradient(135deg, #f59e0b, #fbbf24);
+            --gradient-dark: linear-gradient(135deg, #1a1a2e, #16213e);
             --glass-effect: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --blur: blur(10px);
@@ -173,7 +174,6 @@
             color: white;
             font-weight: bold;
             font-size: 1.1rem;
-            object-fit: cover;
         }
 
         /* Buttons */
@@ -232,43 +232,9 @@
             color: white;
         }
 
-        .btn-warning {
-            background: var(--gradient-warning);
-            color: white;
-        }
-
         .btn-icon {
             padding: 12px;
             border-radius: 12px;
-        }
-
-        /* Privacy Badges */
-        .privacy-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .privacy-public {
-            background: rgba(16, 185, 129, 0.2);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .privacy-private {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .privacy-unlisted {
-            background: rgba(245, 158, 11, 0.2);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         /* Auth Container */
@@ -308,99 +274,23 @@
             color: white;
         }
 
-        /* Dashboard */
-        .dashboard {
-            animation: fadeIn 0.6s ease;
-        }
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .dashboard-tabs {
-            display: flex;
-            gap: 10px;
-            background: var(--darker);
-            padding: 5px;
-            border-radius: 50px;
-        }
-
-        .dashboard-tab {
-            padding: 10px 20px;
-            border: none;
-            background: transparent;
-            color: var(--text-dim);
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .dashboard-tab.active {
-            background: var(--gradient-primary);
-            color: white;
-        }
-
-        .dashboard-tab:hover:not(.active) {
-            color: var(--primary);
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .stat-card {
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: var(--blur);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .stat-icon {
-            font-size: 40px;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: var(--text-dim);
-            font-size: 1rem;
-        }
-
         /* Create Portfolio Form */
         .create-portfolio {
-            background: rgba(26, 26, 46, 0.95);
+            background: rgba(26, 26, 46, 0.9);
             backdrop-filter: var(--blur);
             border-radius: 24px;
             padding: 40px;
             border: 1px solid var(--glass-border);
             margin-bottom: 30px;
             animation: fadeIn 0.6s ease;
+        }
+
+        .create-portfolio h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .form-grid {
@@ -418,6 +308,7 @@
             margin-bottom: 8px;
             color: var(--text-dim);
             font-weight: 500;
+            font-size: 0.95rem;
         }
 
         .form-group input,
@@ -442,42 +333,43 @@
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
         }
 
-        /* Privacy Selector */
-        .privacy-selector {
+        /* Privacy Settings */
+        .privacy-settings {
             display: flex;
-            gap: 15px;
-            margin-top: 10px;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--darker);
+            border-radius: 16px;
         }
 
         .privacy-option {
             flex: 1;
-            padding: 15px;
-            background: var(--darker);
-            border: 2px solid var(--border);
-            border-radius: 12px;
             text-align: center;
+            padding: 15px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
 
         .privacy-option:hover {
-            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .privacy-option.selected {
             border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.2);
         }
 
         .privacy-option i {
             font-size: 24px;
-            margin-bottom: 8px;
-            display: block;
+            margin-bottom: 10px;
         }
 
-        .privacy-option.public i { color: #10b981; }
-        .privacy-option.private i { color: #ef4444; }
-        .privacy-option.unlisted i { color: #f59e0b; }
+        .privacy-option.public i { color: var(--success); }
+        .privacy-option.private i { color: var(--danger); }
+        .privacy-option.unlisted i { color: var(--accent); }
 
         /* Image Upload */
         .image-upload-area {
@@ -493,6 +385,17 @@
         .image-upload-area:hover {
             border-color: var(--primary);
             background: rgba(99, 102, 241, 0.1);
+        }
+
+        .image-upload-area i {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .image-upload-area.uploading {
+            opacity: 0.7;
+            pointer-events: none;
         }
 
         .image-preview {
@@ -512,7 +415,7 @@
         .cover-preview {
             width: 100%;
             height: 200px;
-            border-radius: 12px;
+            border-radius: 16px;
             object-fit: cover;
             border: 4px solid var(--primary);
             margin: 20px 0;
@@ -521,6 +424,27 @@
 
         .cover-preview.show {
             display: block;
+        }
+
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
         }
 
         /* Links Container */
@@ -535,7 +459,7 @@
             gap: 10px;
             align-items: center;
             background: var(--darker);
-            padding: 15px;
+            padding: 10px;
             border-radius: 12px;
             border: 1px solid var(--border);
             transition: all 0.3s ease;
@@ -546,7 +470,7 @@
         }
 
         .link-input-group select {
-            width: 140px;
+            width: 120px;
             padding: 10px;
             background: var(--dark-card);
             border: 1px solid var(--border);
@@ -567,8 +491,8 @@
             background: var(--danger);
             color: white;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -577,6 +501,23 @@
         .remove-link:hover {
             background: #dc2626;
             transform: scale(1.1);
+        }
+
+        .add-link-btn {
+            background: var(--dark-card);
+            border: 2px dashed var(--border);
+            padding: 15px;
+            border-radius: 12px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .add-link-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         /* Portfolio Grid */
@@ -589,7 +530,7 @@
 
         /* Portfolio Card */
         .portfolio-card {
-            background: rgba(26, 26, 46, 0.95);
+            background: rgba(26, 26, 46, 0.9);
             backdrop-filter: var(--blur);
             border-radius: 20px;
             border: 1px solid var(--glass-border);
@@ -600,104 +541,127 @@
         }
 
         .portfolio-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-10px) scale(1.02);
             border-color: var(--primary);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
         }
 
-        .portfolio-card.private {
-            opacity: 0.8;
-            filter: grayscale(0.3);
+        .portfolio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            padding: 2px;
+            background: var(--gradient-primary);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .portfolio-header {
-            padding: 25px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            position: relative;
+        .portfolio-card:hover::before {
+            opacity: 1;
         }
 
-        .privacy-badge-card {
+        .privacy-badge {
             position: absolute;
             top: 15px;
             right: 15px;
             padding: 5px 10px;
-            border-radius: 50px;
-            font-size: 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: 600;
+            z-index: 10;
             background: rgba(0,0,0,0.5);
             backdrop-filter: var(--blur);
         }
 
+        .privacy-badge.public { color: var(--success); border-left: 3px solid var(--success); }
+        .privacy-badge.private { color: var(--danger); border-left: 3px solid var(--danger); }
+        .privacy-badge.unlisted { color: var(--accent); border-left: 3px solid var(--accent); }
+
+        .portfolio-header {
+            padding: 30px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            position: relative;
+            text-align: center;
+        }
+
         .portfolio-avatar {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             border: 4px solid white;
-            margin: 0 auto 15px;
-            display: block;
+            margin: 0 auto 20px;
             object-fit: cover;
+            background: white;
         }
 
         .portfolio-name {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: white;
-            text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .portfolio-username {
             color: rgba(255,255,255,0.9);
-            font-size: 0.9rem;
-            text-align: center;
+            font-size: 1rem;
+            font-weight: 500;
         }
 
         .portfolio-body {
-            padding: 20px;
+            padding: 25px;
         }
 
         .portfolio-bio {
             color: var(--text-dim);
-            margin-bottom: 15px;
-            line-height: 1.6;
-            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.8;
         }
 
-        .portfolio-meta {
-            display: flex;
-            justify-content: space-between;
-            color: var(--text-dimmer);
-            font-size: 0.85rem;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .social-links-preview {
+        .social-links {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
+            margin-top: 20px;
         }
 
-        .social-icon {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
+        .social-link {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
             background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-dim);
+            gap: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
         }
 
-        .social-icon:hover {
-            background: var(--primary);
+        .social-link:hover {
+            background: var(--gradient-primary);
+            border-color: transparent;
+            transform: translateY(-3px);
             color: white;
         }
 
+        .social-link i {
+            font-size: 1.1rem;
+        }
+
         .portfolio-footer {
-            padding: 15px 20px;
+            padding: 20px 25px;
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -705,9 +669,14 @@
             background: var(--darker);
         }
 
+        .portfolio-views {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
         /* Portfolio Detail View */
         .portfolio-detail {
-            background: rgba(26, 26, 46, 0.98);
+            background: rgba(26, 26, 46, 0.95);
             backdrop-filter: var(--blur);
             border-radius: 30px;
             border: 1px solid var(--glass-border);
@@ -727,13 +696,13 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             padding: 40px;
         }
 
         .portfolio-detail-avatar {
-            width: 150px;
-            height: 150px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             border: 5px solid var(--primary);
             object-fit: cover;
@@ -741,28 +710,32 @@
         }
 
         .portfolio-detail-name {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 10px;
-            color: white;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .portfolio-detail-username {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: var(--text-dim);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
-        .portfolio-detail-privacy {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: var(--blur);
-            border-radius: 50px;
+        .privacy-info {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
             font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
+
+        .privacy-info.public { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .privacy-info.private { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .privacy-info.unlisted { background: rgba(245, 158, 11, 0.2); color: var(--accent); }
 
         .portfolio-detail-bio {
             background: var(--darker);
@@ -771,6 +744,7 @@
             padding: 30px;
             margin: 30px;
             line-height: 1.8;
+            font-size: 1.1rem;
         }
 
         .links-grid {
@@ -793,6 +767,23 @@
             overflow: hidden;
         }
 
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .link-card:hover::before {
+            opacity: 0.1;
+        }
+
         .link-card:hover {
             transform: translateY(-5px);
             border-color: var(--primary);
@@ -810,6 +801,8 @@
             font-size: 24px;
             color: white;
             margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
         }
 
         .link-title {
@@ -817,29 +810,25 @@
             font-weight: 600;
             color: white;
             margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
         }
 
         .link-url {
             color: var(--primary-light);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             margin-bottom: 10px;
             word-break: break-all;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Access Denied */
-        .access-denied {
-            text-align: center;
-            padding: 60px;
-            background: rgba(26, 26, 46, 0.9);
-            backdrop-filter: var(--blur);
-            border-radius: 24px;
-            border: 1px solid var(--border);
-        }
-
-        .access-denied i {
-            font-size: 80px;
-            color: var(--danger);
-            margin-bottom: 20px;
+        .link-description {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
         }
 
         /* Modal */
@@ -850,11 +839,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: var(--blur);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
@@ -865,7 +855,7 @@
             background: var(--dark-card);
             padding: 40px;
             border-radius: 24px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             border: 1px solid var(--border);
             animation: slideInUp 0.4s ease;
@@ -896,8 +886,79 @@
             border-left-color: var(--danger);
         }
 
-        .notification.warning {
-            border-left-color: var(--warning);
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Animations */
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Loading */
@@ -922,67 +983,24 @@
             to { transform: rotate(360deg); }
         }
 
-        @keyframes slideInDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes slideInUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .dashboard-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
             .portfolio-detail-name {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
             
             .portfolio-detail-avatar {
-                width: 100px;
-                height: 100px;
+                width: 120px;
+                height: 120px;
             }
             
             .form-grid {
                 grid-template-columns: 1fr;
             }
             
-            .privacy-selector {
+            .navbar {
                 flex-direction: column;
-            }
-            
-            .link-input-group {
-                flex-direction: column;
-            }
-            
-            .link-input-group select,
-            .link-input-group input {
-                width: 100%;
+                gap: 15px;
             }
         }
     </style>
@@ -992,7 +1010,7 @@
     
     <div class="container">
         <!-- Navbar -->
-        <nav class="navbar">
+        <nav class="navbar animate__animated animate__fadeInDown">
             <div class="logo" onclick="window.location.hash='#dashboard'">PortfolioHub Pro</div>
             <div class="nav-buttons" id="navButtons"></div>
         </nav>
@@ -1007,80 +1025,151 @@
     <div id="shareModal" class="modal">
         <div class="modal-content">
             <h2 style="margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Share Portfolio</h2>
-            <div style="margin-bottom: 20px;">
-                <p style="color: var(--text-dim); margin-bottom: 10px;">Portfolio URL:</p>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="shareLink" readonly style="flex: 1; padding: 12px; background: var(--darker); border: 1px solid var(--border); border-radius: 8px; color: white;">
-                    <button class="btn btn-primary" onclick="copyShareLink()">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="shareLink" readonly style="flex: 1; padding: 12px; background: var(--darker); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                <button class="btn btn-primary" onclick="copyShareLink()">
+                    <i class="fas fa-copy"></i>
+                </button>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button class="btn btn-danger" onclick="closeShareModal()">Close</button>
             </div>
         </div>
     </div>
 
-    <script>
+    <!-- Import Firebase -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, deleteDoc, increment, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Firebase configuration with API key and secret
+        const firebaseConfig = {
+            apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
+            authDomain: "vertexpaste.firebaseapp.com",
+            projectId: "vertexpaste",
+            storageBucket: "vertexpaste.firebasestorage.app",
+            messagingSenderId: "255275350380",
+            appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // API Secret for additional Firebase services (use with caution - client-side exposure is not recommended)
+        const FIREBASE_API_SECRET = "4YroGoXPGaiaiLQb0yPsRsxqSgM";
+
+        // Cloudinary configuration (using demo account)
+        const CLOUDINARY_CONFIG = {
+            cloudName: 'demo', // Using demo cloud for testing
+            uploadPreset: 'ml_default', // Default unsigned preset
+            apiKey: '725361572671118', // Cloudinary API key
+            apiSecret: '4YroGoXPGaiaiLQb0yPsRsxqSgM' // Cloudinary API secret
+        };
+
         // ============ APP STATE ============
-        let portfolios = JSON.parse(localStorage.getItem('portfolios')) || [];
-        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-        let currentFilter = 'all';
+        let currentUser = null;
+        let allPortfolios = [];
+        let currentFilter = 'all'; // all, public, private, unlisted
 
         // ============ INITIALIZATION ============
         function init() {
-            updateNavbar();
+            // Auth state observer
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        // Get user data from Firestore
+                        const userDoc = await getDoc(doc(db, 'users', user.uid));
+                        
+                        if (userDoc.exists()) {
+                            currentUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                displayName: userDoc.data().displayName || user.displayName || user.email.split('@')[0],
+                                ...userDoc.data()
+                            };
+                        } else {
+                            // Create new user document
+                            const newUser = {
+                                displayName: user.displayName || user.email.split('@')[0],
+                                email: user.email,
+                                createdAt: new Date().toISOString(),
+                                portfolioViews: 0,
+                                portfolioLinks: []
+                            };
+                            
+                            await setDoc(doc(db, 'users', user.uid), newUser);
+                            
+                            currentUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                ...newUser
+                            };
+                        }
+                        
+                        await loadAllPortfolios();
+                    } catch (error) {
+                        console.error('Auth error:', error);
+                    }
+                } else {
+                    currentUser = null;
+                    await loadAllPortfolios();
+                }
+                
+                updateNavbar();
+                handleRouting();
+            });
+            
+            // Check URL hash on load
+            window.addEventListener('hashchange', handleRouting);
             handleRouting();
         }
 
-        // ============ ROUTING ============
-        function handleRouting() {
-            const hash = window.location.hash;
-            
-            if (hash.startsWith('#portfolio-')) {
-                const username = hash.replace('#portfolio-', '');
-                viewPortfolio(username);
-            } else if (hash === '#dashboard' || hash === '') {
-                showDashboard('all');
-            } else if (hash === '#create') {
-                if (currentUser) {
-                    showCreatePortfolio();
-                } else {
-                    showNotification('Please login to create a portfolio', 'error');
-                    showAuth();
-                }
-            } else if (hash === '#my-portfolios') {
-                if (currentUser) {
-                    showDashboard('mine');
-                } else {
-                    showAuth();
-                }
-            } else {
-                showDashboard('all');
+        // ============ LOAD ALL PORTFOLIOS ============
+        async function loadAllPortfolios() {
+            try {
+                const usersRef = collection(db, 'users');
+                const usersSnapshot = await getDocs(usersRef);
+                
+                allPortfolios = [];
+                usersSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Only show public and unlisted portfolios to non-owners
+                    if (data.privacy === 'public' || data.privacy === 'unlisted' || (currentUser && currentUser.uid === doc.id)) {
+                        allPortfolios.push({
+                            uid: doc.id,
+                            ...data
+                        });
+                    }
+                });
+                
+                console.log('Loaded', allPortfolios.length, 'portfolios');
+            } catch (error) {
+                console.error('Error loading portfolios:', error);
+                allPortfolios = [];
             }
         }
-
-        window.addEventListener('hashchange', handleRouting);
 
         // ============ UPDATE NAVBAR ============
         function updateNavbar() {
             const navButtons = document.getElementById('navButtons');
             
             if (currentUser) {
+                const initial = (currentUser.displayName || 'U').charAt(0).toUpperCase();
                 navButtons.innerHTML = `
-                    <div class="user-info" onclick="window.location.hash='#portfolio-${currentUser.username}'">
+                    <div class="user-info" onclick="window.location.hash='#portfolio-${currentUser.uid}'">
                         ${currentUser.avatar ? 
-                            `<img src="${currentUser.avatar}" class="user-avatar" style="object-fit: cover;">` : 
-                            `<div class="user-avatar">${currentUser.name.charAt(0).toUpperCase()}</div>`
+                            `<img src="${currentUser.avatar}" class="user-avatar" style="object-fit: cover; width: 35px; height: 35px; border-radius: 50%;">` : 
+                            `<div class="user-avatar">${initial}</div>`
                         }
-                        <span>${currentUser.name}</span>
+                        <span>${currentUser.displayName}</span>
                     </div>
                     <button class="btn btn-primary" onclick="window.location.hash='#create'">
-                        <i class="fas fa-plus"></i> Create
-                    </button>
-                    <button class="btn btn-success" onclick="window.location.hash='#my-portfolios'">
-                        <i class="fas fa-folder"></i> My Portfolios
+                        <i class="fas fa-plus"></i> Edit Portfolio
                     </button>
                     <button class="btn btn-danger" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i> Logout
@@ -1095,17 +1184,38 @@
             }
         }
 
-        // ============ AUTH ============
+        // ============ HANDLE ROUTING ============
+        function handleRouting() {
+            const hash = window.location.hash;
+            
+            if (hash.startsWith('#portfolio-')) {
+                const uid = hash.replace('#portfolio-', '');
+                viewPortfolio(uid);
+            } else if (hash === '#dashboard' || hash === '') {
+                showDashboard();
+            } else if (hash === '#create') {
+                if (currentUser) {
+                    showCreatePortfolio();
+                } else {
+                    showNotification('Please login to create a portfolio', 'error');
+                    showAuth();
+                }
+            } else {
+                showDashboard();
+            }
+        }
+
+        // ============ SHOW AUTH ============
         function showAuth() {
             const container = document.getElementById('mainContent');
             container.innerHTML = `
                 <div class="auth-container">
                     <div class="auth-tabs">
-                        <div class="auth-tab active" onclick="switchAuthTab('login')">Login</div>
-                        <div class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</div>
+                        <div class="auth-tab active" onclick="window.switchAuthTab('login')">Login</div>
+                        <div class="auth-tab" onclick="window.switchAuthTab('signup')">Sign Up</div>
                     </div>
 
-                    <div id="loginForm">
+                    <div id="loginForm" class="auth-form">
                         <div class="form-group">
                             <label><i class="fas fa-envelope"></i> Email</label>
                             <input type="email" id="loginEmail" placeholder="Enter your email">
@@ -1114,19 +1224,18 @@
                             <label><i class="fas fa-lock"></i> Password</label>
                             <input type="password" id="loginPassword" placeholder="Enter your password">
                         </div>
-                        <button class="btn btn-primary" style="width: 100%;" onclick="login()">
+                        <button class="btn btn-primary" style="width: 100%;" onclick="window.loginWithEmail()">
                             <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                        <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="window.loginWithGoogle()">
+                            <i class="fab fa-google"></i> Login with Google
                         </button>
                     </div>
 
-                    <div id="signupForm" style="display: none;">
+                    <div id="signupForm" class="auth-form" style="display: none;">
                         <div class="form-group">
                             <label><i class="fas fa-user"></i> Name</label>
                             <input type="text" id="signupName" placeholder="Your full name">
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-at"></i> Username</label>
-                            <input type="text" id="signupUsername" placeholder="uniqueusername">
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-envelope"></i> Email</label>
@@ -1134,19 +1243,23 @@
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-lock"></i> Password</label>
-                            <input type="password" id="signupPassword" placeholder="Create a password">
+                            <input type="password" id="signupPassword" placeholder="Create a password (min. 6 characters)">
                         </div>
-                        <button class="btn btn-primary" style="width: 100%;" onclick="signup()">
+                        <button class="btn btn-primary" style="width: 100%;" onclick="window.signupWithEmail()">
                             <i class="fas fa-user-plus"></i> Sign Up
+                        </button>
+                        <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="window.loginWithGoogle()">
+                            <i class="fab fa-google"></i> Sign up with Google
                         </button>
                     </div>
                 </div>
             `;
         }
 
-        function switchAuthTab(tab) {
+        // ============ SWITCH AUTH TABS ============
+        window.switchAuthTab = function(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('#loginForm, #signupForm').forEach(f => f.style.display = 'none');
+            document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
             
             if (tab === 'login') {
                 document.querySelectorAll('.auth-tab')[0].classList.add('active');
@@ -1155,84 +1268,149 @@
                 document.querySelectorAll('.auth-tab')[1].classList.add('active');
                 document.getElementById('signupForm').style.display = 'block';
             }
-        }
+        };
 
-        function login() {
+        // ============ AUTH FUNCTIONS ============
+        window.signupWithEmail = async function() {
+            const name = document.getElementById('signupName')?.value;
+            const email = document.getElementById('signupEmail')?.value;
+            const password = document.getElementById('signupPassword')?.value;
+
+            if (!email || !password || !name) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showNotification('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, {
+                    displayName: name
+                });
+                showNotification('Account created successfully!', 'success');
+            } catch (error) {
+                showNotification(getUserFriendlyError(error), 'error');
+            }
+        };
+
+        window.loginWithEmail = async function() {
             const email = document.getElementById('loginEmail')?.value;
             const password = document.getElementById('loginPassword')?.value;
-            
+
             if (!email || !password) {
                 showNotification('Please fill in all fields', 'error');
                 return;
             }
-            
-            const user = portfolios.find(p => p.email === email && p.password === password);
-            
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                updateNavbar();
-                window.location.hash = '#dashboard';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
                 showNotification('Login successful!', 'success');
-            } else {
-                showNotification('Invalid email or password', 'error');
+            } catch (error) {
+                showNotification(getUserFriendlyError(error), 'error');
+            }
+        };
+
+        window.loginWithGoogle = async function() {
+            try {
+                await signInWithPopup(auth, googleProvider);
+                showNotification('Login successful!', 'success');
+            } catch (error) {
+                showNotification(getUserFriendlyError(error), 'error');
+            }
+        };
+
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                window.location.hash = '';
+                showNotification('Logged out successfully', 'success');
+            } catch (error) {
+                showNotification(getUserFriendlyError(error), 'error');
+            }
+        };
+
+        function getUserFriendlyError(error) {
+            const errorCode = error.code;
+            
+            switch(errorCode) {
+                case 'auth/email-already-in-use':
+                    return 'This email is already registered. Please login instead.';
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/weak-password':
+                    return 'Password should be at least 6 characters.';
+                case 'auth/wrong-password':
+                    return 'Incorrect password. Please try again.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email.';
+                default:
+                    return 'An error occurred. Please try again.';
             }
         }
 
-        function signup() {
-            const name = document.getElementById('signupName')?.value;
-            const username = document.getElementById('signupUsername')?.value;
-            const email = document.getElementById('signupEmail')?.value;
-            const password = document.getElementById('signupPassword')?.value;
+        // ============ IMAGE UPLOAD TO CLOUDINARY ============
+        async function uploadImageToCloudinary(file, type = 'avatar') {
+            if (!file) return null;
             
-            if (!name || !username || !email || !password) {
-                showNotification('Please fill in all fields', 'error');
-                return;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+            formData.append('api_key', CLOUDINARY_CONFIG.apiKey);
+            
+            // Show progress
+            const progressBar = document.querySelector(`.upload-progress.${type}`);
+            const progressBarInner = document.querySelector(`.upload-progress.${type} .upload-progress-bar`);
+            
+            if (progressBar) {
+                progressBar.classList.add('active');
             }
             
-            if (portfolios.some(p => p.username === username)) {
-                showNotification('Username already taken', 'error');
-                return;
+            try {
+                // Simulate progress (Cloudinary doesn't provide progress events in basic API)
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    if (progressBarInner) {
+                        progressBarInner.style.width = progress + '%';
+                    }
+                    if (progress >= 90) clearInterval(interval);
+                }, 200);
+                
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                clearInterval(interval);
+                
+                if (progressBarInner) {
+                    progressBarInner.style.width = '100%';
+                }
+                
+                const data = await response.json();
+                
+                setTimeout(() => {
+                    if (progressBar) {
+                        progressBar.classList.remove('active');
+                        progressBarInner.style.width = '0%';
+                    }
+                }, 500);
+                
+                return data.secure_url;
+            } catch (error) {
+                console.error('Upload error:', error);
+                showNotification('Failed to upload image', 'error');
+                
+                if (progressBar) {
+                    progressBar.classList.remove('active');
+                }
+                
+                return null;
             }
-            
-            if (portfolios.some(p => p.email === email)) {
-                showNotification('Email already registered', 'error');
-                return;
-            }
-            
-            const newUser = {
-                id: Date.now().toString(),
-                name,
-                username,
-                email,
-                password,
-                bio: '',
-                avatar: null,
-                cover: null,
-                links: [],
-                privacy: 'public',
-                views: 0,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            
-            portfolios.push(newUser);
-            localStorage.setItem('portfolios', JSON.stringify(portfolios));
-            
-            currentUser = newUser;
-            localStorage.setItem('currentUser', JSON.stringify(newUser));
-            
-            updateNavbar();
-            window.location.hash = '#create';
-            showNotification('Account created! Now create your portfolio.', 'success');
-        }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            updateNavbar();
-            window.location.hash = '#dashboard';
-            showNotification('Logged out successfully', 'success');
         }
 
         // ============ CREATE PORTFOLIO ============
@@ -1243,60 +1421,42 @@
             }
             
             const container = document.getElementById('mainContent');
-            const user = portfolios.find(p => p.id === currentUser.id) || currentUser;
             
             container.innerHTML = `
                 <div class="create-portfolio">
-                    <h2><i class="fas fa-magic"></i> Create/Edit Portfolio</h2>
+                    <h2><i class="fas fa-magic"></i> Edit Your Portfolio</h2>
                     
                     <div class="form-grid">
                         <div>
                             <div class="form-group">
-                                <label><i class="fas fa-user"></i> Full Name</label>
-                                <input type="text" id="portfolioName" value="${escapeHtml(user.name || '')}" placeholder="John Doe">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label><i class="fas fa-at"></i> Username</label>
-                                <input type="text" id="portfolioUsername" value="${escapeHtml(user.username || '')}" placeholder="johndoe">
+                                <label><i class="fas fa-user"></i> Display Name</label>
+                                <input type="text" id="portfolioName" value="${escapeHtml(currentUser.displayName || '')}" placeholder="John Doe">
                             </div>
                             
                             <div class="form-group">
                                 <label><i class="fas fa-info-circle"></i> Bio</label>
-                                <textarea id="portfolioBio" rows="4" placeholder="Tell your story...">${escapeHtml(user.bio || '')}</textarea>
+                                <textarea id="portfolioBio" rows="4" placeholder="Tell your story...">${escapeHtml(currentUser.bio || '')}</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label><i class="fas fa-tag"></i> Title/Headline</label>
+                                <input type="text" id="portfolioTitle" value="${escapeHtml(currentUser.title || '')}" placeholder="e.g., Full Stack Developer">
                             </div>
                         </div>
                         
                         <div>
                             <div class="form-group">
-                                <label><i class="fas fa-lock"></i> Privacy Settings</label>
-                                <div class="privacy-selector">
-                                    <div class="privacy-option public ${user.privacy === 'public' ? 'selected' : ''}" onclick="selectPrivacy('public')">
-                                        <i class="fas fa-globe"></i>
-                                        <strong>Public</strong>
-                                        <small style="display: block; color: var(--text-dim);">Anyone can see</small>
-                                    </div>
-                                    <div class="privacy-option private ${user.privacy === 'private' ? 'selected' : ''}" onclick="selectPrivacy('private')">
-                                        <i class="fas fa-lock"></i>
-                                        <strong>Private</strong>
-                                        <small style="display: block; color: var(--text-dim);">Only you can see</small>
-                                    </div>
-                                    <div class="privacy-option unlisted ${user.privacy === 'unlisted' ? 'selected' : ''}" onclick="selectPrivacy('unlisted')">
-                                        <i class="fas fa-eye-slash"></i>
-                                        <strong>Unlisted</strong>
-                                        <small style="display: block; color: var(--text-dim);">Only with link</small>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
                                 <label><i class="fas fa-camera"></i> Profile Picture</label>
                                 <div class="image-upload-area" onclick="document.getElementById('avatarInput').click()">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <p>Click to upload profile picture</p>
-                                    <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewImage(this, 'avatarPreview')">
+                                    <p style="font-size: 12px; opacity: 0.7;">(Uploaded to Cloudinary)</p>
+                                    <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="window.prepareImageUpload(this, 'avatar')">
                                 </div>
-                                <img id="avatarPreview" class="image-preview ${user.avatar ? 'show' : ''}" src="${user.avatar || ''}" alt="Preview">
+                                <div class="upload-progress avatar">
+                                    <div class="upload-progress-bar"></div>
+                                </div>
+                                <img id="avatarPreview" class="image-preview ${currentUser.avatar ? 'show' : ''}" src="${currentUser.avatar || ''}" alt="Preview">
                             </div>
                             
                             <div class="form-group">
@@ -1304,19 +1464,43 @@
                                 <div class="image-upload-area" onclick="document.getElementById('coverInput').click()">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <p>Click to upload cover image</p>
-                                    <input type="file" id="coverInput" accept="image/*" style="display: none;" onchange="previewCover(this, 'coverPreview')">
+                                    <p style="font-size: 12px; opacity: 0.7;">(Uploaded to Cloudinary)</p>
+                                    <input type="file" id="coverInput" accept="image/*" style="display: none;" onchange="window.prepareImageUpload(this, 'cover')">
                                 </div>
-                                <img id="coverPreview" class="cover-preview ${user.cover ? 'show' : ''}" src="${user.cover || ''}" alt="Preview">
+                                <div class="upload-progress cover">
+                                    <div class="upload-progress-bar"></div>
+                                </div>
+                                <img id="coverPreview" class="cover-preview ${currentUser.cover ? 'show' : ''}" src="${currentUser.cover || ''}" alt="Preview">
                             </div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin: 30px 0 20px;"><i class="fas fa-lock"></i> Privacy Settings</h3>
+                    
+                    <div class="privacy-settings">
+                        <div class="privacy-option public ${currentUser.privacy === 'public' ? 'selected' : ''}" onclick="window.selectPrivacy('public')">
+                            <i class="fas fa-globe"></i>
+                            <h4>Public</h4>
+                            <p style="font-size: 12px; color: var(--text-dim);">Visible to everyone</p>
+                        </div>
+                        <div class="privacy-option private ${currentUser.privacy === 'private' ? 'selected' : ''}" onclick="window.selectPrivacy('private')">
+                            <i class="fas fa-lock"></i>
+                            <h4>Private</h4>
+                            <p style="font-size: 12px; color: var(--text-dim);">Only you can view</p>
+                        </div>
+                        <div class="privacy-option unlisted ${currentUser.privacy === 'unlisted' ? 'selected' : ''}" onclick="window.selectPrivacy('unlisted')">
+                            <i class="fas fa-link"></i>
+                            <h4>Unlisted</h4>
+                            <p style="font-size: 12px; color: var(--text-dim);">Only people with link</p>
                         </div>
                     </div>
                     
                     <h3 style="margin: 30px 0 20px;"><i class="fas fa-link"></i> Social Links</h3>
                     
                     <div id="linksContainer" class="links-container">
-                        ${user.links && user.links.map((link, index) => `
+                        ${currentUser.portfolioLinks && currentUser.portfolioLinks.map((link, index) => `
                             <div class="link-input-group" data-index="${index}">
-                                <select onchange="updateLinkType(${index}, this.value)">
+                                <select onchange="window.updateLinkType(${index}, this.value)">
                                     <option value="website" ${link.type === 'website' ? 'selected' : ''}>🌐 Website</option>
                                     <option value="github" ${link.type === 'github' ? 'selected' : ''}>🐙 GitHub</option>
                                     <option value="linkedin" ${link.type === 'linkedin' ? 'selected' : ''}>🔗 LinkedIn</option>
@@ -1325,26 +1509,22 @@
                                     <option value="youtube" ${link.type === 'youtube' ? 'selected' : ''}>▶️ YouTube</option>
                                     <option value="facebook" ${link.type === 'facebook' ? 'selected' : ''}>📘 Facebook</option>
                                     <option value="tiktok" ${link.type === 'tiktok' ? 'selected' : ''}>🎵 TikTok</option>
-                                    <option value="behance" ${link.type === 'behance' ? 'selected' : ''}>🎨 Behance</option>
-                                    <option value="dribbble" ${link.type === 'dribbble' ? 'selected' : ''}>🏀 Dribbble</option>
-                                    <option value="medium" ${link.type === 'medium' ? 'selected' : ''}>📝 Medium</option>
-                                    <option value="devto" ${link.type === 'devto' ? 'selected' : ''}>👨‍💻 Dev.to</option>
                                 </select>
-                                <input type="url" value="${escapeHtml(link.url || '')}" placeholder="https://..." onchange="updateLinkUrl(${index}, this.value)">
-                                <input type="text" value="${escapeHtml(link.title || '')}" placeholder="Link title" onchange="updateLinkTitle(${index}, this.value)">
-                                <button class="remove-link" onclick="removeLink(${index})">
+                                <input type="url" value="${escapeHtml(link.url)}" placeholder="https://..." onchange="window.updateLinkUrl(${index}, this.value)">
+                                <input type="text" value="${escapeHtml(link.title || '')}" placeholder="Link title" onchange="window.updateLinkTitle(${index}, this.value)">
+                                <button class="remove-link" onclick="window.removeLink(${index})">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         `).join('') || ''}
                     </div>
                     
-                    <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="addLinkField()">
+                    <button class="add-link-btn" onclick="window.addLinkField()">
                         <i class="fas fa-plus-circle"></i> Add Social Link
                     </button>
                     
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
-                        <button class="btn btn-success" style="flex: 1;" onclick="savePortfolio()">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="window.savePortfolio()">
                             <i class="fas fa-save"></i> Save Portfolio
                         </button>
                         <button class="btn btn-danger" style="flex: 1;" onclick="window.location.hash='#dashboard'">
@@ -1356,380 +1536,418 @@
         }
 
         // ============ PRIVACY SELECTION ============
-        function selectPrivacy(privacy) {
-            document.querySelectorAll('.privacy-option').forEach(opt => opt.classList.remove('selected'));
+        window.selectPrivacy = function(privacy) {
+            document.querySelectorAll('.privacy-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
             document.querySelector(`.privacy-option.${privacy}`).classList.add('selected');
             currentUser.privacy = privacy;
-        }
+        };
+
+        // ============ IMAGE UPLOAD PREPARATION ============
+        window.prepareImageUpload = async function(input, type) {
+            if (input.files && input.files[0]) {
+                const preview = document.getElementById(type === 'avatar' ? 'avatarPreview' : 'coverPreview');
+                
+                // Show local preview immediately
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.add('show');
+                }
+                reader.readAsDataURL(input.files[0]);
+                
+                // Upload to Cloudinary
+                const imageUrl = await uploadImageToCloudinary(input.files[0], type);
+                
+                if (imageUrl) {
+                    if (type === 'avatar') {
+                        currentUser.avatar = imageUrl;
+                    } else {
+                        currentUser.cover = imageUrl;
+                    }
+                    showNotification('Image uploaded successfully!', 'success');
+                }
+            }
+        };
 
         // ============ LINK MANAGEMENT ============
-        function addLinkField() {
-            if (!currentUser.links) currentUser.links = [];
-            currentUser.links.push({ type: 'website', url: '', title: '' });
-            showCreatePortfolio();
-        }
-
-        function updateLinkType(index, type) {
-            if (!currentUser.links) currentUser.links = [];
-            if (!currentUser.links[index]) currentUser.links[index] = {};
-            currentUser.links[index].type = type;
-        }
-
-        function updateLinkUrl(index, url) {
-            if (!currentUser.links) currentUser.links = [];
-            if (!currentUser.links[index]) currentUser.links[index] = {};
-            currentUser.links[index].url = url;
-        }
-
-        function updateLinkTitle(index, title) {
-            if (!currentUser.links) currentUser.links = [];
-            if (!currentUser.links[index]) currentUser.links[index] = {};
-            currentUser.links[index].title = title;
-        }
-
-        function removeLink(index) {
-            if (currentUser.links) {
-                currentUser.links.splice(index, 1);
-                showCreatePortfolio();
-            }
-        }
-
-        // ============ IMAGE HANDLING ============
-        function previewImage(input, previewId) {
-            const preview = document.getElementById(previewId);
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.classList.add('show');
-                    currentUser.avatar = e.target.result;
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function previewCover(input, previewId) {
-            const preview = document.getElementById(previewId);
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.classList.add('show');
-                    currentUser.cover = e.target.result;
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // ============ SAVE PORTFOLIO ============
-        function savePortfolio() {
-            const name = document.getElementById('portfolioName')?.value;
-            const username = document.getElementById('portfolioUsername')?.value;
-            const bio = document.getElementById('portfolioBio')?.value;
-            
-            if (!name || !username) {
-                showNotification('Name and username are required', 'error');
-                return;
+        window.addLinkField = function() {
+            if (!currentUser.portfolioLinks) {
+                currentUser.portfolioLinks = [];
             }
             
-            // Check if username is taken (by another user)
-            const existingUser = portfolios.find(p => p.username === username && p.id !== currentUser.id);
-            if (existingUser) {
-                showNotification('Username already taken', 'error');
-                return;
-            }
-            
-            // Update current user
-            currentUser.name = name;
-            currentUser.username = username;
-            currentUser.bio = bio;
-            currentUser.updatedAt = new Date().toISOString();
-            
-            // Update in portfolios array
-            const index = portfolios.findIndex(p => p.id === currentUser.id);
-            if (index !== -1) {
-                portfolios[index] = currentUser;
-            } else {
-                portfolios.push(currentUser);
-            }
-            
-            localStorage.setItem('portfolios', JSON.stringify(portfolios));
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
-            showNotification('Portfolio saved successfully!', 'success');
-            window.location.hash = `#portfolio-${username}`;
-        }
-
-        // ============ VIEW PORTFOLIO ============
-        function viewPortfolio(username) {
-            const container = document.getElementById('mainContent');
-            const portfolio = portfolios.find(p => p.username === username);
-            
-            if (!portfolio) {
-                container.innerHTML = `
-                    <div class="access-denied">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h2>Portfolio Not Found</h2>
-                        <p style="color: var(--text-dim); margin: 20px 0;">The portfolio you're looking for doesn't exist.</p>
-                        <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
-                            <i class="fas fa-home"></i> Back to Dashboard
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Check privacy settings
-            const isOwner = currentUser && currentUser.id === portfolio.id;
-            
-            if (portfolio.privacy === 'private' && !isOwner) {
-                container.innerHTML = `
-                    <div class="access-denied">
-                        <i class="fas fa-lock" style="color: var(--danger);"></i>
-                        <h2>Private Portfolio</h2>
-                        <p style="color: var(--text-dim); margin: 20px 0;">This portfolio is private. Only the owner can view it.</p>
-                        <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
-                            <i class="fas fa-home"></i> Back to Dashboard
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Increment views (if not the owner)
-            if (!isOwner && portfolio.privacy !== 'private') {
-                portfolio.views = (portfolio.views || 0) + 1;
-                localStorage.setItem('portfolios', JSON.stringify(portfolios));
-            }
-            
-            const coverStyle = portfolio.cover ? `background-image: url('${portfolio.cover}');` : 'background: linear-gradient(135deg, #6366f1, #8b5cf6);';
-            
-            const privacyIcon = {
-                'public': '<i class="fas fa-globe"></i> Public',
-                'private': '<i class="fas fa-lock"></i> Private',
-                'unlisted': '<i class="fas fa-eye-slash"></i> Unlisted'
-            };
-            
-            container.innerHTML = `
-                <div class="portfolio-detail">
-                    <div class="portfolio-cover" style="${coverStyle}">
-                        <div class="portfolio-cover-overlay">
-                            <img src="${portfolio.avatar || 'https://via.placeholder.com/150'}" class="portfolio-detail-avatar" alt="Avatar">
-                            <h1 class="portfolio-detail-name">${escapeHtml(portfolio.name)}</h1>
-                            <div class="portfolio-detail-username">@${escapeHtml(portfolio.username)}</div>
-                            <div class="portfolio-detail-privacy ${portfolio.privacy}">
-                                ${privacyIcon[portfolio.privacy]}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="portfolio-detail-bio">
-                        <i class="fas fa-quote-left" style="color: var(--primary); opacity: 0.5; font-size: 24px; margin-right: 10px;"></i>
-                        ${escapeHtml(portfolio.bio || 'No bio yet.')}
-                    </div>
-                    
-                    <div style="padding: 0 30px; display: flex; justify-content: space-between; align-items: center;">
-                        <h2><i class="fas fa-link"></i> Links</h2>
-                        <div style="display: flex; gap: 15px;">
-                            <span><i class="fas fa-eye"></i> ${portfolio.views || 0} views</span>
-                            <span><i class="fas fa-calendar"></i> ${new Date(portfolio.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="links-grid">
-                        ${portfolio.links && portfolio.links.map(link => `
-                            <a href="${escapeHtml(link.url)}" target="_blank" class="link-card">
-                                <div class="link-icon">
-                                    <i class="${getLinkIcon(link.type)}"></i>
-                                </div>
-                                <div class="link-title">${escapeHtml(link.title || getLinkTitle(link.type))}</div>
-                                <div class="link-url">${escapeHtml(link.url)}</div>
-                            </a>
-                        `).join('')}
-                        
-                        ${(!portfolio.links || portfolio.links.length === 0) ? 
-                            '<p style="color: var(--text-dim); grid-column: 1/-1; text-align: center; padding: 40px;">No links added yet.</p>' : 
-                            ''}
-                    </div>
-                    
-                    <div style="padding: 30px; text-align: center;">
-                        <button class="btn btn-primary" onclick="sharePortfolio('${portfolio.username}')">
-                            <i class="fas fa-share-alt"></i> Share Portfolio
-                        </button>
-                        ${isOwner ? `
-                            <button class="btn btn-success" style="margin-left: 15px;" onclick="window.location.hash='#create'">
-                                <i class="fas fa-edit"></i> Edit Portfolio
-                            </button>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        // ============ DASHBOARD ============
-        function showDashboard(filter = 'all') {
-            currentFilter = filter;
-            const container = document.getElementById('mainContent');
-            
-            // Filter portfolios based on privacy and ownership
-            let filteredPortfolios = portfolios.filter(p => {
-                if (p.privacy === 'private') {
-                    return currentUser && currentUser.id === p.id;
-                }
-                if (p.privacy === 'unlisted' && filter !== 'mine') {
-                    return currentUser && currentUser.id === p.id;
-                }
-                return true;
+            currentUser.portfolioLinks.push({
+                type: 'website',
+                url: '',
+                title: ''
             });
             
-            // Apply filter
-            if (filter === 'mine' && currentUser) {
-                filteredPortfolios = filteredPortfolios.filter(p => p.id === currentUser.id);
+            showCreatePortfolio();
+        };
+
+        window.updateLinkType = function(index, type) {
+            if (!currentUser.portfolioLinks) currentUser.portfolioLinks = [];
+            if (!currentUser.portfolioLinks[index]) currentUser.portfolioLinks[index] = {};
+            currentUser.portfolioLinks[index].type = type;
+        };
+
+        window.updateLinkUrl = function(index, url) {
+            if (!currentUser.portfolioLinks) currentUser.portfolioLinks = [];
+            if (!currentUser.portfolioLinks[index]) currentUser.portfolioLinks[index] = {};
+            currentUser.portfolioLinks[index].url = url;
+        };
+
+        window.updateLinkTitle = function(index, title) {
+            if (!currentUser.portfolioLinks) currentUser.portfolioLinks = [];
+            if (!currentUser.portfolioLinks[index]) currentUser.portfolioLinks[index] = {};
+            currentUser.portfolioLinks[index].title = title;
+        };
+
+        window.removeLink = function(index) {
+            if (currentUser.portfolioLinks) {
+                currentUser.portfolioLinks.splice(index, 1);
+                showCreatePortfolio();
+            }
+        };
+
+        // ============ SAVE PORTFOLIO ============
+        window.savePortfolio = async function() {
+            const name = document.getElementById('portfolioName')?.value;
+            const bio = document.getElementById('portfolioBio')?.value;
+            const title = document.getElementById('portfolioTitle')?.value;
+            
+            if (!name) {
+                showNotification('Name is required', 'error');
+                return;
             }
             
-            const totalPortfolios = portfolios.length;
-            const publicPortfolios = portfolios.filter(p => p.privacy === 'public').length;
-            const totalViews = portfolios.reduce((sum, p) => sum + (p.views || 0), 0);
-            const myPortfolios = currentUser ? portfolios.filter(p => p.id === currentUser.id).length : 0;
+            try {
+                // Update user document in Firestore
+                const userRef = doc(db, 'users', currentUser.uid);
+                
+                const updateData = {
+                    displayName: name,
+                    bio: bio || '',
+                    title: title || '',
+                    privacy: currentUser.privacy || 'public',
+                    portfolioLinks: currentUser.portfolioLinks || [],
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Only update images if they exist
+                if (currentUser.avatar) {
+                    updateData.avatar = currentUser.avatar;
+                }
+                
+                if (currentUser.cover) {
+                    updateData.cover = currentUser.cover;
+                }
+                
+                await updateDoc(userRef, updateData);
+                
+                // Update current user object
+                currentUser = {
+                    ...currentUser,
+                    ...updateData
+                };
+                
+                showNotification('Portfolio saved successfully!', 'success');
+                window.location.hash = `#portfolio-${currentUser.uid}`;
+                
+            } catch (error) {
+                console.error('Error saving portfolio:', error);
+                showNotification('Error saving portfolio', 'error');
+            }
+        };
+
+        // ============ VIEW PORTFOLIO ============
+        async function viewPortfolio(uid) {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading"></div>';
             
-            container.innerHTML = `
-                <div class="dashboard">
-                    <div class="dashboard-header">
-                        <h1><i class="fas fa-home"></i> Portfolio Dashboard</h1>
-                        <div class="dashboard-tabs">
-                            <button class="dashboard-tab ${filter === 'all' ? 'active' : ''}" onclick="showDashboard('all')">
-                                <i class="fas fa-globe"></i> All Portfolios
+            try {
+                const userDoc = await getDoc(doc(db, 'users', uid));
+                
+                if (!userDoc.exists()) {
+                    container.innerHTML = `
+                        <div class="auth-container" style="text-align: center;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger); margin-bottom: 20px;"></i>
+                            <h2>Portfolio Not Found</h2>
+                            <p style="color: var(--text-dim); margin: 20px 0;">The portfolio you're looking for doesn't exist.</p>
+                            <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
+                                <i class="fas fa-home"></i> Back to Dashboard
                             </button>
-                            ${currentUser ? `
-                                <button class="dashboard-tab ${filter === 'mine' ? 'active' : ''}" onclick="showDashboard('mine')">
-                                    <i class="fas fa-user"></i> My Portfolios
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const portfolio = {
+                    uid: doc.id,
+                    ...userDoc.data()
+                };
+                
+                // Check privacy settings
+                const canView = 
+                    portfolio.privacy === 'public' || 
+                    (portfolio.privacy === 'unlisted') ||
+                    (currentUser && currentUser.uid === uid);
+                
+                if (!canView) {
+                    container.innerHTML = `
+                        <div class="auth-container" style="text-align: center;">
+                            <i class="fas fa-lock" style="font-size: 48px; color: var(--danger); margin-bottom: 20px;"></i>
+                            <h2>Private Portfolio</h2>
+                            <p style="color: var(--text-dim); margin: 20px 0;">This portfolio is private.</p>
+                            <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
+                                <i class="fas fa-home"></i> Back to Dashboard
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Increment view count if not owner
+                if (!currentUser || currentUser.uid !== uid) {
+                    await updateDoc(doc(db, 'users', uid), {
+                        portfolioViews: increment(1)
+                    });
+                    portfolio.portfolioViews = (portfolio.portfolioViews || 0) + 1;
+                }
+                
+                const coverStyle = portfolio.cover ? `background-image: url('${portfolio.cover}');` : 'background: linear-gradient(135deg, #6366f1, #8b5cf6);';
+                const privacyInfo = {
+                    public: { icon: 'fa-globe', text: 'Public Portfolio' },
+                    private: { icon: 'fa-lock', text: 'Private Portfolio' },
+                    unlisted: { icon: 'fa-link', text: 'Unlisted Portfolio' }
+                }[portfolio.privacy || 'public'];
+                
+                container.innerHTML = `
+                    <div class="portfolio-detail">
+                        <div class="portfolio-cover" style="${coverStyle}">
+                            <div class="portfolio-cover-overlay">
+                                <img src="${portfolio.avatar || 'https://via.placeholder.com/180'}" class="portfolio-detail-avatar" alt="Avatar">
+                                <h1 class="portfolio-detail-name">${escapeHtml(portfolio.displayName)}</h1>
+                                <div class="portfolio-detail-username">${escapeHtml(portfolio.title || 'Professional Portfolio')}</div>
+                                <div class="privacy-info ${portfolio.privacy || 'public'}">
+                                    <i class="fas ${privacyInfo.icon}"></i> ${privacyInfo.text}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="portfolio-detail-bio">
+                            <i class="fas fa-quote-left" style="color: var(--primary); opacity: 0.5; font-size: 24px; margin-right: 10px;"></i>
+                            ${escapeHtml(portfolio.bio || 'No bio yet.')}
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; padding: 0 30px; color: var(--text-dim);">
+                            <span><i class="fas fa-eye"></i> ${portfolio.portfolioViews || 0} views</span>
+                            <span><i class="fas fa-calendar"></i> Joined ${new Date(portfolio.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        
+                        <h2 style="padding: 30px 30px 0;"><i class="fas fa-link"></i> Links</h2>
+                        
+                        <div class="links-grid">
+                            ${portfolio.portfolioLinks && portfolio.portfolioLinks.map(link => `
+                                <a href="${escapeHtml(link.url)}" target="_blank" class="link-card" rel="noopener noreferrer">
+                                    <div class="link-icon">
+                                        <i class="${getLinkIcon(link.type)}"></i>
+                                    </div>
+                                    <div class="link-title">${escapeHtml(link.title || getLinkTitle(link.type))}</div>
+                                    <div class="link-url">${escapeHtml(link.url)}</div>
+                                </a>
+                            `).join('')}
+                            
+                            ${(!portfolio.portfolioLinks || portfolio.portfolioLinks.length === 0) ? 
+                                '<p style="color: var(--text-dim); grid-column: 1/-1; text-align: center; padding: 40px;">No links added yet.</p>' : 
+                                ''}
+                        </div>
+                        
+                        <div style="padding: 30px; text-align: center;">
+                            <button class="btn btn-primary" onclick="window.sharePortfolio('${portfolio.uid}')">
+                                <i class="fas fa-share-alt"></i> Share Portfolio
+                            </button>
+                            ${currentUser && currentUser.uid === uid ? `
+                                <button class="btn btn-success" style="margin-left: 10px;" onclick="window.location.hash='#create'">
+                                    <i class="fas fa-edit"></i> Edit Portfolio
                                 </button>
                             ` : ''}
                         </div>
                     </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading portfolio:', error);
+                container.innerHTML = `
+                    <div class="auth-container" style="text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger); margin-bottom: 20px;"></i>
+                        <h2>Error Loading Portfolio</h2>
+                        <p style="color: var(--text-dim); margin: 20px 0;">Please try again later.</p>
+                        <button class="btn btn-primary" onclick="window.location.hash='#dashboard'">
+                            <i class="fas fa-home"></i> Back to Dashboard
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // ============ DASHBOARD ============
+        function showDashboard() {
+            const container = document.getElementById('mainContent');
+            
+            // Filter portfolios based on privacy and current filter
+            let filteredPortfolios = allPortfolios.filter(p => {
+                if (currentFilter === 'all') return p.privacy === 'public' || p.privacy === 'unlisted';
+                return p.privacy === currentFilter;
+            });
+            
+            // Add user's own private portfolios
+            if (currentUser) {
+                const userPortfolios = allPortfolios.filter(p => 
+                    p.uid === currentUser.uid && p.privacy === 'private'
+                );
+                filteredPortfolios = [...filteredPortfolios, ...userPortfolios];
+            }
+            
+            container.innerHTML = `
+                <div class="dashboard">
+                    <div style="text-align: center; margin-bottom: 50px;">
+                        <h1 style="font-size: 4rem; font-weight: 800; margin-bottom: 20px; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            PortfolioHub Pro
+                        </h1>
+                        <p style="font-size: 1.3rem; color: var(--text-dim); max-width: 600px; margin: 0 auto;">
+                            Create your professional portfolio in minutes. Showcase your work and connect with the world.
+                        </p>
+                    </div>
                     
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <i class="fas fa-users stat-icon"></i>
-                            <div class="stat-number">${totalPortfolios}</div>
-                            <div class="stat-label">Total Portfolios</div>
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 50px;">
+                        <div style="background: rgba(26, 26, 46, 0.8); backdrop-filter: var(--blur); border-radius: 20px; padding: 30px; text-align: center; border: 1px solid var(--border);">
+                            <i class="fas fa-users" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+                            <h3 style="font-size: 2.5rem; color: var(--primary);">${allPortfolios.length}</h3>
+                            <p style="color: var(--text-dim);">Total Portfolios</p>
                         </div>
                         
-                        <div class="stat-card">
-                            <i class="fas fa-globe stat-icon" style="color: #10b981;"></i>
-                            <div class="stat-number" style="color: #10b981;">${publicPortfolios}</div>
-                            <div class="stat-label">Public Portfolios</div>
+                        <div style="background: rgba(26, 26, 46, 0.8); backdrop-filter: var(--blur); border-radius: 20px; padding: 30px; text-align: center; border: 1px solid var(--border);">
+                            <i class="fas fa-eye" style="font-size: 40px; color: var(--success); margin-bottom: 15px;"></i>
+                            <h3 style="font-size: 2.5rem; color: var(--success);">${allPortfolios.reduce((sum, p) => sum + (p.portfolioViews || 0), 0)}</h3>
+                            <p style="color: var(--text-dim);">Total Views</p>
                         </div>
                         
-                        <div class="stat-card">
-                            <i class="fas fa-eye stat-icon" style="color: #f59e0b;"></i>
-                            <div class="stat-number" style="color: #f59e0b;">${totalViews}</div>
-                            <div class="stat-label">Total Views</div>
+                        <div style="background: rgba(26, 26, 46, 0.8); backdrop-filter: var(--blur); border-radius: 20px; padding: 30px; text-align: center; border: 1px solid var(--border);">
+                            <i class="fas fa-link" style="font-size: 40px; color: var(--accent); margin-bottom: 15px;"></i>
+                            <h3 style="font-size: 2.5rem; color: var(--accent);">${allPortfolios.reduce((sum, p) => sum + (p.portfolioLinks?.length || 0), 0)}</h3>
+                            <p style="color: var(--text-dim);">Total Links</p>
                         </div>
-                        
+                    </div>
+                    
+                    <div class="filters">
+                        <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="window.setFilter('all')">
+                            <i class="fas fa-globe"></i> All Public
+                        </button>
+                        <button class="filter-btn ${currentFilter === 'public' ? 'active' : ''}" onclick="window.setFilter('public')">
+                            <i class="fas fa-globe"></i> Public
+                        </button>
+                        <button class="filter-btn ${currentFilter === 'unlisted' ? 'active' : ''}" onclick="window.setFilter('unlisted')">
+                            <i class="fas fa-link"></i> Unlisted
+                        </button>
                         ${currentUser ? `
-                        <div class="stat-card">
-                            <i class="fas fa-folder stat-icon" style="color: #8b5cf6;"></i>
-                            <div class="stat-number" style="color: #8b5cf6;">${myPortfolios}</div>
-                            <div class="stat-label">My Portfolios</div>
-                        </div>
+                            <button class="filter-btn ${currentFilter === 'private' ? 'active' : ''}" onclick="window.setFilter('private')">
+                                <i class="fas fa-lock"></i> My Private
+                            </button>
                         ` : ''}
                     </div>
                     
                     ${!currentUser ? `
-                    <div style="background: var(--gradient-primary); border-radius: 30px; padding: 60px; text-align: center; margin-bottom: 40px;">
-                        <h2 style="font-size: 2.5rem; color: white; margin-bottom: 20px;">Create Your Portfolio Today!</h2>
-                        <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin-bottom: 30px;">Choose between public, private, or unlisted portfolios.</p>
+                    <div style="background: var(--gradient-primary); border-radius: 30px; padding: 60px; text-align: center; margin-bottom: 50px;">
+                        <h2 style="font-size: 2.5rem; color: white; margin-bottom: 20px;">Ready to create your portfolio?</h2>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin-bottom: 30px;">Join thousands of professionals showcasing their work.</p>
                         <button class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.1rem; padding: 15px 40px;" onclick="showAuth()">
                             <i class="fas fa-rocket"></i> Get Started
                         </button>
                     </div>
                     ` : ''}
                     
-                    <h2 style="margin-bottom: 20px;">
-                        <i class="fas ${filter === 'mine' ? 'fa-folder' : 'fa-star'}"></i> 
-                        ${filter === 'mine' ? 'My Portfolios' : 'Featured Portfolios'}
+                    <h2 style="font-size: 2rem; margin-bottom: 30px;">
+                        <i class="fas fa-star"></i> 
+                        ${currentFilter === 'all' ? 'Featured Portfolios' : 
+                          currentFilter === 'public' ? 'Public Portfolios' :
+                          currentFilter === 'unlisted' ? 'Unlisted Portfolios' :
+                          'My Private Portfolios'}
                     </h2>
                     
                     <div class="portfolio-grid">
-                        ${filteredPortfolios.sort((a, b) => (b.views || 0) - (a.views || 0)).map(portfolio => `
-                            <div class="portfolio-card ${portfolio.privacy}" onclick="window.location.hash='#portfolio-${portfolio.username}'">
-                                <div class="portfolio-header">
-                                    <div class="privacy-badge-card privacy-${portfolio.privacy}">
-                                        <i class="fas ${portfolio.privacy === 'public' ? 'fa-globe' : portfolio.privacy === 'private' ? 'fa-lock' : 'fa-eye-slash'}"></i>
-                                        ${portfolio.privacy}
-                                    </div>
-                                    <img src="${portfolio.avatar || 'https://via.placeholder.com/100'}" class="portfolio-avatar" alt="Avatar">
-                                    <div class="portfolio-name">${escapeHtml(portfolio.name)}</div>
-                                    <div class="portfolio-username">@${escapeHtml(portfolio.username)}</div>
+                        ${filteredPortfolios.sort((a, b) => (b.portfolioViews || 0) - (a.portfolioViews || 0)).map(portfolio => `
+                            <div class="portfolio-card" onclick="window.location.hash='#portfolio-${portfolio.uid}'">
+                                <div class="privacy-badge ${portfolio.privacy || 'public'}">
+                                    <i class="fas ${portfolio.privacy === 'private' ? 'fa-lock' : portfolio.privacy === 'unlisted' ? 'fa-link' : 'fa-globe'}"></i>
+                                    ${portfolio.privacy || 'public'}
+                                </div>
+                                <div class="portfolio-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                                    <img src="${portfolio.avatar || 'https://via.placeholder.com/120'}" class="portfolio-avatar" alt="Avatar">
+                                    <div class="portfolio-name">${escapeHtml(portfolio.displayName)}</div>
+                                    <div class="portfolio-username">${escapeHtml(portfolio.title || 'Professional Portfolio')}</div>
                                 </div>
                                 <div class="portfolio-body">
                                     <div class="portfolio-bio">
                                         ${escapeHtml((portfolio.bio || 'No bio yet').substring(0, 100))}${portfolio.bio?.length > 100 ? '...' : ''}
                                     </div>
                                     
-                                    <div class="portfolio-meta">
-                                        <span><i class="fas fa-eye"></i> ${portfolio.views || 0} views</span>
-                                        <span><i class="fas fa-link"></i> ${portfolio.links?.length || 0} links</span>
-                                    </div>
-                                    
-                                    <div class="social-links-preview">
-                                        ${portfolio.links && portfolio.links.slice(0, 5).map(link => `
-                                            <div class="social-icon" title="${link.title || link.type}">
+                                    <div class="social-links">
+                                        ${portfolio.portfolioLinks && portfolio.portfolioLinks.slice(0, 3).map(link => `
+                                            <a href="${escapeHtml(link.url)}" class="social-link" onclick="event.stopPropagation()" target="_blank" rel="noopener noreferrer">
                                                 <i class="${getLinkIcon(link.type)}"></i>
-                                            </div>
+                                                <span>${link.title || getLinkTitle(link.type)}</span>
+                                            </a>
                                         `).join('')}
                                     </div>
                                 </div>
                                 <div class="portfolio-footer">
-                                    <span><i class="fas fa-calendar"></i> ${new Date(portfolio.createdAt).toLocaleDateString()}</span>
-                                    ${portfolio.id === currentUser?.id ? '<span><i class="fas fa-star" style="color: gold;"></i> Owner</span>' : ''}
+                                    <div class="portfolio-views">
+                                        <i class="fas fa-eye"></i> ${portfolio.portfolioViews || 0} views
+                                    </div>
+                                    <div class="portfolio-views">
+                                        <i class="fas fa-calendar"></i> ${new Date(portfolio.createdAt).toLocaleDateString()}
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
                         
                         ${filteredPortfolios.length === 0 ? `
-                            <div style="grid-column: 1/-1; text-align: center; padding: 60px; background: var(--dark-card); border-radius: 20px;">
-                                <i class="fas fa-folder-open" style="font-size: 60px; color: var(--text-dim); margin-bottom: 20px;"></i>
-                                <h3>No portfolios found</h3>
-                                <p style="color: var(--text-dim); margin: 20px 0;">${filter === 'mine' ? 'You haven\'t created any portfolios yet.' : 'No portfolios available.'}</p>
-                                ${filter === 'mine' ? `
-                                    <button class="btn btn-primary" onclick="window.location.hash='#create'">
-                                        <i class="fas fa-plus"></i> Create Portfolio
-                                    </button>
-                                ` : ''}
-                            </div>
+                            <p style="color: var(--text-dim); grid-column: 1/-1; text-align: center; padding: 40px;">
+                                No portfolios found.
+                            </p>
                         ` : ''}
                     </div>
                 </div>
             `;
         }
 
+        // ============ SET FILTER ============
+        window.setFilter = function(filter) {
+            currentFilter = filter;
+            showDashboard();
+        };
+
         // ============ SHARE FUNCTIONALITY ============
-        function sharePortfolio(username) {
+        window.sharePortfolio = function(uid) {
             const shareModal = document.getElementById('shareModal');
             const shareLink = document.getElementById('shareLink');
-            shareLink.value = `${window.location.origin}${window.location.pathname}#portfolio-${username}`;
+            shareLink.value = `${window.location.origin}${window.location.pathname}#portfolio-${uid}`;
             shareModal.classList.add('active');
-        }
+        };
 
-        function closeShareModal() {
+        window.closeShareModal = function() {
             document.getElementById('shareModal').classList.remove('active');
-        }
+        };
 
-        function copyShareLink() {
+        window.copyShareLink = function() {
             const link = document.getElementById('shareLink');
             link.select();
             navigator.clipboard.writeText(link.value);
             showNotification('Link copied to clipboard!', 'success');
             closeShareModal();
-        }
+        };
 
         // ============ HELPER FUNCTIONS ============
         function getLinkIcon(type) {
@@ -1741,11 +1959,7 @@
                 instagram: 'fab fa-instagram',
                 youtube: 'fab fa-youtube',
                 facebook: 'fab fa-facebook',
-                tiktok: 'fab fa-tiktok',
-                behance: 'fab fa-behance',
-                dribbble: 'fab fa-dribbble',
-                medium: 'fab fa-medium',
-                devto: 'fab fa-dev'
+                tiktok: 'fab fa-tiktok'
             };
             return icons[type] || 'fas fa-link';
         }
@@ -1759,11 +1973,7 @@
                 instagram: 'Instagram',
                 youtube: 'YouTube',
                 facebook: 'Facebook',
-                tiktok: 'TikTok',
-                behance: 'Behance',
-                dribbble: 'Dribbble',
-                medium: 'Medium',
-                devto: 'Dev.to'
+                tiktok: 'TikTok'
             };
             return titles[type] || 'Link';
         }
@@ -1792,9 +2002,6 @@
             }, 3000);
         }
 
-        // ============ INITIALIZE ============
-        init();
-
         // ============ CLOSE MODAL ON OUTSIDE CLICK ============
         window.onclick = function(event) {
             const shareModal = document.getElementById('shareModal');
@@ -1805,24 +2012,13 @@
 
         // ============ EXPOSE FUNCTIONS TO WINDOW ============
         window.showAuth = showAuth;
-        window.switchAuthTab = switchAuthTab;
-        window.login = login;
-        window.signup = signup;
-        window.logout = logout;
-        window.showCreatePortfolio = showCreatePortfolio;
-        window.addLinkField = addLinkField;
-        window.updateLinkType = updateLinkType;
-        window.updateLinkUrl = updateLinkUrl;
-        window.updateLinkTitle = updateLinkTitle;
-        window.removeLink = removeLink;
-        window.previewImage = previewImage;
-        window.previewCover = previewCover;
-        window.selectPrivacy = selectPrivacy;
-        window.savePortfolio = savePortfolio;
+        window.showDashboard = showDashboard;
         window.sharePortfolio = sharePortfolio;
         window.closeShareModal = closeShareModal;
         window.copyShareLink = copyShareLink;
-        window.showDashboard = showDashboard;
+
+        // ============ INITIALIZE ============
+        init();
     </script>
 </body>
 </html>
