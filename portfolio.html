@@ -38,8 +38,8 @@
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.5);
-            --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --shadow-glow: 0 0 20px var(--primary);
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
             --gradient-success: linear-gradient(135deg, #10b981, #34d399);
             --gradient-danger: linear-gradient(135deg, #ef4444, #f87171);
             --gradient-dark: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -57,14 +57,30 @@
             transition: background 0.5s ease;
         }
 
-        body.theme-primary { background: radial-gradient(circle at top right, #1e1e3f, #0a0a14); }
-        body.theme-success { background: radial-gradient(circle at top right, #0f2e1a, #0a140a); }
-        body.theme-danger { background: radial-gradient(circle at top right, #3f1e1e, #140a0a); }
-        body.theme-warning { background: radial-gradient(circle at top right, #3f2e0a, #14100a); }
-        body.theme-purple { background: radial-gradient(circle at top right, #2e1e3f, #0f0a14); }
-        body.theme-pink { background: radial-gradient(circle at top right, #3f1e2e, #140a0f); }
-        body.theme-indigo { background: radial-gradient(circle at top right, #1e1e4f, #0a0a1a); }
-        body.theme-teal { background: radial-gradient(circle at top right, #0e3f3f, #0a1414); }
+        body.theme-primary {
+            background: radial-gradient(circle at top right, #1e1e3f, #0a0a14);
+        }
+        body.theme-success {
+            background: radial-gradient(circle at top right, #1a2e1a, #0a140a);
+        }
+        body.theme-danger {
+            background: radial-gradient(circle at top right, #3f1e1e, #140a0a);
+        }
+        body.theme-warning {
+            background: radial-gradient(circle at top right, #3f2e1e, #14100a);
+        }
+        body.theme-purple {
+            background: radial-gradient(circle at top right, #2e1e3f, #0a0a14);
+        }
+        body.theme-pink {
+            background: radial-gradient(circle at top right, #3f1e2e, #140a0a);
+        }
+        body.theme-indigo {
+            background: radial-gradient(circle at top right, #1e1e4f, #0a0a1a);
+        }
+        body.theme-teal {
+            background: radial-gradient(circle at top right, #1e3f3f, #0a1414);
+        }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -612,6 +628,7 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             transition: all 0.3s ease;
+            flex-wrap: wrap;
         }
 
         .link-input-group:hover {
@@ -629,6 +646,7 @@
 
         .link-input-group input {
             flex: 1;
+            min-width: 200px;
             padding: 10px;
             background: var(--dark-card);
             border: 1px solid var(--border);
@@ -714,7 +732,7 @@
 
         .portfolio-header {
             padding: 30px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             position: relative;
             text-align: center;
         }
@@ -1015,6 +1033,13 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .subscriber-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
         }
 
         .subscriber-info h4 {
@@ -1032,7 +1057,7 @@
             background: var(--gradient-primary);
             border-radius: 30px;
             padding: 40px;
-            margin-top: 40px;
+            margin: 30px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -1229,10 +1254,20 @@
             .stats-grid {
                 flex-direction: column;
             }
+            
+            .link-input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .link-input-group select,
+            .link-input-group input {
+                width: 100%;
+            }
         }
     </style>
 </head>
-<body class="theme-primary">
+<body>
     <div class="animated-bg"></div>
     
     <div class="container">
@@ -1281,6 +1316,22 @@
         </div>
     </div>
 
+    <!-- Subscribe Modal -->
+    <div id="subscribeModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-bell"></i> Subscribe to Portfolio</h2>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Get notified when this portfolio updates!</p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-success" onclick="confirmSubscribe()">
+                    <i class="fas fa-check"></i> Confirm Subscribe
+                </button>
+                <button class="btn btn-danger" onclick="closeSubscribeModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Import Firebase -->
     <script type="module">
         // Import Firebase modules
@@ -1314,160 +1365,53 @@
         // Support link requirement
         const SUPPORT_LINK = 'https://earnpaste.com/?ref=dgSmzLFiRlbidd4iWrmRRxn4SYv2';
         
-        // ============ 100+ WEBSITE SUPPORT ============
+        // Expanded link types with more platforms
         const LINK_TYPES = {
-            // Social Media
-            twitter: { icon: 'fab fa-twitter', name: 'Twitter', color: '#1DA1F2' },
-            instagram: { icon: 'fab fa-instagram', name: 'Instagram', color: '#E4405F' },
-            facebook: { icon: 'fab fa-facebook', name: 'Facebook', color: '#1877F2' },
-            linkedin: { icon: 'fab fa-linkedin', name: 'LinkedIn', color: '#0A66C2' },
-            tiktok: { icon: 'fab fa-tiktok', name: 'TikTok', color: '#000000' },
-            snapchat: { icon: 'fab fa-snapchat', name: 'Snapchat', color: '#FFFC00' },
-            pinterest: { icon: 'fab fa-pinterest', name: 'Pinterest', color: '#BD081C' },
-            reddit: { icon: 'fab fa-reddit', name: 'Reddit', color: '#FF4500' },
-            tumblr: { icon: 'fab fa-tumblr', name: 'Tumblr', color: '#36465D' },
-            flickr: { icon: 'fab fa-flickr', name: 'Flickr', color: '#0063DC' },
-            whatsapp: { icon: 'fab fa-whatsapp', name: 'WhatsApp', color: '#25D366' },
-            telegram: { icon: 'fab fa-telegram', name: 'Telegram', color: '#26A5E4' },
-            discord: { icon: 'fab fa-discord', name: 'Discord', color: '#5865F2' },
-            slack: { icon: 'fab fa-slack', name: 'Slack', color: '#4A154B' },
-            
-            // Video Platforms
-            youtube: { icon: 'fab fa-youtube', name: 'YouTube', color: '#FF0000' },
-            twitch: { icon: 'fab fa-twitch', name: 'Twitch', color: '#9146FF' },
-            vimeo: { icon: 'fab fa-vimeo', name: 'Vimeo', color: '#1AB7EA' },
-            dailymotion: { icon: 'fas fa-play', name: 'Dailymotion', color: '#0066DC' },
-            rumble: { icon: 'fas fa-video', name: 'Rumble', color: '#85C742' },
-            bitchute: { icon: 'fas fa-video', name: 'BitChute', color: '#FF6B4A' },
-            odysee: { icon: 'fas fa-play-circle', name: 'Odysee', color: '#EF1970' },
-            
-            // Gaming
-            twitch: { icon: 'fab fa-twitch', name: 'Twitch', color: '#9146FF' },
-            discord: { icon: 'fab fa-discord', name: 'Discord', color: '#5865F2' },
-            steam: { icon: 'fab fa-steam', name: 'Steam', color: '#000000' },
-            epicgames: { icon: 'fab fa-epic-games', name: 'Epic Games', color: '#313131' },
-            xbox: { icon: 'fab fa-xbox', name: 'Xbox', color: '#107C10' },
-            playstation: { icon: 'fab fa-playstation', name: 'PlayStation', color: '#003791' },
-            nintendo: { icon: 'fas fa-gamepad', name: 'Nintendo', color: '#E60012' },
-            roblox: { icon: 'fas fa-cube', name: 'Roblox', color: '#FF0000' },
-            minecraft: { icon: 'fas fa-cube', name: 'Minecraft', color: '#44B37F' },
-            fortnite: { icon: 'fas fa-gamepad', name: 'Fortnite', color: '#A639FF' },
-            valorant: { icon: 'fas fa-crosshairs', name: 'Valorant', color: '#FF4655' },
-            cod: { icon: 'fas fa-crosshairs', name: 'Call of Duty', color: '#000000' },
-            apex: { icon: 'fas fa-gamepad', name: 'Apex Legends', color: '#C72A2A' },
-            
-            // Developer Platforms
-            github: { icon: 'fab fa-github', name: 'GitHub', color: '#181717' },
-            gitlab: { icon: 'fab fa-gitlab', name: 'GitLab', color: '#FC6D26' },
-            bitbucket: { icon: 'fab fa-bitbucket', name: 'Bitbucket', color: '#0052CC' },
-            stackoverflow: { icon: 'fab fa-stack-overflow', name: 'Stack Overflow', color: '#F58025' },
-            devto: { icon: 'fab fa-dev', name: 'Dev.to', color: '#0A0A0A' },
-            medium: { icon: 'fab fa-medium', name: 'Medium', color: '#000000' },
-            hashnode: { icon: 'fas fa-blog', name: 'Hashnode', color: '#2962FF' },
-            codepen: { icon: 'fab fa-codepen', name: 'CodePen', color: '#000000' },
-            codesandbox: { icon: 'fas fa-code', name: 'CodeSandbox', color: '#000000' },
-            replit: { icon: 'fas fa-code', name: 'Replit', color: '#F26207' },
-            glitch: { icon: 'fas fa-code', name: 'Glitch', color: '#3333FF' },
-            
-            // Creative Platforms
-            behance: { icon: 'fab fa-behance', name: 'Behance', color: '#1769FF' },
-            dribbble: { icon: 'fab fa-dribbble', name: 'Dribbble', color: '#EA4C89' },
-            figma: { icon: 'fab fa-figma', name: 'Figma', color: '#F24E1E' },
-            adobe: { icon: 'fab fa-adobe', name: 'Adobe', color: '#FF0000' },
-            artstation: { icon: 'fab fa-artstation', name: 'ArtStation', color: '#13AFF0' },
-            deviantart: { icon: 'fab fa-deviantart', name: 'DeviantArt', color: '#05CC47' },
-            flickr: { icon: 'fab fa-flickr', name: 'Flickr', color: '#0063DC' },
-            500px: { icon: 'fab fa-500px', name: '500px', color: '#0099E5' },
-            unsplash: { icon: 'fas fa-camera', name: 'Unsplash', color: '#000000' },
-            
-            // Music Platforms
-            spotify: { icon: 'fab fa-spotify', name: 'Spotify', color: '#1DB954' },
-            apple: { icon: 'fab fa-apple', name: 'Apple Music', color: '#000000' },
-            soundcloud: { icon: 'fab fa-soundcloud', name: 'SoundCloud', color: '#FF3300' },
-            bandcamp: { icon: 'fab fa-bandcamp', name: 'Bandcamp', color: '#629AA9' },
-            tidal: { icon: 'fas fa-music', name: 'Tidal', color: '#000000' },
-            deezer: { icon: 'fab fa-deezer', name: 'Deezer', color: '#FEAA2D' },
-            
-            // Professional
-            linkedin: { icon: 'fab fa-linkedin', name: 'LinkedIn', color: '#0A66C2' },
-            indeed: { icon: 'fas fa-briefcase', name: 'Indeed', color: '#003A9B' },
-            glassdoor: { icon: 'fas fa-glass-cheers', name: 'Glassdoor', color: '#0CAA41' },
-            monster: { icon: 'fas fa-briefcase', name: 'Monster', color: '#6E46AE' },
-            upwork: { icon: 'fab fa-upwork', name: 'Upwork', color: '#6FDA44' },
-            fiverr: { icon: 'fas fa-hand-holding-heart', name: 'Fiverr', color: '#1DBF73' },
-            freelancer: { icon: 'fas fa-laptop', name: 'Freelancer', color: '#29B2FE' },
-            
-            // E-commerce
-            etsy: { icon: 'fab fa-etsy', name: 'Etsy', color: '#F16521' },
-            ebay: { icon: 'fab fa-ebay', name: 'eBay', color: '#E53238' },
-            amazon: { icon: 'fab fa-amazon', name: 'Amazon', color: '#FF9900' },
-            shopify: { icon: 'fab fa-shopify', name: 'Shopify', color: '#96BF48' },
-            walmart: { icon: 'fas fa-shopping-cart', name: 'Walmart', color: '#0071DC' },
-            target: { icon: 'fas fa-bullseye', name: 'Target', color: '#CC0000' },
-            
-            // Blogging
-            wordpress: { icon: 'fab fa-wordpress', name: 'WordPress', color: '#21759B' },
-            blogger: { icon: 'fab fa-blogger', name: 'Blogger', color: '#FF5722' },
-            tumblr: { icon: 'fab fa-tumblr', name: 'Tumblr', color: '#36465D' },
-            medium: { icon: 'fab fa-medium', name: 'Medium', color: '#000000' },
-            substack: { icon: 'fas fa-newspaper', name: 'Substack', color: '#FF6719' },
-            ghost: { icon: 'fas fa-ghost', name: 'Ghost', color: '#15171A' },
-            
-            // Messaging
-            whatsapp: { icon: 'fab fa-whatsapp', name: 'WhatsApp', color: '#25D366' },
-            telegram: { icon: 'fab fa-telegram', name: 'Telegram', color: '#26A5E4' },
-            signal: { icon: 'fas fa-comment', name: 'Signal', color: '#3A76F0' },
-            wechat: { icon: 'fab fa-weixin', name: 'WeChat', color: '#07C160' },
-            line: { icon: 'fab fa-line', name: 'LINE', color: '#00C300' },
-            viber: { icon: 'fab fa-viber', name: 'Viber', color: '#7360F2' },
-            
-            // File Sharing
-            dropbox: { icon: 'fab fa-dropbox', name: 'Dropbox', color: '#0061FF' },
-            googledrive: { icon: 'fab fa-google-drive', name: 'Google Drive', color: '#4285F4' },
-            onedrive: { icon: 'fab fa-microsoft', name: 'OneDrive', color: '#0078D4' },
-            icloud: { icon: 'fab fa-apple', name: 'iCloud', color: '#3693F3' },
-            box: { icon: 'fab fa-box', name: 'Box', color: '#0061D5' },
-            mega: { icon: 'fas fa-cloud', name: 'MEGA', color: '#D90007' },
-            
-            // Streaming
-            netflix: { icon: 'fas fa-film', name: 'Netflix', color: '#E50914' },
-            hulu: { icon: 'fas fa-tv', name: 'Hulu', color: '#1CE783' },
-            disney: { icon: 'fab fa-disney', name: 'Disney+', color: '#113CCF' },
-            hbo: { icon: 'fas fa-tv', name: 'HBO Max', color: '#5822B4' },
-            primevideo: { icon: 'fab fa-amazon', name: 'Prime Video', color: '#00A8E1' },
-            peacock: { icon: 'fas fa-feather', name: 'Peacock', color: '#008CFF' },
-            paramount: { icon: 'fas fa-mountain', name: 'Paramount+', color: '#0064FF' },
-            
-            // News
-            reddit: { icon: 'fab fa-reddit', name: 'Reddit', color: '#FF4500' },
-            quora: { icon: 'fab fa-quora', name: 'Quora', color: '#B92B27' },
-            flipboard: { icon: 'fab fa-flipboard', name: 'Flipboard', color: '#E12828' },
-            buzzfeed: { icon: 'fas fa-newspaper', name: 'BuzzFeed', color: '#EE3322' },
-            
-            // Crypto
-            discord: { icon: 'fab fa-discord', name: 'Discord', color: '#5865F2' },
-            telegram: { icon: 'fab fa-telegram', name: 'Telegram', color: '#26A5E4' },
-            twitter: { icon: 'fab fa-twitter', name: 'Twitter', color: '#1DA1F2' },
-            opensea: { icon: 'fas fa-anchor', name: 'OpenSea', color: '#2081E2' },
-            rarible: { icon: 'fas fa-gem', name: 'Rarible', color: '#FEDA03' },
-            foundation: { icon: 'fas fa-paint-brush', name: 'Foundation', color: '#000000' },
-            
-            // Portfolio
             website: { icon: 'fas fa-globe', name: 'Website', color: '#6366f1' },
+            github: { icon: 'fab fa-github', name: 'GitHub', color: '#333' },
+            linkedin: { icon: 'fab fa-linkedin', name: 'LinkedIn', color: '#0077b5' },
+            twitter: { icon: 'fab fa-twitter', name: 'Twitter', color: '#1da1f2' },
+            instagram: { icon: 'fab fa-instagram', name: 'Instagram', color: '#e4405f' },
+            youtube: { icon: 'fab fa-youtube', name: 'YouTube', color: '#ff0000' },
+            facebook: { icon: 'fab fa-facebook', name: 'Facebook', color: '#1877f2' },
+            tiktok: { icon: 'fab fa-tiktok', name: 'TikTok', color: '#000000' },
+            rumble: { icon: 'fas fa-video', name: 'Rumble', color: '#85c742' },
+            roblox: { icon: 'fas fa-gamepad', name: 'Roblox', color: '#ff4444' },
+            twitch: { icon: 'fab fa-twitch', name: 'Twitch', color: '#9146ff' },
+            discord: { icon: 'fab fa-discord', name: 'Discord', color: '#5865f2' },
+            telegram: { icon: 'fab fa-telegram', name: 'Telegram', color: '#26a5e4' },
+            whatsapp: { icon: 'fab fa-whatsapp', name: 'WhatsApp', color: '#25d366' },
+            snapchat: { icon: 'fab fa-snapchat', name: 'Snapchat', color: '#fffc00' },
+            pinterest: { icon: 'fab fa-pinterest', name: 'Pinterest', color: '#bd081c' },
+            reddit: { icon: 'fab fa-reddit', name: 'Reddit', color: '#ff4500' },
+            medium: { icon: 'fab fa-medium', name: 'Medium', color: '#00ab6c' },
+            devto: { icon: 'fab fa-dev', name: 'Dev.to', color: '#0a0a0a' },
+            behance: { icon: 'fab fa-behance', name: 'Behance', color: '#1769ff' },
+            dribbble: { icon: 'fab fa-dribbble', name: 'Dribbble', color: '#ea4c89' },
+            spotify: { icon: 'fab fa-spotify', name: 'Spotify', color: '#1db954' },
+            soundcloud: { icon: 'fab fa-soundcloud', name: 'SoundCloud', color: '#ff3300' },
+            patreon: { icon: 'fab fa-patreon', name: 'Patreon', color: '#f96854' },
+            etsy: { icon: 'fab fa-etsy', name: 'Etsy', color: '#f16521' },
+            amazon: { icon: 'fab fa-amazon', name: 'Amazon', color: '#ff9900' },
+            ebay: { icon: 'fab fa-ebay', name: 'eBay', color: '#e53238' },
+            steam: { icon: 'fab fa-steam', name: 'Steam', color: '#171a21' },
+            epic: { icon: 'fas fa-crown', name: 'Epic Games', color: '#313131' },
+            xbox: { icon: 'fab fa-xbox', name: 'Xbox', color: '#107c10' },
+            playstation: { icon: 'fab fa-playstation', name: 'PlayStation', color: '#003791' },
+            nintendo: { icon: 'fas fa-gamepad', name: 'Nintendo', color: '#e60012' },
+            minecraft: { icon: 'fas fa-cube', name: 'Minecraft', color: '#44a833' },
+            fortnite: { icon: 'fas fa-fort-awesome', name: 'Fortnite', color: '#964b8b' },
+            twitch: { icon: 'fab fa-twitch', name: 'Twitch', color: '#9146ff' },
+            kick: { icon: 'fas fa-kickstarter', name: 'Kick', color: '#53fc18' },
+            patreon: { icon: 'fab fa-patreon', name: 'Patreon', color: '#f96854' },
+            substack: { icon: 'fas fa-pen', name: 'Substack', color: '#ff6719' },
+            newsletter: { icon: 'fas fa-envelope', name: 'Newsletter', color: '#6366f1' },
+            linktree: { icon: 'fas fa-tree', name: 'Linktree', color: '#39e09b' },
+            beacons: { icon: 'fas fa-bolt', name: 'Beacons', color: '#ff5e5e' },
             portfolio: { icon: 'fas fa-briefcase', name: 'Portfolio', color: '#6366f1' },
-            resume: { icon: 'fas fa-file-alt', name: 'Resume', color: '#6366f1' },
-            cv: { icon: 'fas fa-file-pdf', name: 'CV', color: '#6366f1' },
-            
-            // Other
-            linktree: { icon: 'fas fa-tree', name: 'Linktree', color: '#39E09B' },
-            linkinbio: { icon: 'fas fa-link', name: 'Linkin.bio', color: '#6366f1' },
-            aboutme: { icon: 'fas fa-user', name: 'About.me', color: '#00A98F' },
-            calendly: { icon: 'fas fa-calendar', name: 'Calendly', color: '#006BFF' },
-            patreon: { icon: 'fab fa-patreon', name: 'Patreon', color: '#FF424D' },
-            koji: { icon: 'fas fa-heart', name: 'Koji', color: '#FF5C5C' },
-            buymeacoffee: { icon: 'fas fa-mug-hot', name: 'Buy Me a Coffee', color: '#FFDD00' }
+            blog: { icon: 'fas fa-blog', name: 'Blog', color: '#ff5722' }
         };
-        
+
         // ============ APP STATE ============
         let currentUser = null;
         let allPortfolios = [];
@@ -1525,7 +1469,9 @@
                         }
                         
                         // Apply theme color to body
-                        applyThemeColor(currentUser.themeColor || '#6366f1');
+                        if (currentUser.themeColor) {
+                            applyThemeToBody(currentUser.themeColor);
+                        }
                         
                         await loadAllPortfolios();
                     } catch (error) {
@@ -1533,6 +1479,8 @@
                     }
                 } else {
                     currentUser = null;
+                    // Reset body theme to default
+                    document.body.className = '';
                     await loadAllPortfolios();
                 }
                 
@@ -1549,24 +1497,51 @@
             trackDeviceInfo();
         }
 
-        // ============ APPLY THEME COLOR TO BODY ============
-        function applyThemeColor(color) {
-            // Remove all theme classes
-            document.body.classList.remove(
-                'theme-primary', 'theme-success', 'theme-danger', 'theme-warning',
-                'theme-purple', 'theme-pink', 'theme-indigo', 'theme-teal'
-            );
+        // ============ APPLY THEME TO BODY ============
+        function applyThemeToBody(color) {
+            document.body.className = '';
             
-            // Map color to theme class
-            if (color === '#6366f1') document.body.classList.add('theme-primary');
-            else if (color === '#10b981') document.body.classList.add('theme-success');
-            else if (color === '#ef4444') document.body.classList.add('theme-danger');
-            else if (color === '#f59e0b') document.body.classList.add('theme-warning');
-            else if (color === '#8b5cf6') document.body.classList.add('theme-purple');
-            else if (color === '#ec4899') document.body.classList.add('theme-pink');
-            else if (color === '#4f46e5') document.body.classList.add('theme-indigo');
-            else if (color === '#14b8a6') document.body.classList.add('theme-teal');
-            else document.body.classList.add('theme-primary');
+            const colorMap = {
+                '#6366f1': 'theme-primary',
+                '#10b981': 'theme-success',
+                '#ef4444': 'theme-danger',
+                '#f59e0b': 'theme-warning',
+                '#8b5cf6': 'theme-purple',
+                '#ec4899': 'theme-pink',
+                '#4f46e5': 'theme-indigo',
+                '#14b8a6': 'theme-teal'
+            };
+            
+            // Also update CSS variable
+            document.documentElement.style.setProperty('--primary', color);
+            document.documentElement.style.setProperty('--shadow-glow', `0 0 20px ${color}`);
+            
+            // Find closest preset
+            let closestClass = 'theme-primary';
+            let minDiff = Infinity;
+            
+            Object.entries(colorMap).forEach(([hex, className]) => {
+                const diff = colorDistance(hex, color);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestClass = className;
+                }
+            });
+            
+            document.body.classList.add(closestClass);
+        }
+
+        // Helper to calculate color distance
+        function colorDistance(hex1, hex2) {
+            const r1 = parseInt(hex1.substring(1,3), 16);
+            const g1 = parseInt(hex1.substring(3,5), 16);
+            const b1 = parseInt(hex1.substring(5,7), 16);
+            
+            const r2 = parseInt(hex2.substring(1,3), 16);
+            const g2 = parseInt(hex2.substring(3,5), 16);
+            const b2 = parseInt(hex2.substring(5,7), 16);
+            
+            return Math.sqrt(Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2));
         }
 
         // ============ TRACK DEVICE INFO ============
@@ -1984,6 +1959,11 @@
             
             const container = document.getElementById('mainContent');
             
+            // Generate link type options
+            const linkOptions = Object.entries(LINK_TYPES).map(([value, data]) => 
+                `<option value="${value}">${data.name}</option>`
+            ).join('');
+            
             container.innerHTML = `
                 <div class="create-portfolio">
                     <h2><i class="fas fa-magic"></i> Edit Your Portfolio</h2>
@@ -2006,7 +1986,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label><i class="fas fa-palette"></i> Theme Color</label>
+                                <label><i class="fas fa-palette"></i> Theme Color (Affects Background & Accents)</label>
                                 <div class="color-picker-container">
                                     <div class="color-preset primary ${(!currentUser.themeColor || currentUser.themeColor === '#6366f1') ? 'selected' : ''}" onclick="window.selectThemeColor('#6366f1')" style="background: #6366f1;"></div>
                                     <div class="color-preset success ${currentUser.themeColor === '#10b981' ? 'selected' : ''}" onclick="window.selectThemeColor('#10b981')" style="background: #10b981;"></div>
@@ -2076,18 +2056,18 @@
                         </div>
                     </div>
                     
-                    <h3 style="margin: 30px 0 20px;"><i class="fas fa-link"></i> Social Links (100+ Platforms Supported)</h3>
+                    <h3 style="margin: 30px 0 20px;"><i class="fas fa-link"></i> Social Links (50+ Platforms Supported)</h3>
                     
                     <div id="linksContainer" class="links-container">
                         ${currentUser.portfolioLinks && currentUser.portfolioLinks.map((link, index) => `
                             <div class="link-input-group" data-index="${index}">
                                 <select onchange="window.updateLinkType(${index}, this.value)">
-                                    ${Object.entries(LINK_TYPES).map(([key, value]) => `
-                                        <option value="${key}" ${link.type === key ? 'selected' : ''}>${value.icon} ${value.name}</option>
-                                    `).join('')}
+                                    ${Object.entries(LINK_TYPES).map(([value, data]) => 
+                                        `<option value="${value}" ${link.type === value ? 'selected' : ''}>${data.name}</option>`
+                                    ).join('')}
                                 </select>
                                 <input type="url" value="${escapeHtml(link.url)}" placeholder="https://..." onchange="window.updateLinkUrl(${index}, this.value)">
-                                <input type="text" value="${escapeHtml(link.title || '')}" placeholder="Link title" onchange="window.updateLinkTitle(${index}, this.value)">
+                                <input type="text" value="${escapeHtml(link.title || '')}" placeholder="Link title (optional)" onchange="window.updateLinkTitle(${index}, this.value)">
                                 <button class="remove-link" onclick="window.removeLink(${index})">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -2118,8 +2098,8 @@
             document.getElementById('themeColorHex').value = color;
             currentUser.themeColor = color;
             
-            // Apply to body background
-            applyThemeColor(color);
+            // Apply theme to body
+            applyThemeToBody(color);
             
             // Find and select preset if matches
             const preset = Array.from(document.querySelectorAll('.color-preset')).find(p => 
@@ -2304,9 +2284,6 @@
                 
                 currentViewingPortfolio = portfolio;
                 
-                // Apply theme color for this portfolio
-                applyThemeColor(portfolio.themeColor || '#6366f1');
-                
                 const canView = 
                     portfolio.privacy === 'public' || 
                     (portfolio.privacy === 'unlisted') ||
@@ -2430,12 +2407,6 @@
                             </div>
                             
                             <div class="stat-card">
-                                <i class="fas fa-link"></i>
-                                <div class="stat-value">${portfolio.portfolioLinks ? portfolio.portfolioLinks.length : 0}</div>
-                                <div class="stat-label">Links</div>
-                            </div>
-                            
-                            <div class="stat-card">
                                 <i class="fas fa-chart-pie"></i>
                                 <div class="stat-value">${Object.keys(deviceStats).length}</div>
                                 <div class="stat-label">Device Types</div>
@@ -2451,7 +2422,7 @@
                             </div>
                         </div>
                         
-                        <h2 style="padding: 30px 30px 0;"><i class="fas fa-link"></i> Links (${portfolio.portfolioLinks ? portfolio.portfolioLinks.length : 0})</h2>
+                        <h2 style="padding: 30px 30px 0;"><i class="fas fa-link"></i> Links</h2>
                         
                         <div class="links-grid">
                             ${portfolio.portfolioLinks && portfolio.portfolioLinks.map(link => {
@@ -2799,9 +2770,37 @@
         // ============ CLOSE MODAL ON OUTSIDE CLICK ============
         window.onclick = function(event) {
             const shareModal = document.getElementById('shareModal');
+            const subscribeModal = document.getElementById('subscribeModal');
             if (event.target === shareModal) {
                 closeShareModal();
             }
+            if (event.target === subscribeModal) {
+                closeSubscribeModal();
+            }
+        };
+
+        // ============ SUBSCRIBE MODAL ============
+        window.showSubscribeModal = function(portfolioUid) {
+            if (!currentUser) {
+                showNotification('Please login to subscribe', 'error');
+                showAuth();
+                return;
+            }
+            
+            const modal = document.getElementById('subscribeModal');
+            modal.setAttribute('data-portfolio', portfolioUid);
+            modal.classList.add('active');
+        };
+
+        window.closeSubscribeModal = function() {
+            document.getElementById('subscribeModal').classList.remove('active');
+        };
+
+        window.confirmSubscribe = function() {
+            const modal = document.getElementById('subscribeModal');
+            const portfolioUid = modal.getAttribute('data-portfolio');
+            closeSubscribeModal();
+            toggleSubscribe(portfolioUid);
         };
 
         // ============ EXPOSE FUNCTIONS TO WINDOW ============
@@ -2810,6 +2809,9 @@
         window.sharePortfolio = sharePortfolio;
         window.closeShareModal = closeShareModal;
         window.copyShareLink = copyShareLink;
+        window.showSubscribeModal = showSubscribeModal;
+        window.closeSubscribeModal = closeSubscribeModal;
+        window.confirmSubscribe = confirmSubscribe;
         window.toggleSubscribe = toggleSubscribe;
 
         // ============ INITIALIZE ============
