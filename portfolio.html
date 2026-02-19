@@ -180,6 +180,7 @@
             align-items: center;
             box-shadow: var(--shadow);
             animation: slideInDown 0.5s ease;
+            position: relative;
         }
 
         .logo {
@@ -233,6 +234,224 @@
             color: white;
             font-weight: bold;
             font-size: 1.1rem;
+            object-fit: cover;
+        }
+
+        /* Notification Bell */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .notification-bell:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: scale(1.1);
+        }
+
+        .notification-bell i {
+            font-size: 1.3rem;
+            color: var(--text);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            border: 2px solid var(--dark-card);
+        }
+
+        /* Notifications Panel */
+        .notifications-panel {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            width: 400px;
+            background: var(--dark-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: none;
+            animation: slideInRight 0.3s ease;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .notifications-panel.active {
+            display: block;
+        }
+
+        .notifications-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            backdrop-filter: var(--blur);
+        }
+
+        .notifications-header h3 {
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        .mark-read {
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .mark-read:hover {
+            text-decoration: underline;
+        }
+
+        .notifications-list {
+            padding: 10px;
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .notification-item:hover {
+            background: var(--dark-card-hover);
+            border-color: var(--border);
+            transform: translateX(5px);
+        }
+
+        .notification-item.unread {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .notification-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-text {
+            color: var(--text);
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .notification-text strong {
+            color: var(--primary);
+        }
+
+        .notification-time {
+            color: var(--text-dimmer);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .notification-time i {
+            font-size: 0.7rem;
+        }
+
+        .no-notifications {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-dim);
+        }
+
+        .no-notifications i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Live Notification Toast */
+        .live-notification {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: var(--dark-card);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 2000;
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 4.7s forwards;
+            cursor: pointer;
+            max-width: 350px;
+        }
+
+        .live-notification:hover {
+            transform: translateX(-5px);
+        }
+
+        .live-notification-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .live-notification-content {
+            flex: 1;
+        }
+
+        .live-notification-text {
+            color: var(--text);
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+
+        .live-notification-text strong {
+            color: var(--primary);
+        }
+
+        .live-notification-time {
+            color: var(--text-dimmer);
+            font-size: 0.8rem;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
         }
 
         /* Buttons */
@@ -851,6 +1070,13 @@
             border: 5px solid var(--primary);
             object-fit: cover;
             margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-detail-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-glow);
         }
 
         .portfolio-detail-name {
@@ -1016,6 +1242,13 @@
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .subscriber-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-glow);
         }
 
         .subscriber-grid {
@@ -1264,6 +1497,11 @@
             .link-input-group input {
                 width: 100%;
             }
+
+            .notifications-panel {
+                width: 300px;
+                right: 10px;
+            }
         }
     </style>
 </head>
@@ -1275,6 +1513,17 @@
         <nav class="navbar animate__animated animate__fadeInDown">
             <div class="logo" onclick="window.location.hash='#dashboard'">PortfolioHub Pro</div>
             <div class="nav-buttons" id="navButtons"></div>
+            
+            <!-- Notifications Panel -->
+            <div class="notifications-panel" id="notificationsPanel">
+                <div class="notifications-header">
+                    <h3><i class="fas fa-bell"></i> Notifications</h3>
+                    <span class="mark-read" onclick="markAllNotificationsRead()">Mark all as read</span>
+                </div>
+                <div class="notifications-list" id="notificationsList">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
         </nav>
 
         <!-- Support Banner (shown to users who haven't supported) -->
@@ -1337,7 +1586,7 @@
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, deleteDoc, increment, arrayUnion, arrayRemove, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, deleteDoc, increment, arrayUnion, arrayRemove, Timestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -1401,9 +1650,7 @@
             nintendo: { icon: 'fas fa-gamepad', name: 'Nintendo', color: '#e60012' },
             minecraft: { icon: 'fas fa-cube', name: 'Minecraft', color: '#44a833' },
             fortnite: { icon: 'fas fa-fort-awesome', name: 'Fortnite', color: '#964b8b' },
-            twitch: { icon: 'fab fa-twitch', name: 'Twitch', color: '#9146ff' },
             kick: { icon: 'fas fa-kickstarter', name: 'Kick', color: '#53fc18' },
-            patreon: { icon: 'fab fa-patreon', name: 'Patreon', color: '#f96854' },
             substack: { icon: 'fas fa-pen', name: 'Substack', color: '#ff6719' },
             newsletter: { icon: 'fas fa-envelope', name: 'Newsletter', color: '#6366f1' },
             linktree: { icon: 'fas fa-tree', name: 'Linktree', color: '#39e09b' },
@@ -1418,6 +1665,8 @@
         let currentFilter = 'all';
         let currentViewingPortfolio = null;
         let hasSupported = false;
+        let notifications = [];
+        let notificationUnsubscribe = null;
 
         // ============ INITIALIZATION ============
         function init() {
@@ -1444,6 +1693,15 @@
                                 hasSupported = true;
                                 localStorage.setItem('portfoliohub_supported', 'true');
                             }
+                            
+                            // Initialize notifications array if not exists
+                            if (!currentUser.notifications) {
+                                currentUser.notifications = [];
+                            }
+                            
+                            // Set up real-time notifications listener
+                            setupNotificationsListener(user.uid);
+                            
                         } else {
                             // Create new user document
                             const newUser = {
@@ -1456,7 +1714,8 @@
                                 subscribedTo: [],
                                 viewedDevices: [],
                                 hasSupported: false,
-                                themeColor: '#6366f1'
+                                themeColor: '#6366f1',
+                                notifications: []
                             };
                             
                             await setDoc(doc(db, 'users', user.uid), newUser);
@@ -1482,6 +1741,12 @@
                     // Reset body theme to default
                     document.body.className = '';
                     await loadAllPortfolios();
+                    
+                    // Remove notifications listener
+                    if (notificationUnsubscribe) {
+                        notificationUnsubscribe();
+                        notificationUnsubscribe = null;
+                    }
                 }
                 
                 updateNavbar();
@@ -1495,6 +1760,218 @@
             
             // Get device info
             trackDeviceInfo();
+            
+            // Close notifications panel when clicking outside
+            document.addEventListener('click', function(event) {
+                const panel = document.getElementById('notificationsPanel');
+                const bell = document.querySelector('.notification-bell');
+                if (panel && bell && !panel.contains(event.target) && !bell.contains(event.target)) {
+                    panel.classList.remove('active');
+                }
+            });
+        }
+
+        // ============ SETUP NOTIFICATIONS LISTENER ============
+        function setupNotificationsListener(uid) {
+            // Unsubscribe from previous listener if exists
+            if (notificationUnsubscribe) {
+                notificationUnsubscribe();
+            }
+            
+            const userRef = doc(db, 'users', uid);
+            
+            // Listen for real-time updates to user document
+            notificationUnsubscribe = onSnapshot(userRef, (doc) => {
+                if (doc.exists() && currentUser) {
+                    const oldNotifications = currentUser.notifications || [];
+                    const newNotifications = doc.data().notifications || [];
+                    
+                    // Check if there are new notifications
+                    if (newNotifications.length > oldNotifications.length) {
+                        // Find the newest notification
+                        const newestNotification = newNotifications[0];
+                        
+                        // Show live notification toast
+                        showLiveNotification(newestNotification);
+                    }
+                    
+                    // Update current user's notifications
+                    currentUser.notifications = newNotifications;
+                    
+                    // Update notification badge
+                    updateNotificationBadge();
+                    
+                    // Update notifications panel if it's open
+                    if (document.getElementById('notificationsPanel').classList.contains('active')) {
+                        renderNotificationsPanel();
+                    }
+                }
+            });
+        }
+
+        // ============ SHOW LIVE NOTIFICATION ============
+        async function showLiveNotification(notification) {
+            // Get subscriber info
+            const subscriberDoc = await getDoc(doc(db, 'users', notification.subscriberId));
+            if (!subscriberDoc.exists()) return;
+            
+            const subscriber = subscriberDoc.data();
+            
+            // Create live notification element
+            const liveNotif = document.createElement('div');
+            liveNotif.className = 'live-notification';
+            liveNotif.onclick = function() {
+                window.location.hash = `#portfolio-${notification.subscriberId}`;
+                this.remove();
+            };
+            
+            liveNotif.innerHTML = `
+                <img src="${subscriber.avatar || 'https://via.placeholder.com/50'}" class="live-notification-avatar" alt="Avatar">
+                <div class="live-notification-content">
+                    <div class="live-notification-text">
+                        <strong>${subscriber.displayName}</strong> subscribed to you!
+                    </div>
+                    <div class="live-notification-time">
+                        <i class="far fa-clock"></i> just now
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(liveNotif);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (liveNotif.parentNode) {
+                    liveNotif.remove();
+                }
+            }, 5000);
+        }
+
+        // ============ UPDATE NOTIFICATION BADGE ============
+        function updateNotificationBadge() {
+            const bell = document.querySelector('.notification-bell');
+            if (!bell) return;
+            
+            const unreadCount = (currentUser?.notifications || []).filter(n => !n.read).length;
+            
+            let badge = bell.querySelector('.notification-badge');
+            if (unreadCount > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'notification-badge';
+                    bell.appendChild(badge);
+                }
+                badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+
+        // ============ RENDER NOTIFICATIONS PANEL ============
+        async function renderNotificationsPanel() {
+            const list = document.getElementById('notificationsList');
+            
+            if (!currentUser || !currentUser.notifications || currentUser.notifications.length === 0) {
+                list.innerHTML = `
+                    <div class="no-notifications">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No notifications yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort notifications by timestamp (newest first)
+            const sortedNotifications = [...currentUser.notifications].sort((a, b) => 
+                new Date(b.timestamp) - new Date(a.timestamp)
+            );
+            
+            let html = '';
+            
+            for (const notif of sortedNotifications) {
+                // Get subscriber info
+                const subscriberDoc = await getDoc(doc(db, 'users', notif.subscriberId));
+                if (!subscriberDoc.exists()) continue;
+                
+                const subscriber = subscriberDoc.data();
+                const timeAgo = getTimeAgo(notif.timestamp);
+                
+                html += `
+                    <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="window.location.hash='#portfolio-${notif.subscriberId}'; markNotificationRead('${notif.id}')">
+                        <img src="${subscriber.avatar || 'https://via.placeholder.com/50'}" class="notification-avatar" alt="Avatar">
+                        <div class="notification-content">
+                            <div class="notification-text">
+                                <strong>${subscriber.displayName}</strong> subscribed to your portfolio
+                            </div>
+                            <div class="notification-time">
+                                <i class="far fa-clock"></i> ${timeAgo}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            list.innerHTML = html;
+        }
+
+        // ============ MARK NOTIFICATION AS READ ============
+        window.markNotificationRead = async function(notificationId) {
+            if (!currentUser) return;
+            
+            const notifications = currentUser.notifications.map(n => {
+                if (n.id === notificationId) {
+                    return { ...n, read: true };
+                }
+                return n;
+            });
+            
+            await updateDoc(doc(db, 'users', currentUser.uid), {
+                notifications: notifications
+            });
+            
+            currentUser.notifications = notifications;
+            updateNotificationBadge();
+            renderNotificationsPanel();
+        };
+
+        // ============ MARK ALL NOTIFICATIONS AS READ ============
+        window.markAllNotificationsRead = async function() {
+            if (!currentUser) return;
+            
+            const notifications = currentUser.notifications.map(n => ({
+                ...n,
+                read: true
+            }));
+            
+            await updateDoc(doc(db, 'users', currentUser.uid), {
+                notifications: notifications
+            });
+            
+            currentUser.notifications = notifications;
+            updateNotificationBadge();
+            renderNotificationsPanel();
+        };
+
+        // ============ TOGGLE NOTIFICATIONS PANEL ============
+        window.toggleNotifications = function() {
+            const panel = document.getElementById('notificationsPanel');
+            panel.classList.toggle('active');
+            
+            if (panel.classList.contains('active')) {
+                renderNotificationsPanel();
+            }
+        };
+
+        // ============ GET TIME AGO ============
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const then = new Date(timestamp);
+            const seconds = Math.floor((now - then) / 1000);
+            
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            return `${Math.floor(seconds / 86400)} days ago`;
         }
 
         // ============ APPLY THEME TO BODY ============
@@ -1611,7 +2088,13 @@
             
             if (currentUser) {
                 const initial = (currentUser.displayName || 'U').charAt(0).toUpperCase();
+                const unreadCount = (currentUser.notifications || []).filter(n => !n.read).length;
+                
                 navButtons.innerHTML = `
+                    <div class="notification-bell" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        ${unreadCount > 0 ? `<span class="notification-badge">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
+                    </div>
                     <div class="user-info" onclick="window.location.hash='#portfolio-${currentUser.uid}'">
                         ${currentUser.avatar ? 
                             `<img src="${currentUser.avatar}" class="user-avatar" style="object-fit: cover; width: 35px; height: 35px; border-radius: 50%;">` : 
@@ -2379,7 +2862,7 @@
                     <div class="portfolio-detail" style="--theme-color: ${themeColor};">
                         <div class="portfolio-cover" style="${coverStyle}">
                             <div class="portfolio-cover-overlay">
-                                <img src="${portfolio.avatar || 'https://via.placeholder.com/180'}" class="portfolio-detail-avatar" alt="Avatar">
+                                <img src="${portfolio.avatar || 'https://via.placeholder.com/180'}" class="portfolio-detail-avatar" onclick="window.location.hash='#portfolio-${portfolio.uid}'" alt="Avatar">
                                 <h1 class="portfolio-detail-name">${escapeHtml(portfolio.displayName)}</h1>
                                 <div class="portfolio-detail-username">${escapeHtml(portfolio.title || 'Professional Portfolio')}</div>
                                 <div class="privacy-info ${portfolio.privacy || 'public'}">
@@ -2542,16 +3025,39 @@
                     
                     showNotification('Unsubscribed successfully', 'success');
                 } else {
-                    // Subscribe
+                    // Create notification for portfolio owner
+                    const notification = {
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: 'subscribe',
+                        subscriberId: currentUser.uid,
+                        subscriberName: currentUser.displayName,
+                        timestamp: new Date().toISOString(),
+                        read: false,
+                        portfolioId: portfolioUid
+                    };
+                    
+                    // Get current notifications or initialize empty array
+                    const currentNotifications = portfolioData.notifications || [];
+                    
+                    // Add new notification at the beginning
+                    const updatedNotifications = [notification, ...currentNotifications];
+                    
+                    // Update portfolio owner's notifications and subscribers
                     await updateDoc(portfolioRef, {
-                        subscribers: arrayUnion(currentUser.uid)
+                        subscribers: arrayUnion(currentUser.uid),
+                        notifications: updatedNotifications
                     });
                     
                     await updateDoc(userRef, {
                         subscribedTo: arrayUnion(portfolioUid)
                     });
                     
-                    showNotification('Subscribed successfully! You will be notified of updates.', 'success');
+                    showNotification('Subscribed successfully!', 'success');
+                    
+                    // Show live notification immediately if we're the owner viewing
+                    if (currentViewingPortfolio && currentViewingPortfolio.uid === portfolioUid) {
+                        showLiveNotification(notification);
+                    }
                 }
                 
                 // Refresh portfolio view
@@ -2813,6 +3319,9 @@
         window.closeSubscribeModal = closeSubscribeModal;
         window.confirmSubscribe = confirmSubscribe;
         window.toggleSubscribe = toggleSubscribe;
+        window.toggleNotifications = toggleNotifications;
+        window.markNotificationRead = markNotificationRead;
+        window.markAllNotificationsRead = markAllNotificationsRead;
 
         // ============ INITIALIZE ============
         init();
