@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VertexTube - Professional Video Platform</title>
+  <title>VertexTube - Advanced Video Platform</title>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
@@ -19,20 +20,25 @@
     }
 
     :root {
-      --bg-primary: #0f0f0f;
-      --bg-secondary: #1a1a1a;
-      --bg-tertiary: #272727;
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #1f1f1f;
+      --bg-tertiary: #2a2a2a;
+      --bg-hover: #3a3a3a;
       --text-primary: #ffffff;
-      --text-secondary: #aaaaaa;
-      --accent-red: #ff0000;
+      --text-secondary: #aaa;
+      --accent-red: #ff4d4d;
       --accent-blue: #3ea6ff;
-      --border-color: #303030;
+      --accent-green: #4caf50;
+      --accent-orange: #ff9800;
+      --border-color: #404040;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
     }
 
     body {
       background: var(--bg-primary);
       color: var(--text-primary);
       min-height: 100vh;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
     }
 
     /* Header Styles */
@@ -41,103 +47,132 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 60px;
-      background: var(--bg-primary);
+      height: 64px;
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 24px;
       z-index: 1000;
+      box-shadow: var(--shadow);
     }
 
     .logo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       font-size: 1.5rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
+      background: linear-gradient(45deg, var(--accent-red), var(--accent-orange));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .logo i {
       color: var(--accent-red);
-      font-size: 2rem;
+      font-size: 2.2rem;
+      -webkit-text-fill-color: var(--accent-red);
+      filter: drop-shadow(0 4px 8px rgba(255, 77, 77, 0.3));
     }
 
     .search-container {
       flex: 1;
-      max-width: 600px;
+      max-width: 700px;
       display: flex;
       margin: 0 20px;
+      position: relative;
     }
 
     .search-container input {
       flex: 1;
       background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
+      border: 2px solid var(--border-color);
       border-radius: 40px 0 0 40px;
-      padding: 10px 16px;
+      padding: 12px 20px;
       color: var(--text-primary);
       font-size: 1rem;
       outline: none;
+      transition: all 0.3s ease;
     }
 
     .search-container input:focus {
       border-color: var(--accent-blue);
+      box-shadow: 0 0 15px rgba(62, 166, 255, 0.3);
     }
 
     .search-container button {
       background: var(--bg-tertiary);
-      border: 1px solid var(--border-color);
+      border: 2px solid var(--border-color);
       border-left: none;
       border-radius: 0 40px 40px 0;
-      padding: 10px 24px;
+      padding: 12px 30px;
       color: var(--text-primary);
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.3s ease;
+      font-weight: 600;
     }
 
     .search-container button:hover {
-      background: #3a3a3a;
+      background: var(--bg-hover);
+      border-color: var(--accent-blue);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 25px;
     }
 
     .header-actions i {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       color: var(--text-primary);
       cursor: pointer;
       position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .header-actions i:hover {
+      color: var(--accent-blue);
+      transform: scale(1.1);
     }
 
     .notification-badge {
       position: absolute;
-      top: -5px;
-      right: -5px;
+      top: -8px;
+      right: -8px;
       background: var(--accent-red);
       color: white;
       font-size: 0.7rem;
-      padding: 2px 5px;
-      border-radius: 10px;
+      padding: 2px 6px;
+      border-radius: 12px;
       min-width: 18px;
       text-align: center;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(255, 77, 77, 0.5);
     }
 
     .user-avatar {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: var(--accent-blue);
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-red));
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       overflow: hidden;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.05);
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 20px rgba(62, 166, 255, 0.5);
     }
 
     .user-avatar img {
@@ -149,109 +184,140 @@
     /* Sidebar */
     .sidebar {
       position: fixed;
-      top: 60px;
+      top: 64px;
       left: 0;
       bottom: 0;
-      width: 240px;
-      background: var(--bg-primary);
+      width: 260px;
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(10px);
       border-right: 1px solid var(--border-color);
-      padding: 12px;
+      padding: 20px 12px;
       overflow-y: auto;
+      z-index: 900;
     }
 
     .sidebar-item {
       display: flex;
       align-items: center;
       gap: 20px;
-      padding: 10px 16px;
-      border-radius: 10px;
+      padding: 12px 16px;
+      border-radius: 12px;
       cursor: pointer;
-      transition: background 0.2s;
-      margin-bottom: 2px;
+      transition: all 0.3s ease;
+      margin-bottom: 4px;
+      color: var(--text-secondary);
     }
 
     .sidebar-item:hover {
-      background: var(--bg-tertiary);
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      transform: translateX(5px);
     }
 
     .sidebar-item.active {
-      background: var(--bg-tertiary);
+      background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-hover));
+      color: var(--text-primary);
+      border-left: 3px solid var(--accent-red);
     }
 
     .sidebar-item i {
       width: 24px;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
     }
 
     .sidebar-divider {
       height: 1px;
       background: var(--border-color);
-      margin: 12px 0;
+      margin: 20px 0;
     }
 
     /* Main Content */
     .main-content {
-      margin-left: 240px;
-      margin-top: 60px;
-      padding: 24px;
-      min-height: calc(100vh - 60px);
+      margin-left: 260px;
+      margin-top: 64px;
+      padding: 30px;
+      min-height: calc(100vh - 64px);
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Video Grid */
     .video-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 25px;
     }
 
     .video-card {
-      background: var(--bg-primary);
-      border-radius: 12px;
+      background: var(--bg-secondary);
+      border-radius: 16px;
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
       border: 1px solid var(--border-color);
+      position: relative;
     }
 
     .video-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+      border-color: var(--accent-blue);
     }
 
     .thumbnail-container {
       position: relative;
       aspect-ratio: 16/9;
       background: var(--bg-tertiary);
+      overflow: hidden;
     }
 
     .thumbnail-container img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .video-card:hover .thumbnail-container img {
+      transform: scale(1.05);
     }
 
     .video-duration {
       position: absolute;
       bottom: 8px;
       right: 8px;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 2px 6px;
-      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 4px 8px;
+      border-radius: 6px;
       font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid var(--accent-blue);
     }
 
     .video-info {
-      padding: 12px;
+      padding: 15px;
       display: flex;
       gap: 12px;
     }
 
     .channel-avatar {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: var(--accent-blue);
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-red));
       flex-shrink: 0;
       overflow: hidden;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .channel-avatar:hover {
+      transform: scale(1.1);
+      border-color: var(--accent-blue);
     }
 
     .channel-avatar img {
@@ -266,17 +332,23 @@
 
     .video-title {
       font-weight: 600;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      font-size: 1rem;
     }
 
     .video-channel {
       font-size: 0.9rem;
       color: var(--text-secondary);
-      margin-bottom: 2px;
+      margin-bottom: 4px;
+      transition: color 0.3s ease;
+    }
+
+    .video-channel:hover {
+      color: var(--accent-blue);
     }
 
     .video-meta {
@@ -284,19 +356,103 @@
       color: var(--text-secondary);
     }
 
+    /* Channel Page */
+    .channel-banner {
+      height: 300px;
+      background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+
+    .channel-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .channel-info-large {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border-radius: 60px;
+      box-shadow: var(--shadow);
+    }
+
+    .channel-avatar-large {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid var(--accent-blue);
+      box-shadow: 0 0 30px rgba(62, 166, 255, 0.5);
+    }
+
+    .channel-avatar-large img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .channel-details-large h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, var(--text-primary), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .channel-stats {
+      display: flex;
+      gap: 30px;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .channel-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .channel-tab {
+      padding: 10px 25px;
+      cursor: pointer;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .channel-tab:hover {
+      background: var(--bg-hover);
+    }
+
+    .channel-tab.active {
+      background: var(--accent-blue);
+      color: var(--bg-primary);
+    }
+
     /* Video Player Page */
     .video-player-container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
     .video-player-wrapper {
       position: relative;
-      padding-bottom: 56.25%; /* 16:9 */
+      padding-bottom: 56.25%;
       height: 0;
       overflow: hidden;
-      border-radius: 12px;
+      border-radius: 24px;
       background: black;
+      box-shadow: var(--shadow);
     }
 
     .video-player-wrapper iframe,
@@ -309,78 +465,75 @@
       border: none;
     }
 
+    .video-controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .control-btn {
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 30px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-btn:hover {
+      background: var(--accent-blue);
+      transform: scale(1.05);
+    }
+
     .video-info-section {
-      margin-top: 20px;
-      padding: 20px;
+      margin-top: 30px;
+      padding: 30px;
       background: var(--bg-secondary);
-      border-radius: 12px;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
     }
 
     .video-title-large {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 10px;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, var(--text-primary), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .video-stats {
       display: flex;
-      gap: 20px;
+      gap: 30px;
       color: var(--text-secondary);
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      font-size: 1.1rem;
     }
 
-    .channel-info-large {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 20px 0;
-      border-top: 1px solid var(--border-color);
-      border-bottom: 1px solid var(--border-color);
+    .language-selector {
+      margin: 20px 0;
+      padding: 15px;
+      background: var(--bg-tertiary);
+      border-radius: 16px;
     }
 
-    .channel-avatar-large {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      overflow: hidden;
-    }
-
-    .channel-avatar-large img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .channel-details-large h3 {
-      margin-bottom: 5px;
-    }
-
-    .subscribe-btn {
-      background: var(--accent-red);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 40px;
-      font-weight: 600;
+    .language-selector select {
+      padding: 8px 15px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-left: 10px;
       cursor: pointer;
-      margin-left: auto;
-    }
-
-    .video-description {
-      margin-top: 20px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-
-    .back-btn {
-      display: inline-block;
-      margin-bottom: 20px;
-      color: var(--accent-blue);
-      cursor: pointer;
-    }
-
-    .back-btn:hover {
-      text-decoration: underline;
     }
 
     /* Modals */
@@ -391,10 +544,17 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
       z-index: 2000;
       align-items: center;
       justify-content: center;
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     .modal.active {
@@ -403,103 +563,175 @@
 
     .modal-content {
       background: var(--bg-secondary);
-      border-radius: 16px;
-      padding: 32px;
+      border-radius: 30px;
+      padding: 40px;
       width: 90%;
       max-width: 500px;
       max-height: 90vh;
       overflow-y: auto;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 30px;
     }
 
     .modal-header h2 {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
+      background: linear-gradient(45deg, var(--accent-blue), var(--accent-red));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .close-modal {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       cursor: pointer;
       color: var(--text-secondary);
+      transition: all 0.3s ease;
+    }
+
+    .close-modal:hover {
+      color: var(--accent-red);
+      transform: rotate(90deg);
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .form-group label {
       display: block;
       margin-bottom: 8px;
       color: var(--text-secondary);
+      font-weight: 600;
     }
 
     .form-group input,
     .form-group textarea,
     .form-group select {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       background: var(--bg-tertiary);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
       color: var(--text-primary);
       font-size: 1rem;
+      transition: all 0.3s ease;
     }
 
     .form-group input:focus,
     .form-group textarea:focus {
       outline: none;
       border-color: var(--accent-blue);
+      box-shadow: 0 0 20px rgba(62, 166, 255, 0.3);
+    }
+
+    .file-upload-area {
+      border: 3px dashed var(--border-color);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--bg-tertiary);
+    }
+
+    .file-upload-area:hover {
+      border-color: var(--accent-blue);
+      background: var(--bg-hover);
+    }
+
+    .file-upload-area i {
+      font-size: 3.5rem;
+      color: var(--accent-blue);
+      margin-bottom: 15px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
     }
 
     .btn {
-      padding: 12px 24px;
+      padding: 14px 30px;
       border: none;
-      border-radius: 40px;
+      border-radius: 50px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--accent-blue);
-      color: var(--bg-primary);
-    }
-
-    .btn-danger {
-      background: var(--accent-red);
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-red));
       color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
     }
 
     .btn:hover {
-      opacity: 0.9;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(62, 166, 255, 0.4);
+    }
+
+    .btn-google {
+      background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+      color: white;
+      width: 100%;
+      margin-top: 15px;
     }
 
     /* Notifications Panel */
     .notifications-panel {
       position: absolute;
-      top: 60px;
-      right: 80px;
-      width: 360px;
+      top: 70px;
+      right: 90px;
+      width: 400px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
       display: none;
       z-index: 1001;
+      backdrop-filter: blur(10px);
     }
 
     .notifications-panel.active {
       display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .notifications-header {
-      padding: 16px;
+      padding: 20px;
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
@@ -507,79 +739,81 @@
     }
 
     .notifications-list {
-      max-height: 400px;
+      max-height: 450px;
       overflow-y: auto;
     }
 
     .notification-item {
-      padding: 16px;
+      padding: 20px;
       border-bottom: 1px solid var(--border-color);
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.3s ease;
     }
 
     .notification-item:hover {
-      background: var(--bg-tertiary);
+      background: var(--bg-hover);
+      transform: translateX(5px);
     }
 
     .notification-item.unread {
-      background: rgba(62, 166, 255, 0.1);
-    }
-
-    /* Loading Spinner */
-    .spinner {
-      border: 3px solid var(--bg-tertiary);
-      border-top: 3px solid var(--accent-blue);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      background: rgba(62, 166, 255, 0.15);
+      border-left: 3px solid var(--accent-blue);
     }
 
     /* Toast Notifications */
     .toast-container {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      bottom: 30px;
+      right: 30px;
       z-index: 3000;
     }
 
     .toast {
       background: var(--bg-secondary);
-      border-left: 4px solid var(--accent-blue);
-      padding: 16px 24px;
-      border-radius: 8px;
-      margin-top: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-left: 6px solid var(--accent-blue);
+      padding: 18px 28px;
+      border-radius: 16px;
+      margin-top: 15px;
+      box-shadow: var(--shadow);
       display: flex;
       align-items: center;
-      gap: 12px;
-      animation: slideIn 0.3s ease;
+      gap: 15px;
+      animation: slideInRight 0.3s ease;
+      backdrop-filter: blur(10px);
     }
 
     .toast.success {
-      border-left-color: #4caf50;
+      border-left-color: var(--accent-green);
     }
 
     .toast.error {
       border-left-color: var(--accent-red);
     }
 
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+    .toast.warning {
+      border-left-color: var(--accent-orange);
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-red));
+      width: 0%;
+      transition: width 0.3s ease;
     }
 
     /* Responsive */
@@ -593,6 +827,10 @@
       .search-container {
         display: none;
       }
+      .channel-info-large {
+        flex-direction: column;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -605,8 +843,8 @@
     </div>
 
     <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search videos...">
-      <button id="searchBtn"><i class="fas fa-search"></i></button>
+      <input type="text" id="searchInput" placeholder="Search videos, channels, and more...">
+      <button id="searchBtn"><i class="fas fa-search"></i> Search</button>
     </div>
 
     <div class="header-actions">
@@ -615,17 +853,32 @@
         <i class="fas fa-bell" onclick="toggleNotifications()" id="notificationBell"></i>
         <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
       </div>
-      <div class="user-avatar" id="userAvatar" onclick="toggleAuthModal()">
+      <div class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">
         <i class="fas fa-user"></i>
       </div>
     </div>
   </header>
 
+  <!-- User Menu Dropdown -->
+  <div class="notifications-panel" id="userMenu" style="width: 250px; right: 20px;">
+    <div class="notifications-list" id="userMenuItems">
+      <div class="notification-item" onclick="openChannelModal()">
+        <i class="fas fa-plus-circle"></i> Create Channel
+      </div>
+      <div class="notification-item" onclick="window.location.hash = `channel-${currentUser?.uid}`">
+        <i class="fas fa-user-circle"></i> View Channel
+      </div>
+      <div class="notification-item" onclick="auth.signOut()">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </div>
+    </div>
+  </div>
+
   <!-- Notifications Panel -->
   <div class="notifications-panel" id="notificationsPanel">
     <div class="notifications-header">
       <h3>Notifications</h3>
-      <button class="btn" onclick="markAllNotificationsRead()">Mark all read</button>
+      <button class="btn" onclick="markAllNotificationsRead()" style="padding: 8px 15px;">Mark all read</button>
     </div>
     <div class="notifications-list" id="notificationsList">
       <div class="notification-item unread">
@@ -651,13 +904,22 @@
       <span>Subscriptions</span>
     </div>
     <div class="sidebar-divider"></div>
+    <div class="sidebar-item" onclick="loadShorts()">
+      <i class="fas fa-film"></i>
+      <span>Shorts</span>
+    </div>
+    <div class="sidebar-item" onclick="loadLive()">
+      <i class="fas fa-broadcast-tower"></i>
+      <span>Live</span>
+    </div>
+    <div class="sidebar-divider"></div>
     <div class="sidebar-item" onclick="loadHistory()">
       <i class="fas fa-history"></i>
       <span>History</span>
     </div>
-    <div class="sidebar-item" onclick="openChannelModal()">
-      <i class="fas fa-plus-circle"></i>
-      <span>Create Channel</span>
+    <div class="sidebar-item" onclick="loadPlaylists()">
+      <i class="fas fa-list"></i>
+      <span>Playlists</span>
     </div>
   </aside>
 
@@ -670,9 +932,16 @@
   <div class="modal" id="authModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Sign In to VertexTube</h2>
+        <h2>Welcome Back!</h2>
         <span class="close-modal" onclick="closeAuthModal()">&times;</span>
       </div>
+      
+      <!-- Google Sign In -->
+      <button class="btn btn-google" onclick="signInWithGoogle()">
+        <i class="fab fa-google"></i> Continue with Google
+      </button>
+
+      <div style="text-align: center; color: var(--text-secondary); margin: 20px 0;">or</div>
       
       <!-- Email/Password Sign In -->
       <form id="emailSignInForm">
@@ -684,10 +953,8 @@
           <label>Password</label>
           <input type="password" id="signinPassword" placeholder="Enter your password" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">Sign In</button>
+        <button type="submit" class="btn" style="width: 100%; margin-bottom: 12px;">Sign In</button>
       </form>
-
-      <div style="text-align: center; color: var(--text-secondary); margin: 20px 0;">or</div>
 
       <!-- Sign Up Form -->
       <form id="emailSignUpForm">
@@ -699,7 +966,7 @@
           <label>Password</label>
           <input type="password" id="signupPassword" placeholder="Choose a password (min 6 characters)" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+        <button type="submit" class="btn" style="width: 100%;">Create Account</button>
       </form>
     </div>
   </div>
@@ -721,16 +988,22 @@
           <textarea id="channelDescription" rows="3" placeholder="Tell viewers about your channel"></textarea>
         </div>
         <div class="form-group">
-          <label>Profile Picture URL</label>
-          <input type="url" id="profilePicture" placeholder="https://example.com/profile.jpg">
-          <small style="color: var(--text-secondary);">Enter a direct image URL (optional)</small>
+          <label>Profile Picture</label>
+          <div class="file-upload-area" onclick="document.getElementById('profileFile').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload profile picture</p>
+            <input type="file" id="profileFile" accept="image/*" style="display: none;">
+          </div>
         </div>
         <div class="form-group">
-          <label>Channel Banner URL</label>
-          <input type="url" id="channelBanner" placeholder="https://example.com/banner.jpg">
-          <small style="color: var(--text-secondary);">Enter a direct image URL (optional)</small>
+          <label>Channel Banner</label>
+          <div class="file-upload-area" onclick="document.getElementById('bannerFile').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload channel banner</p>
+            <input type="file" id="bannerFile" accept="image/*" style="display: none;">
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Channel</button>
+        <button type="submit" class="btn" style="width: 100%;">Create Channel</button>
       </form>
     </div>
   </div>
@@ -744,13 +1017,43 @@
       </div>
       <form id="uploadForm">
         <div class="form-group">
-          <label>Video Title</label>
-          <input type="text" id="videoTitle" placeholder="Enter video title" required>
+          <label>Video File</label>
+          <div class="file-upload-area" onclick="document.getElementById('videoFile').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to select video file</p>
+            <p id="selectedVideoFile" style="font-size: 0.9rem; color: var(--accent-blue);"></p>
+            <input type="file" id="videoFile" accept="video/*" style="display: none;" required>
+          </div>
         </div>
+
+        <div class="form-group">
+          <label>Thumbnail</label>
+          <div class="file-upload-area" onclick="document.getElementById('thumbnailFile').click()">
+            <i class="fas fa-image"></i>
+            <p>Click to upload thumbnail</p>
+            <input type="file" id="thumbnailFile" accept="image/*" style="display: none;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Video Title (Optional - defaults to upload date)</label>
+          <input type="text" id="videoTitle" placeholder="Enter video title">
+        </div>
+
         <div class="form-group">
           <label>Description</label>
           <textarea id="videoDescription" rows="3" placeholder="Describe your video"></textarea>
         </div>
+
+        <div class="form-group">
+          <label>Content Type</label>
+          <select id="videoType">
+            <option value="video">Video</option>
+            <option value="short">Short</option>
+            <option value="live">Live</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>Visibility</label>
           <select id="videoVisibility">
@@ -759,32 +1062,45 @@
             <option value="private">Private</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Video URL</label>
-          <input type="url" id="videoUrl" placeholder="https://www.youtube.com/embed/VIDEO_ID or direct video URL" required>
-          <small style="color: var(--text-secondary);">Enter YouTube embed URL or direct video URL</small>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="allowDownloads" checked>
+          <label>Allow viewers to download this video</label>
         </div>
-        <div class="form-group">
-          <label>Thumbnail URL</label>
-          <input type="url" id="thumbnailUrl" placeholder="https://example.com/thumbnail.jpg">
-          <small style="color: var(--text-secondary);">Enter a direct image URL (optional)</small>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="autoDub" checked>
+          <label>Auto-dub to multiple languages</label>
         </div>
-        <div class="form-group">
-          <label>Duration</label>
-          <input type="text" id="videoDuration" placeholder="10:30">
-          <small style="color: var(--text-secondary);">Format: MM:SS or HH:MM:SS</small>
+
+        <div id="processingStatus" style="display: none;">
+          <p>Processing video... <span id="processingProgress">0%</span></p>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Publish Video</button>
+
+        <button type="submit" class="btn" style="width: 100%;" id="uploadBtn">Start Upload</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Copyright Strike Modal -->
+  <div class="modal" id="strikeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Copyright Strike</h2>
+        <span class="close-modal" onclick="closeStrikeModal()">&times;</span>
+      </div>
+      <div id="strikeContent"></div>
     </div>
   </div>
 
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Firebase and App Script -->
   <script>
-    // Firebase Configuration - FIXED
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
       authDomain: "vertexpaste.firebaseapp.com",
@@ -798,6 +1114,10 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // Google Auth Provider
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
 
     // Global variables
     let currentUser = null;
@@ -805,15 +1125,16 @@
     let notifications = [];
     let unreadCount = 0;
     let subscriptions = [];
+    let uploadedVideos = {};
 
-    // Check for video ID in URL hash
-    function checkHash() {
-      const hash = window.location.hash;
-      if (hash && hash.startsWith('#watch-')) {
-        const videoId = hash.replace('#watch-', '');
-        playVideoById(videoId);
-      } else {
-        loadHome();
+    // Google Sign In
+    async function signInWithGoogle() {
+      try {
+        const result = await auth.signInWithPopup(googleProvider);
+        showToast('Successfully signed in with Google!', 'success');
+        closeAuthModal();
+      } catch (error) {
+        showToast('Error signing in with Google: ' + error.message, 'error');
       }
     }
 
@@ -832,16 +1153,6 @@
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         showToast('Account created successfully!', 'success');
         closeAuthModal();
-        
-        // Create welcome notification
-        await db.collection('notifications').add({
-          userId: userCredential.user.uid,
-          title: 'Welcome to VertexTube!',
-          message: 'Create your channel to start uploading videos',
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          read: false,
-          type: 'welcome'
-        });
       } catch (error) {
         showToast('Error creating account: ' + error.message, 'error');
       }
@@ -866,282 +1177,402 @@
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         currentUser = user;
-        updateUserUI(user);
         await loadUserChannel(user.uid);
         await loadNotifications(user.uid);
         await loadSubscriptions(user.uid);
-        checkHash(); // Check hash after login
+        updateUserUI();
+        checkHash();
       } else {
         currentUser = null;
         currentChannel = null;
         subscriptions = [];
         document.getElementById('userAvatar').innerHTML = '<i class="fas fa-user"></i>';
-        checkHash(); // Still check hash for public videos
+        checkHash();
       }
     });
 
-    async function loadSubscriptions(uid) {
-      try {
-        const snapshot = await db.collection('subscriptions')
-          .where('subscriberId', '==', uid)
-          .get();
-        subscriptions = snapshot.docs.map(doc => doc.data().channelId);
-      } catch (error) {
-        console.error('Error loading subscriptions:', error);
-      }
-    }
-
-    function updateUserUI(user) {
+    function updateUserUI() {
       const avatar = document.getElementById('userAvatar');
       if (currentChannel && currentChannel.profilePicture) {
         avatar.innerHTML = `<img src="${currentChannel.profilePicture}" alt="Avatar">`;
+      } else if (currentUser?.photoURL) {
+        avatar.innerHTML = `<img src="${currentUser.photoURL}" alt="Avatar">`;
       } else {
         avatar.innerHTML = `<i class="fas fa-user"></i>`;
       }
-    }
 
-    async function loadUserChannel(uid) {
-      try {
-        const channelDoc = await db.collection('channels').doc(uid).get();
-        if (channelDoc.exists) {
-          currentChannel = channelDoc.data();
-          updateUserUI();
-        }
-      } catch (error) {
-        console.error('Error loading channel:', error);
-      }
-    }
-
-    async function loadNotifications(uid) {
-      try {
-        const snapshot = await db.collection('notifications')
-          .where('userId', '==', uid)
-          .orderBy('timestamp', 'desc')
-          .limit(50)
-          .get();
-
-        notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        unreadCount = notifications.filter(n => !n.read).length;
-        updateNotificationBadge();
-        renderNotifications();
-      } catch (error) {
-        console.error('Error loading notifications:', error);
-      }
-    }
-
-    function updateNotificationBadge() {
-      const badge = document.getElementById('notificationBadge');
-      if (unreadCount > 0) {
-        badge.style.display = 'block';
-        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      // Update user menu based on channel status
+      const userMenu = document.getElementById('userMenuItems');
+      if (currentChannel) {
+        userMenu.innerHTML = `
+          <div class="notification-item" onclick="window.location.hash = 'channel-${currentUser.uid}'">
+            <i class="fas fa-user-circle"></i> View Channel
+          </div>
+          <div class="notification-item" onclick="openUploadModal()">
+            <i class="fas fa-video"></i> Upload Video
+          </div>
+          <div class="notification-item" onclick="auth.signOut()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </div>
+        `;
       } else {
-        badge.style.display = 'none';
+        userMenu.innerHTML = `
+          <div class="notification-item" onclick="openChannelModal()">
+            <i class="fas fa-plus-circle"></i> Create Channel
+          </div>
+          <div class="notification-item" onclick="auth.signOut()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </div>
+        `;
       }
     }
 
-    function renderNotifications() {
-      const list = document.getElementById('notificationsList');
-      if (notifications.length === 0) {
-        list.innerHTML = '<div class="notification-item">No notifications</div>';
+    function toggleUserMenu() {
+      if (!currentUser) {
+        toggleAuthModal();
         return;
       }
+      document.getElementById('userMenu').classList.toggle('active');
+    }
 
-      list.innerHTML = notifications.map(notif => `
-        <div class="notification-item ${!notif.read ? 'unread' : ''}" onclick="markNotificationRead('${notif.id}')">
-          <strong>${notif.title}</strong>
-          <p>${notif.message}</p>
-          <small>${formatTime(notif.timestamp)}</small>
+    // Check hash for routing
+    function checkHash() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#watch-')) {
+        playVideoById(hash.replace('#watch-', ''));
+      } else if (hash.startsWith('#channel-')) {
+        loadChannelPage(hash.replace('#channel-', ''));
+      } else {
+        loadHome();
+      }
+    }
+
+    // Load channel page
+    async function loadChannelPage(channelId) {
+      const mainContent = document.getElementById('mainContent');
+      mainContent.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const channelDoc = await db.collection('channels').doc(channelId).get();
+        if (!channelDoc.exists) {
+          showToast('Channel not found', 'error');
+          loadHome();
+          return;
+        }
+
+        const channel = { id: channelDoc.id, ...channelDoc.data() };
+        
+        // Load channel videos
+        const videosSnapshot = await db.collection('videos')
+          .where('channelId', '==', channelId)
+          .where('visibility', '==', 'public')
+          .orderBy('uploadedAt', 'desc')
+          .get();
+
+        const videos = videosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        renderChannelPage(channel, videos);
+      } catch (error) {
+        console.error('Error loading channel:', error);
+        showToast('Error loading channel', 'error');
+        loadHome();
+      }
+    }
+
+    function renderChannelPage(channel, videos) {
+      const mainContent = document.getElementById('mainContent');
+      
+      const shorts = videos.filter(v => v.type === 'short');
+      const liveVideos = videos.filter(v => v.type === 'live');
+      const regularVideos = videos.filter(v => v.type === 'video' || !v.type);
+
+      mainContent.innerHTML = `
+        <div class="channel-banner">
+          <img src="${channel.banner || 'https://via.placeholder.com/1280x360'}" alt="Channel Banner">
+        </div>
+
+        <div class="channel-info-large">
+          <div class="channel-avatar-large">
+            <img src="${channel.profilePicture || 'https://via.placeholder.com/120'}" alt="Channel Avatar">
+          </div>
+          <div class="channel-details-large">
+            <h1>${channel.name}</h1>
+            <div class="channel-stats">
+              <span>${formatSubscribers(channel.subscribers || 0)}</span>
+              <span>${channel.videos || 0} videos</span>
+              <span>${formatViews(channel.views || 0)} total views</span>
+            </div>
+            <p style="margin-top: 10px; color: var(--text-secondary);">${channel.description || ''}</p>
+          </div>
+          ${currentUser && currentUser.uid !== channel.userId ? 
+            `<button class="btn" onclick="toggleSubscribe('${channel.userId}')" style="margin-left: auto;">
+              ${subscriptions.includes(channel.userId) ? 'Subscribed' : 'Subscribe'}
+            </button>` : ''
+          }
+        </div>
+
+        <div class="channel-tabs">
+          <div class="channel-tab active" onclick="showChannelTab('videos', ${JSON.stringify(regularVideos).replace(/"/g, '&quot;')})">Videos</div>
+          <div class="channel-tab" onclick="showChannelTab('shorts', ${JSON.stringify(shorts).replace(/"/g, '&quot;')})">Shorts</div>
+          <div class="channel-tab" onclick="showChannelTab('live', ${JSON.stringify(liveVideos).replace(/"/g, '&quot;')})">Live</div>
+          <div class="channel-tab" onclick="showChannelTab('playlists', [])">Playlists</div>
+        </div>
+
+        <div id="channelContent" class="video-grid">
+          ${renderVideoList(regularVideos)}
+        </div>
+      `;
+    }
+
+    function showChannelTab(tab, videos) {
+      document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      const content = document.getElementById('channelContent');
+      
+      if (videos.length === 0) {
+        content.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 60px;">
+            <i class="fas fa-video" style="font-size: 64px; color: var(--text-secondary); margin-bottom: 20px;"></i>
+            <h3>No ${tab} available</h3>
+          </div>
+        `;
+      } else {
+        content.innerHTML = renderVideoList(videos);
+      }
+    }
+
+    function renderVideoList(videos) {
+      if (videos.length === 0) return '';
+      
+      return videos.map(video => `
+        <div class="video-card" onclick="window.location.hash = 'watch-${video.id}'">
+          <div class="thumbnail-container">
+            <img src="${video.thumbnailUrl || 'https://via.placeholder.com/320x180'}" alt="${video.title}">
+            <span class="video-duration">${video.duration || '0:00'}</span>
+          </div>
+          <div class="video-info">
+            <div class="channel-avatar">
+              <img src="${video.channelAvatar || 'https://via.placeholder.com/36'}" alt="">
+            </div>
+            <div class="video-details">
+              <div class="video-title">${video.title || formatDate(video.uploadedAt)}</div>
+              <div class="video-channel">${video.channelName}</div>
+              <div class="video-meta">${formatViews(video.views || 0)} views • ${formatTime(video.uploadedAt)}</div>
+            </div>
+          </div>
         </div>
       `).join('');
     }
 
-    async function markNotificationRead(id) {
-      try {
-        await db.collection('notifications').doc(id).update({ read: true });
-        unreadCount--;
-        updateNotificationBadge();
-        if (currentUser) loadNotifications(currentUser.uid);
-      } catch (error) {
-        console.error('Error marking notification read:', error);
-      }
-    }
-
-    async function markAllNotificationsRead() {
-      try {
-        const batch = db.batch();
-        notifications.forEach(notif => {
-          if (!notif.read) {
-            const ref = db.collection('notifications').doc(notif.id);
-            batch.update(ref, { read: true });
-          }
-        });
-        await batch.commit();
-        unreadCount = 0;
-        updateNotificationBadge();
-        if (currentUser) loadNotifications(currentUser.uid);
-        showToast('All notifications marked as read', 'success');
-      } catch (error) {
-        console.error('Error marking all read:', error);
-      }
-    }
-
-    function toggleNotifications() {
-      if (!currentUser) {
-        showToast('Please sign in to view notifications', 'error');
-        toggleAuthModal();
-        return;
-      }
-      const panel = document.getElementById('notificationsPanel');
-      panel.classList.toggle('active');
-    }
-
-    // Video upload functions
-    function openUploadModal() {
-      if (!currentUser) {
-        showToast('Please sign in to upload videos', 'error');
-        toggleAuthModal();
-        return;
-      }
-      if (!currentChannel) {
-        showToast('Please create a channel first', 'error');
-        openChannelModal();
-        return;
-      }
-      document.getElementById('uploadModal').classList.add('active');
-    }
-
-    function closeUploadModal() {
-      document.getElementById('uploadModal').classList.remove('active');
-      document.getElementById('uploadForm').reset();
-    }
-
+    // Video upload with processing
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       if (!currentUser || !currentChannel) {
-        showToast('You must be signed in with a channel to upload', 'error');
+        showToast('You must have a channel to upload', 'error');
         return;
       }
 
-      const videoUrl = document.getElementById('videoUrl').value;
-      const thumbnailUrl = document.getElementById('thumbnailUrl').value || 'https://via.placeholder.com/320x180';
-      const duration = document.getElementById('videoDuration').value || '0:00';
-      
-      if (!videoUrl) {
-        showToast('Please enter a video URL', 'error');
+      const videoFile = document.getElementById('videoFile').files[0];
+      if (!videoFile) {
+        showToast('Please select a video file', 'error');
         return;
       }
 
-      showToast('Publishing video...', 'success');
+      // Show processing status
+      document.getElementById('processingStatus').style.display = 'block';
+      document.getElementById('uploadBtn').disabled = true;
 
       try {
-        // Save video metadata to Firestore
+        // Upload video to storage
+        const videoRef = storage.ref(`videos/${currentUser.uid}/${Date.now()}_${videoFile.name}`);
+        const uploadTask = videoRef.put(videoFile);
+
+        // Track upload progress
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            document.getElementById('processingProgress').textContent = Math.round(progress) + '%';
+            document.getElementById('progressFill').style.width = progress + '%';
+          }
+        );
+
+        await uploadTask;
+        const videoUrl = await videoRef.getDownloadURL();
+
+        // Upload thumbnail if provided
+        let thumbnailUrl = '';
+        const thumbnailFile = document.getElementById('thumbnailFile').files[0];
+        if (thumbnailFile) {
+          const thumbRef = storage.ref(`thumbnails/${currentUser.uid}/${Date.now()}_${thumbnailFile.name}`);
+          await thumbRef.put(thumbnailFile);
+          thumbnailUrl = await thumbRef.getDownloadURL();
+        }
+
+        // Get video duration
+        const duration = await getVideoDuration(videoFile);
+
+        // Process video for copyright
+        document.getElementById('processingProgress').textContent = 'Checking copyright...';
+        const copyrightCheck = await checkCopyright(videoFile, videoUrl);
+
+        if (copyrightCheck.strike) {
+          // Issue copyright strike
+          await db.collection('copyrightStrikes').add({
+            channelId: currentUser.uid,
+            videoUrl: videoUrl,
+            reason: copyrightCheck.reason,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            strikeCount: firebase.firestore.FieldValue.increment(1)
+          });
+
+          showStrikeModal(copyrightCheck.reason);
+          return;
+        }
+
+        // Auto-dub if enabled
+        document.getElementById('processingProgress').textContent = 'Generating auto-dubs...';
+        const dubs = [];
+        if (document.getElementById('autoDub').checked) {
+          dubs.push(...await generateAutoDubs(videoFile));
+        }
+
+        // Save video metadata
         const videoData = {
-          title: document.getElementById('videoTitle').value,
+          title: document.getElementById('videoTitle').value || formatDate(new Date()),
           description: document.getElementById('videoDescription').value,
+          type: document.getElementById('videoType').value,
           visibility: document.getElementById('videoVisibility').value,
           videoUrl,
-          thumbnailUrl,
+          thumbnailUrl: thumbnailUrl || 'https://via.placeholder.com/320x180',
           channelId: currentUser.uid,
           channelName: currentChannel.name,
           channelAvatar: currentChannel.profilePicture || '',
           views: 0,
           likes: 0,
-          comments: [],
+          duration: duration,
+          allowDownloads: document.getElementById('allowDownloads').checked,
+          dubs: dubs,
           uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          duration: duration
+          processed: true
         };
 
-        const docRef = await db.collection('videos').add(videoData);
+        const docRef = await db.collection('videos').doc().set(videoData);
 
         // Update channel video count
         await db.collection('channels').doc(currentUser.uid).update({
           videos: firebase.firestore.FieldValue.increment(1)
         });
 
-        // Create notification for subscribers
-        const subscribers = await db.collection('subscriptions')
-          .where('channelId', '==', currentUser.uid)
-          .get();
-
-        const batch = db.batch();
-        subscribers.docs.forEach(sub => {
-          const notifRef = db.collection('notifications').doc();
-          batch.set(notifRef, {
-            userId: sub.data().subscriberId,
-            title: 'New Video Uploaded',
-            message: `${currentChannel.name} uploaded "${videoData.title}"`,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            read: false,
-            type: 'upload',
-            videoId: docRef.id
-          });
-        });
-        await batch.commit();
-
         showToast('Video published successfully!', 'success');
         closeUploadModal();
-        loadHome();
+
+        // Open video in new tab
+        window.open(`#watch-${docRef.id}`, '_blank');
+
       } catch (error) {
-        showToast('Error publishing video: ' + error.message, 'error');
+        console.error('Upload error:', error);
+        showToast('Error uploading video: ' + error.message, 'error');
+      } finally {
+        document.getElementById('processingStatus').style.display = 'none';
+        document.getElementById('uploadBtn').disabled = false;
+        document.getElementById('uploadForm').reset();
       }
     });
 
-    // Channel creation
-    function openChannelModal() {
-      if (!currentUser) {
-        showToast('Please sign in first', 'error');
-        toggleAuthModal();
-        return;
-      }
-      document.getElementById('channelModal').classList.add('active');
+    // Get video duration
+    function getVideoDuration(file) {
+      return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = function() {
+          window.URL.revokeObjectURL(video.src);
+          const minutes = Math.floor(video.duration / 60);
+          const seconds = Math.floor(video.duration % 60);
+          resolve(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        };
+        video.src = URL.createObjectURL(file);
+      });
     }
 
-    function closeChannelModal() {
-      document.getElementById('channelModal').classList.remove('active');
-      document.getElementById('channelForm').reset();
+    // Check copyright (simplified - in production, use actual copyright detection API)
+    async function checkCopyright(file, url) {
+      // Simulate copyright check
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Check if video matches any copyrighted content
+      const copyrightedContent = await db.collection('copyrightedContent').get();
+      
+      for (const doc of copyrightedContent.docs) {
+        const content = doc.data();
+        if (content.videoUrl === url || content.hash === await generateFileHash(file)) {
+          // Check if downloads were allowed
+          if (!content.allowDownloads) {
+            return { strike: true, reason: 'This content is copyrighted and downloads were disabled by the owner' };
+          }
+        }
+      }
+      
+      return { strike: false };
     }
 
-    document.getElementById('channelForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      if (!currentUser) {
-        showToast('Please sign in first', 'error');
-        return;
-      }
-
-      const channelData = {
-        name: document.getElementById('channelName').value,
-        description: document.getElementById('channelDescription').value,
-        profilePicture: document.getElementById('profilePicture').value || 'https://via.placeholder.com/100',
-        banner: document.getElementById('channelBanner').value || 'https://via.placeholder.com/1280x360',
-        subscribers: 0,
-        videos: 0,
-        views: 0,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        userId: currentUser.uid
-      };
-
-      try {
-        await db.collection('channels').doc(currentUser.uid).set(channelData);
-        currentChannel = channelData;
-        showToast('Channel created successfully!', 'success');
-        closeChannelModal();
-        updateUserUI(currentUser);
-        
-        // Create notification
-        await db.collection('notifications').add({
-          userId: currentUser.uid,
-          title: 'Channel Created',
-          message: `Your channel "${channelData.name}" is now live!`,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          read: false,
-          type: 'channel'
+    // Generate auto-dubs (simplified - in production, use actual translation API)
+    async function generateAutoDubs(file) {
+      const languages = ['es', 'fr', 'de', 'ja', 'ko', 'zh'];
+      const dubs = [];
+      
+      for (const lang of languages) {
+        // Simulate dub generation
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        dubs.push({
+          language: lang,
+          url: `https://example.com/dub/${lang}.mp3`,
+          generated: true
         });
-      } catch (error) {
-        showToast('Error creating channel: ' + error.message, 'error');
       }
-    });
+      
+      return dubs;
+    }
+
+    // Generate file hash (simplified)
+    async function generateFileHash(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          // Simple hash - in production, use actual crypto
+          const hash = btoa(e.target.result.slice(0, 100));
+          resolve(hash);
+        };
+        reader.readAsBinaryString(file.slice(0, 100));
+      });
+    }
+
+    // Format date for title
+    function formatDate(date) {
+      const d = date instanceof Date ? date : new Date(date);
+      return d.toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    }
+
+    // Show strike modal
+    function showStrikeModal(reason) {
+      document.getElementById('strikeContent').innerHTML = `
+        <i class="fas fa-exclamation-triangle" style="font-size: 64px; color: var(--accent-red); margin: 20px auto; display: block; text-align: center;"></i>
+        <h3 style="text-align: center; margin: 20px 0;">Copyright Strike Issued</h3>
+        <p style="text-align: center; color: var(--text-secondary);">${reason}</p>
+        <p style="text-align: center; margin-top: 20px;">This strike will affect your channel standing.</p>
+        <button class="btn" onclick="closeStrikeModal()" style="width: 100%; margin-top: 20px;">Close</button>
+      `;
+      document.getElementById('strikeModal').classList.add('active');
+    }
+
+    function closeStrikeModal() {
+      document.getElementById('strikeModal').classList.remove('active');
+    }
 
     // Load videos for Home
     async function loadHome() {
@@ -1164,7 +1595,7 @@
       }
     }
 
-    // Load Trending videos (most viewed)
+    // Load Trending videos
     async function loadTrending() {
       setActiveSidebar('trending');
       window.location.hash = '';
@@ -1182,6 +1613,50 @@
       } catch (error) {
         console.error('Error loading trending:', error);
         grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading videos</div>';
+      }
+    }
+
+    // Load Shorts
+    async function loadShorts() {
+      setActiveSidebar('shorts');
+      window.location.hash = '';
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const snapshot = await db.collection('videos')
+          .where('visibility', '==', 'public')
+          .where('type', '==', 'short')
+          .orderBy('uploadedAt', 'desc')
+          .limit(50)
+          .get();
+        
+        renderVideoGrid(snapshot);
+      } catch (error) {
+        console.error('Error loading shorts:', error);
+        grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading shorts</div>';
+      }
+    }
+
+    // Load Live videos
+    async function loadLive() {
+      setActiveSidebar('live');
+      window.location.hash = '';
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const snapshot = await db.collection('videos')
+          .where('visibility', '==', 'public')
+          .where('type', '==', 'live')
+          .orderBy('uploadedAt', 'desc')
+          .limit(50)
+          .get();
+        
+        renderVideoGrid(snapshot);
+      } catch (error) {
+        console.error('Error loading live videos:', error);
+        grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading live videos</div>';
       }
     }
 
@@ -1268,11 +1743,33 @@
           }
         }
 
-        renderVideoList(videos);
+        grid.innerHTML = renderVideoList(videos);
       } catch (error) {
         console.error('Error loading history:', error);
         grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading history</div>';
       }
+    }
+
+    // Load Playlists
+    async function loadPlaylists() {
+      setActiveSidebar('playlists');
+      window.location.hash = '';
+      
+      if (!currentUser) {
+        showToast('Please sign in to view playlists', 'error');
+        loadHome();
+        return;
+      }
+
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px;">
+          <i class="fas fa-list" style="font-size: 64px; color: var(--text-secondary); margin-bottom: 20px;"></i>
+          <h3>Playlists</h3>
+          <p style="color: var(--text-secondary); margin: 20px 0;">Create and manage your playlists</p>
+          <button class="btn" onclick="showToast('Playlist feature coming soon!', 'info')">Create Playlist</button>
+        </div>
+      `;
     }
 
     function renderVideoGrid(snapshot) {
@@ -1280,10 +1777,11 @@
       
       if (snapshot.empty) {
         grid.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-            <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+          <div style="grid-column: 1/-1; text-align: center; padding: 60px;">
+            <i class="fas fa-video" style="font-size: 64px; color: var(--text-secondary); margin-bottom: 20px;"></i>
             <h3>No videos yet</h3>
-            <p style="color: var(--text-secondary);">Be the first to upload a video!</p>
+            <p style="color: var(--text-secondary); margin: 20px 0;">Be the first to upload a video!</p>
+            <button class="btn" onclick="openUploadModal()">Upload Video</button>
           </div>
         `;
         return;
@@ -1296,41 +1794,26 @@
       });
     }
 
-    function renderVideoList(videos) {
-      const grid = document.getElementById('videoGrid');
-      
-      if (videos.length === 0) {
-        grid.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-            <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
-            <h3>No videos</h3>
-          </div>
-        `;
-        return;
-      }
-
-      grid.innerHTML = '';
-      videos.forEach(video => {
-        grid.appendChild(createVideoCard(video));
-      });
-    }
-
     function createVideoCard(video) {
       const card = document.createElement('div');
       card.className = 'video-card';
       card.onclick = () => window.location.hash = `watch-${video.id}`;
       
+      const title = video.title || formatDate(video.uploadedAt);
+      
       card.innerHTML = `
         <div class="thumbnail-container">
-          <img src="${video.thumbnailUrl || 'https://via.placeholder.com/320x180'}" alt="${video.title}">
+          <img src="${video.thumbnailUrl || 'https://via.placeholder.com/320x180'}" alt="${title}">
           <span class="video-duration">${video.duration || '0:00'}</span>
+          ${video.type === 'live' ? '<span style="position: absolute; top: 8px; left: 8px; background: var(--accent-red); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">LIVE</span>' : ''}
+          ${video.type === 'short' ? '<span style="position: absolute; top: 8px; left: 8px; background: var(--accent-orange); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">SHORT</span>' : ''}
         </div>
         <div class="video-info">
-          <div class="channel-avatar">
+          <div class="channel-avatar" onclick="event.stopPropagation(); window.location.hash = 'channel-${video.channelId}'">
             <img src="${video.channelAvatar || 'https://via.placeholder.com/36'}" alt="">
           </div>
           <div class="video-details">
-            <div class="video-title">${video.title}</div>
+            <div class="video-title">${title}</div>
             <div class="video-channel">${video.channelName}</div>
             <div class="video-meta">${formatViews(video.views || 0)} views • ${formatTime(video.uploadedAt)}</div>
           </div>
@@ -1340,6 +1823,7 @@
       return card;
     }
 
+    // Play video by ID
     async function playVideoById(videoId) {
       const mainContent = document.getElementById('mainContent');
       mainContent.innerHTML = '<div class="spinner"></div>';
@@ -1360,39 +1844,21 @@
           views: firebase.firestore.FieldValue.increment(1)
         });
 
-        // Add to watch history if user is logged in
+        // Update channel views
+        await db.collection('channels').doc(video.channelId).update({
+          views: firebase.firestore.FieldValue.increment(1)
+        });
+
+        // Add to watch history
         if (currentUser) {
           await db.collection('watchHistory').add({
             userId: currentUser.uid,
             videoId: videoId,
             watchedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-
-          // Keep only last 50 history items
-          const historySnapshot = await db.collection('watchHistory')
-            .where('userId', '==', currentUser.uid)
-            .orderBy('watchedAt', 'desc')
-            .get();
-
-          if (historySnapshot.size > 50) {
-            const toDelete = historySnapshot.docs.slice(50);
-            const batch = db.batch();
-            toDelete.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-          }
         }
 
-        // Check if user is subscribed
-        let isSubscribed = false;
-        if (currentUser) {
-          const subDoc = await db.collection('subscriptions')
-            .where('subscriberId', '==', currentUser.uid)
-            .where('channelId', '==', video.channelId)
-            .get();
-          isSubscribed = !subDoc.empty;
-        }
-
-        renderVideoPlayer(video, isSubscribed);
+        renderVideoPlayer(video);
       } catch (error) {
         console.error('Error loading video:', error);
         showToast('Error loading video', 'error');
@@ -1400,13 +1866,11 @@
       }
     }
 
-    function renderVideoPlayer(video, isSubscribed) {
+    function renderVideoPlayer(video) {
       const mainContent = document.getElementById('mainContent');
       
-      // Determine if it's a YouTube URL
-      const isYouTube = video.videoUrl.includes('youtube.com/embed') || 
-                        video.videoUrl.includes('youtu.be') ||
-                        video.videoUrl.includes('youtube.com/watch');
+      const title = video.title || formatDate(video.uploadedAt);
+      const isYouTube = video.videoUrl.includes('youtube.com') || video.videoUrl.includes('youtu.be');
 
       let embedUrl = video.videoUrl;
       if (video.videoUrl.includes('youtube.com/watch')) {
@@ -1419,36 +1883,60 @@
 
       mainContent.innerHTML = `
         <div class="video-player-container">
-          <div class="back-btn" onclick="loadHome()">
+          <div class="back-btn" onclick="loadHome()" style="margin-bottom: 20px; color: var(--accent-blue); cursor: pointer;">
             <i class="fas fa-arrow-left"></i> Back to Home
           </div>
           
           <div class="video-player-wrapper">
             ${isYouTube ? 
               `<iframe src="${embedUrl}" allowfullscreen></iframe>` : 
-              `<video src="${video.videoUrl}" controls></video>`
+              `<video src="${video.videoUrl}" controls ${video.allowDownloads ? 'controlsList="nodownload"' : ''}></video>`
             }
+            
+            <div class="video-controls">
+              ${video.allowDownloads ? 
+                `<button class="control-btn" onclick="downloadVideo('${video.videoUrl}', '${title}')">
+                  <i class="fas fa-download"></i> Download
+                </button>` : ''
+              }
+              <button class="control-btn" onclick="showToast('Language selection coming soon!', 'info')">
+                <i class="fas fa-language"></i> Audio
+              </button>
+            </div>
           </div>
 
           <div class="video-info-section">
-            <h1 class="video-title-large">${video.title}</h1>
+            <h1 class="video-title-large">${title}</h1>
             
             <div class="video-stats">
-              <span>${formatViews(video.views)} views</span>
-              <span>${formatTime(video.uploadedAt)}</span>
+              <span><i class="fas fa-eye"></i> ${formatViews(video.views)} views</span>
+              <span><i class="fas fa-calendar"></i> ${formatTime(video.uploadedAt)}</span>
+              <span><i class="fas fa-heart"></i> ${video.likes || 0} likes</span>
             </div>
 
-            <div class="channel-info-large">
-              <div class="channel-avatar-large">
+            ${video.dubs && video.dubs.length > 0 ? `
+              <div class="language-selector">
+                <label>Audio Language:</label>
+                <select onchange="changeAudio(this.value)">
+                  <option value="original">Original</option>
+                  ${video.dubs.map(dub => 
+                    `<option value="${dub.url}">${getLanguageName(dub.language)} (Dubbed)</option>`
+                  ).join('')}
+                </select>
+              </div>
+            ` : ''}
+
+            <div class="channel-info-large" style="margin-top: 20px;">
+              <div class="channel-avatar-large" onclick="window.location.hash = 'channel-${video.channelId}'" style="cursor: pointer;">
                 <img src="${video.channelAvatar || 'https://via.placeholder.com/60'}" alt="">
               </div>
               <div class="channel-details-large">
-                <h3>${video.channelName}</h3>
-                <p>${formatSubscribers(video.subscribers || 0)} subscribers</p>
+                <h3 style="cursor: pointer;" onclick="window.location.hash = 'channel-${video.channelId}'">${video.channelName}</h3>
+                <p>${formatSubscribers(video.subscribers || 0)}</p>
               </div>
               ${currentUser && currentUser.uid !== video.channelId ? 
-                `<button class="subscribe-btn" onclick="toggleSubscribe('${video.channelId}')">
-                  ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                `<button class="btn" onclick="toggleSubscribe('${video.channelId}')" style="margin-left: auto;">
+                  ${subscriptions.includes(video.channelId) ? 'Subscribed' : 'Subscribe'}
                 </button>` : ''
               }
             </div>
@@ -1461,6 +1949,39 @@
       `;
     }
 
+    function getLanguageName(code) {
+      const languages = {
+        'es': 'Spanish',
+        'fr': 'French',
+        'de': 'German',
+        'ja': 'Japanese',
+        'ko': 'Korean',
+        'zh': 'Chinese',
+        'en': 'English'
+      };
+      return languages[code] || code;
+    }
+
+    function changeAudio(url) {
+      if (url === 'original') {
+        // Switch to original audio
+        showToast('Switched to original audio', 'success');
+      } else {
+        // Switch to dubbed audio
+        showToast('Switched to dubbed audio', 'success');
+      }
+    }
+
+    function downloadVideo(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename + '.mp4';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Subscribe/Unsubscribe
     async function toggleSubscribe(channelId) {
       if (!currentUser) {
         showToast('Please sign in to subscribe', 'error');
@@ -1486,6 +2007,7 @@
             subscribers: firebase.firestore.FieldValue.increment(1)
           });
 
+          subscriptions.push(channelId);
           showToast('Subscribed successfully!', 'success');
         } else {
           // Unsubscribe
@@ -1495,12 +2017,17 @@
             subscribers: firebase.firestore.FieldValue.increment(-1)
           });
 
+          subscriptions = subscriptions.filter(id => id !== channelId);
           showToast('Unsubscribed', 'success');
         }
 
-        // Refresh the current video to update button state
-        const videoId = window.location.hash.replace('#watch-', '');
-        await playVideoById(videoId);
+        // Refresh current page
+        const hash = window.location.hash;
+        if (hash.startsWith('#watch-')) {
+          await playVideoById(hash.replace('#watch-', ''));
+        } else if (hash.startsWith('#channel-')) {
+          await loadChannelPage(hash.replace('#channel-', ''));
+        }
       } catch (error) {
         console.error('Error toggling subscription:', error);
         showToast('Error updating subscription', 'error');
@@ -1526,15 +2053,16 @@
 
         const filtered = snapshot.docs.filter(doc => {
           const video = doc.data();
-          return video.title.toLowerCase().includes(term) || 
-                 (video.description && video.description.toLowerCase().includes(term));
+          const title = (video.title || '').toLowerCase();
+          const description = (video.description || '').toLowerCase();
+          return title.includes(term) || description.includes(term) || video.channelName.toLowerCase().includes(term);
         });
 
         if (filtered.length === 0) {
           grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-              <i class="fas fa-search" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
-              <h3>No videos found for "${term}"</h3>
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px;">
+              <i class="fas fa-search" style="font-size: 64px; color: var(--text-secondary); margin-bottom: 20px;"></i>
+              <h3>No results found for "${term}"</h3>
             </div>
           `;
           return;
@@ -1567,21 +2095,60 @@
       document.getElementById('authModal').classList.remove('active');
     }
 
+    // Channel modal functions
+    function openChannelModal() {
+      if (!currentUser) {
+        showToast('Please sign in first', 'error');
+        toggleAuthModal();
+        return;
+      }
+      document.getElementById('channelModal').classList.add('active');
+    }
+
+    function closeChannelModal() {
+      document.getElementById('channelModal').classList.remove('active');
+      document.getElementById('channelForm').reset();
+    }
+
+    // Upload modal functions
+    function openUploadModal() {
+      if (!currentUser) {
+        showToast('Please sign in to upload videos', 'error');
+        toggleAuthModal();
+        return;
+      }
+      if (!currentChannel) {
+        showToast('Please create a channel first', 'error');
+        openChannelModal();
+        return;
+      }
+      document.getElementById('uploadModal').classList.add('active');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.remove('active');
+      document.getElementById('uploadForm').reset();
+      document.getElementById('processingStatus').style.display = 'none';
+    }
+
     // Set active sidebar item
     function setActiveSidebar(section) {
       document.querySelectorAll('.sidebar-item').forEach(item => {
         item.classList.remove('active');
       });
       
-      const index = {
+      const items = {
         'home': 0,
         'trending': 1,
         'subscriptions': 2,
-        'history': 4
-      }[section];
+        'shorts': 4,
+        'live': 5,
+        'history': 7,
+        'playlists': 8
+      };
 
-      if (index !== undefined) {
-        document.querySelectorAll('.sidebar-item')[index].classList.add('active');
+      if (items[section] !== undefined) {
+        document.querySelectorAll('.sidebar-item')[items[section]].classList.add('active');
       }
     }
 
@@ -1611,7 +2178,7 @@
       
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
       const now = new Date();
-      const diff = Math.floor((now - date) / 1000); // seconds
+      const diff = Math.floor((now - date) / 1000);
 
       if (diff < 60) return 'just now';
       if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
@@ -1626,7 +2193,7 @@
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       toast.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
         <span>${message}</span>
       `;
       
@@ -1647,6 +2214,12 @@
           event.target.classList.remove('active');
         }
       };
+
+      // Show selected video file name
+      document.getElementById('videoFile').addEventListener('change', (e) => {
+        const fileName = e.target.files[0]?.name;
+        document.getElementById('selectedVideoFile').textContent = fileName ? `Selected: ${fileName}` : '';
+      });
     });
 
     // Handle hash changes
