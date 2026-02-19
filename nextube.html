@@ -9,7 +9,6 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Previous styles remain the same - keeping all your existing CSS */
         * {
             margin: 0;
             padding: 0;
@@ -34,6 +33,7 @@
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
             --success: #4caf50;
             --error: #f44336;
+            --warning: #ffc107;
         }
 
         body {
@@ -137,6 +137,7 @@
             display: flex;
             gap: 15px;
             align-items: center;
+            position: relative;
         }
 
         .btn {
@@ -192,6 +193,10 @@
             background: #c82333;
         }
 
+        .user-avatar-container {
+            position: relative;
+        }
+
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -204,1004 +209,370 @@
             font-weight: bold;
             cursor: pointer;
             object-fit: cover;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
         }
 
-        /* Main Layout */
-        .main-layout {
-            display: flex;
-            margin-top: 20px;
-        }
-
-        .sidebar {
-            width: 240px;
-            position: sticky;
-            top: 80px;
-            height: calc(100vh - 80px);
-            overflow-y: auto;
-            padding: 20px;
-            background: var(--darker);
-            border-right: 1px solid var(--border);
-        }
-
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 12px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: var(--text-dim);
-            margin-bottom: 5px;
-        }
-
-        .sidebar-item:hover {
-            background: var(--dark-card-hover);
-            color: var(--text);
-        }
-
-        .sidebar-item.active {
-            background: rgba(255, 0, 0, 0.2);
-            color: var(--primary);
-        }
-
-        .sidebar-item i {
-            width: 24px;
-            font-size: 1.2rem;
-        }
-
-        .sidebar-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 15px 0;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 20px 30px;
-        }
-
-        /* Video Grid */
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        .video-card {
-            background: var(--dark-card);
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
-            position: relative;
-        }
-
-        .video-card:hover {
-            transform: translateY(-5px);
+        .user-avatar:hover {
             border-color: var(--primary);
+        }
+
+        /* User Dropdown Menu */
+        .user-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 320px;
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
             box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            display: none;
+            overflow: hidden;
         }
 
-        .video-thumbnail {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: var(--darker);
+        .user-dropdown.active {
+            display: block;
+            animation: slideDown 0.3s ease;
         }
 
-        .video-thumbnail img {
-            width: 100%;
-            height: 100%;
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .user-info-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .user-info-row:hover {
+            background: var(--dark-card-hover);
+        }
+
+        .dropdown-user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
             object-fit: cover;
         }
 
-        .video-duration {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
+        .dropdown-user-details {
+            flex: 1;
         }
 
-        .video-status {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(255, 193, 7, 0.9);
-            color: black;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+        .dropdown-display-name {
             font-weight: 600;
+            color: var(--text);
+        }
+
+        .dropdown-username {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .dropdown-email {
+            font-size: 0.8rem;
+            color: var(--text-dimmer);
+            margin-top: 2px;
+        }
+
+        .view-channel-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background: var(--dark-card-hover);
+            border: none;
+            border-radius: 40px;
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-channel-btn:hover {
+            background: var(--primary);
+        }
+
+        .dropdown-section {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            color: var(--text);
+        }
+
+        .dropdown-item:hover {
+            background: var(--dark-card-hover);
+        }
+
+        .dropdown-item i {
+            width: 24px;
+            color: var(--text-dim);
+        }
+
+        .dropdown-item-text {
+            flex: 1;
+        }
+
+        .dropdown-item-sub {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .dropdown-item-right {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-flag {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Create Channel Modal */
+        .create-channel-modal {
+            max-width: 500px;
+        }
+
+        .channel-setup-steps {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+
+        .step.active .step-number {
+            background: var(--primary);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--dark-card-hover);
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            position: relative;
             z-index: 2;
         }
 
-        .video-status.private {
-            background: rgba(108, 117, 125, 0.9);
-            color: white;
+        .step-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
         }
 
-        .video-status.processing {
-            background: rgba(255, 193, 7, 0.9);
+        .step.active .step-label {
+            color: var(--primary);
         }
 
-        .video-status.copyright {
-            background: rgba(220, 53, 69, 0.9);
-            color: white;
+        .banner-upload-area {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 12px;
+            position: relative;
+            margin-bottom: 60px;
+            cursor: pointer;
         }
 
-        .video-edit-overlay {
+        .banner-upload-overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
             opacity: 0;
             transition: opacity 0.3s ease;
-            z-index: 3;
         }
 
-        .video-card:hover .video-edit-overlay {
+        .banner-upload-area:hover .banner-upload-overlay {
             opacity: 1;
         }
 
-        .video-edit-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .channel-avatar-upload {
+            position: absolute;
+            bottom: -40px;
+            left: 30px;
         }
 
-        .video-edit-btn:hover {
-            background: var(--primary-dark);
-        }
-
-        .video-edit-btn.delete {
-            background: #dc3545;
-        }
-
-        .video-edit-btn.delete:hover {
-            background: #c82333;
-        }
-
-        .video-info {
-            padding: 12px;
-            display: flex;
-            gap: 12px;
-        }
-
-        .channel-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-
-        .video-details {
-            flex: 1;
-        }
-
-        .video-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .video-channel {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-            cursor: pointer;
-        }
-
-        .video-channel:hover {
-            color: var(--text);
-        }
-
-        .video-meta {
-            color: var(--text-dimmer);
-            font-size: 0.85rem;
-            display: flex;
-            gap: 8px;
-        }
-
-        /* Video Player Page */
-        .video-player-container {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 25px;
-        }
-
-        .video-player-section {
-            background: var(--dark-card);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .video-player-wrapper {
-            width: 100%;
-            background: black;
-        }
-
-        .video-player-wrapper video {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: black;
-        }
-
-        .video-player-info {
-            padding: 20px;
-        }
-
-        .video-player-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .video-player-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 15px;
-        }
-
-        .video-actions {
-            display: flex;
-            gap: 15px;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 40px;
-            background: var(--dark-card-hover);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            color: var(--text);
-        }
-
-        .action-btn:hover {
-            background: var(--primary);
-        }
-
-        .action-btn.active {
-            background: var(--primary);
-        }
-
-        .channel-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        .channel-details {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .channel-large-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-
-        .channel-meta h3 {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-            cursor: pointer;
-        }
-
-        .channel-meta p {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        .video-description {
-            background: var(--dark-card-hover);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            white-space: pre-line;
-        }
-
-        /* Comments Section */
-        .comments-section {
-            margin-top: 30px;
-        }
-
-        .comment-input {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .comment-input img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .comment-input input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--border);
-            color: var(--text);
-            padding: 10px 0;
-            font-size: 14px;
-        }
-
-        .comment-input input:focus {
-            outline: none;
-            border-bottom-color: var(--primary);
-        }
-
-        .comment {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .comment-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-
-        .comment-content {
-            flex: 1;
-        }
-
-        .comment-header {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        .comment-author {
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .comment-author:hover {
-            color: var(--primary);
-        }
-
-        .comment-time {
-            color: var(--text-dim);
-        }
-
-        .comment-text {
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .comment-actions {
-            display: flex;
-            gap: 15px;
-            color: var(--text-dim);
-            font-size: 0.85rem;
-        }
-
-        .comment-action {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: var(--text-dim);
-        }
-
-        .comment-action:hover {
-            color: var(--text);
-        }
-
-        .comment-action.active {
-            color: var(--primary);
-        }
-
-        /* Recommended Videos */
-        .recommended-videos {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .recommended-card {
-            display: flex;
-            gap: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 5px;
-            border-radius: 8px;
-        }
-
-        .recommended-card:hover {
-            background: var(--dark-card-hover);
-        }
-
-        .recommended-thumbnail {
-            width: 168px;
-            aspect-ratio: 16/9;
-            background: var(--darker);
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .recommended-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .recommended-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .recommended-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            font-size: 0.95rem;
-        }
-
-        .recommended-channel {
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            margin-bottom: 3px;
-        }
-
-        .recommended-meta {
-            color: var(--text-dimmer);
-            font-size: 0.8rem;
-        }
-
-        /* Channel Page */
-        .channel-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            padding: 40px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            display: flex;
-            gap: 30px;
-            align-items: center;
-            position: relative;
-        }
-
-        .channel-header-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid white;
-            object-fit: cover;
-        }
-
-        .channel-header-info {
-            flex: 1;
-        }
-
-        .channel-header-info h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .channel-stats {
-            display: flex;
-            gap: 20px;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 15px;
-        }
-
-        .channel-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .channel-tabs {
-            display: flex;
-            gap: 20px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 30px;
-        }
-
-        .channel-tab {
-            padding: 15px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-
-        .channel-tab.active {
-            border-bottom-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* Upload Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--dark-card);
-            border-radius: 16px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            background: var(--dark-card);
-        }
-
-        .modal-header h2 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 24px;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-btn:hover {
-            background: var(--dark-card-hover);
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .upload-area {
-            border: 3px dashed var(--border);
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .upload-area:hover {
-            border-color: var(--primary);
-            background: rgba(255, 0, 0, 0.1);
-        }
-
-        .upload-area i {
-            font-size: 48px;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .upload-progress {
-            width: 100%;
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
-            margin: 20px 0;
-            display: none;
-        }
-
-        .upload-progress.active {
-            display: block;
-        }
-
-        .upload-progress-bar {
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .upload-progress-text {
-            text-align: center;
-            margin-top: 10px;
-            color: var(--text-dim);
-        }
-
-        .copyright-warning {
-            background: rgba(220, 53, 69, 0.1);
-            border: 1px solid #dc3545;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            color: #dc3545;
-        }
-
-        .copyright-warning i {
-            margin-right: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            background: var(--darker);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .thumbnail-preview {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: var(--darker);
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .thumbnail-preview.show {
-            display: block;
-        }
-
-        .thumbnail-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Auth Modal */
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 30px;
-            border-radius: 8px;
-            background: var(--darker);
-            padding: 5px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .auth-tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Loading */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-
-        .loading::after {
-            content: "";
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--dark-card);
-            border-left: 4px solid var(--primary);
-            padding: 16px 24px;
-            border-radius: 8px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 3000;
-            animation: slideIn 0.3s ease;
-        }
-
-        .notification.success {
-            border-left-color: var(--success);
-        }
-
-        .notification.error {
-            border-left-color: var(--error);
-        }
-
-        .notification.warning {
-            border-left-color: #ffc107;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Empty States */
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            color: var(--text-dim);
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: var(--text);
-        }
-
-        /* Manage Videos Page */
-        .manage-videos-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .video-filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            background: var(--dark-card);
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            cursor: pointer;
-        }
-
-        .filter-btn:hover,
-        .filter-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .video-management-card {
-            background: var(--dark-card);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            margin-bottom: 15px;
-        }
-
-        .video-management-row {
-            display: flex;
-            padding: 15px;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .management-thumbnail {
-            width: 160px;
-            aspect-ratio: 16/9;
-            background: var(--darker);
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .management-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .management-info {
-            flex: 1;
-        }
-
-        .management-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-        }
-
-        .management-meta {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        .management-stats {
-            display: flex;
-            gap: 20px;
-            color: var(--text-dimmer);
-            font-size: 0.9rem;
-        }
-
-        .management-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .management-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            background: var(--dark-card-hover);
-            border: none;
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .management-btn:hover {
-            background: var(--primary);
-        }
-
-        .management-btn.delete:hover {
-            background: #dc3545;
-        }
-
-        /* Edit Channel Modal */
-        .avatar-upload-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .current-avatar {
+        .channel-avatar-circle {
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--primary);
+            border: 4px solid var(--dark-card);
+            background: var(--dark-card-hover);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
         }
 
-        .avatar-upload-btn {
+        .channel-avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .channel-avatar-circle:hover .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .link-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .link-input-group input {
+            flex: 1;
+        }
+
+        .remove-link {
+            color: var(--error);
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .remove-link:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .add-link-btn {
             background: var(--dark-card-hover);
-            padding: 8px 16px;
-            border-radius: 20px;
+            border: 1px dashed var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .add-link-btn:hover {
+            border-color: var(--primary);
+        }
+
+        /* Appearance Selector */
+        .appearance-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .appearance-option {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            background: var(--dark-card-hover);
+            text-align: center;
             cursor: pointer;
         }
 
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .video-player-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                display: none;
-            }
+        .appearance-option.active {
+            background: var(--primary);
         }
 
+        /* Responsive */
         @media (max-width: 768px) {
+            .navbar {
+                padding: 0.5rem 1rem;
+            }
+            
             .search-container {
                 display: none;
             }
             
-            .video-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .channel-header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .management-thumbnail {
-                width: 120px;
+            .user-dropdown {
+                width: 300px;
+                right: -10px;
             }
         }
     </style>
@@ -1373,41 +744,111 @@
         </div>
     </div>
 
-    <!-- Edit Channel Modal -->
-    <div id="editChannelModal" class="modal">
-        <div class="modal-content">
+    <!-- Create Channel Modal -->
+    <div id="createChannelModal" class="modal">
+        <div class="modal-content create-channel-modal">
             <div class="modal-header">
-                <h2><i class="fas fa-edit"></i> Edit Channel</h2>
-                <button class="close-btn" onclick="window.app.closeEditChannelModal()">&times;</button>
+                <h2><i class="fas fa-plus-circle"></i> Create Your Channel</h2>
+                <button class="close-btn" onclick="window.app.closeCreateChannelModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="avatar-upload-area">
-                    <img src="" alt="Channel Avatar" class="current-avatar" id="currentChannelAvatar">
-                    <div class="avatar-upload-btn" onclick="document.getElementById('channelAvatarFile').click()">
-                        <i class="fas fa-camera"></i> Change Avatar
+                <!-- Step Progress -->
+                <div class="channel-setup-steps" id="channelSetupSteps">
+                    <div class="step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Branding</div>
                     </div>
-                    <input type="file" id="channelAvatarFile" accept="image/*" style="display: none;">
+                    <div class="step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">About</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Links</div>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label>Channel Name</label>
-                    <input type="text" id="editChannelName" placeholder="Enter channel name">
+
+                <!-- Step 1: Branding -->
+                <div id="channelStep1" class="channel-step">
+                    <!-- Banner Upload -->
+                    <div class="banner-upload-area" onclick="document.getElementById('channelBannerFile').click()">
+                        <img id="bannerPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                        <div class="banner-upload-overlay">
+                            <i class="fas fa-camera"></i> Upload Banner
+                        </div>
+                        <input type="file" id="channelBannerFile" accept="image/*" style="display: none;">
+                    </div>
+
+                    <!-- Avatar Upload -->
+                    <div class="channel-avatar-upload">
+                        <div class="channel-avatar-circle" onclick="document.getElementById('channelAvatarFile').click()">
+                            <img id="channelAvatarPreview" src="https://via.placeholder.com/100" alt="Avatar">
+                            <div class="avatar-upload-overlay">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <input type="file" id="channelAvatarFile" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 40px;">
+                        <label>Channel Name</label>
+                        <input type="text" id="channelName" placeholder="Enter channel name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Channel URL (handle)</label>
+                        <input type="text" id="channelHandle" placeholder="@username">
+                        <small style="color: var(--text-dim);">This will be your unique channel URL</small>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label>Channel URL (username)</label>
-                    <input type="text" id="editChannelUsername" placeholder="username (no spaces)">
-                    <small style="color: var(--text-dim);">This will be used in your channel URL</small>
+
+                <!-- Step 2: About -->
+                <div id="channelStep2" class="channel-step" style="display: none;">
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="channelDescription" rows="4" placeholder="Tell viewers about your channel"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Country</label>
+                        <select id="channelCountry">
+                            <option value="">Select your country</option>
+                            <option value="US">United States</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="CA">Canada</option>
+                            <option value="AU">Australia</option>
+                            <option value="IN">India</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="editChannelDescription" rows="4" placeholder="Tell viewers about your channel"></textarea>
+
+                <!-- Step 3: Links -->
+                <div id="channelStep3" class="channel-step" style="display: none;">
+                    <div class="links-container" id="linksContainer">
+                        <div class="link-input-group">
+                            <input type="text" placeholder="https://youtube.com/..." class="channel-link">
+                            <i class="fas fa-times remove-link" onclick="this.parentElement.remove()"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="add-link-btn" onclick="addLinkField()">
+                        <i class="fas fa-plus"></i> Add Link
+                    </div>
                 </div>
-                
-                <button class="btn btn-primary" style="width: 100%;" onclick="window.app.updateChannel()">
-                    <i class="fas fa-save"></i> Save Changes
-                </button>
+
+                <!-- Navigation Buttons -->
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button class="btn btn-outline" id="prevStepBtn" onclick="prevChannelStep()" style="display: none;">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="btn btn-primary" id="nextStepBtn" onclick="nextChannelStep()" style="flex: 1;">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button class="btn btn-success" id="createChannelBtn" onclick="window.app.createChannel()" style="display: none; flex: 1;">
+                        <i class="fas fa-check"></i> Create Channel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1499,7 +940,14 @@
             currentChannel: null,
             subscriptions: [],
             searchQuery: '',
-            usernameMap: new Map() // Map to store username to ID mappings
+            usernameMap: new Map(),
+            userPreferences: {
+                appearance: 'device',
+                language: 'en-US',
+                restrictedMode: false,
+                location: 'US',
+                keyboardShortcuts: true
+            }
         };
 
         // DOM elements
@@ -1509,7 +957,7 @@
             mainContent: document.getElementById('mainContent'),
             uploadModal: document.getElementById('uploadModal'),
             editVideoModal: document.getElementById('editVideoModal'),
-            editChannelModal: document.getElementById('editChannelModal'),
+            createChannelModal: document.getElementById('createChannelModal'),
             authModal: document.getElementById('authModal'),
             uploadArea: document.getElementById('uploadArea'),
             videoDetails: document.getElementById('videoDetails'),
@@ -1519,12 +967,14 @@
             thumbnailPreview: document.getElementById('thumbnailPreview'),
             videoFile: document.getElementById('videoFile'),
             thumbnailFile: document.getElementById('thumbnailFile'),
-            channelAvatarFile: document.getElementById('channelAvatarFile'),
             copyrightWarning: document.getElementById('copyrightWarning')
         };
 
         // Initialize app
         async function init() {
+            // Load user preferences from localStorage
+            loadUserPreferences();
+
             // Auth state listener
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
@@ -1549,6 +999,61 @@
             handleRouting();
         }
 
+        // Load user preferences from localStorage
+        function loadUserPreferences() {
+            const savedPrefs = localStorage.getItem('vertexTube_preferences');
+            if (savedPrefs) {
+                state.userPreferences = JSON.parse(savedPrefs);
+                applyAppearance();
+            }
+        }
+
+        // Save user preferences
+        function saveUserPreferences() {
+            localStorage.setItem('vertexTube_preferences', JSON.stringify(state.userPreferences));
+            applyAppearance();
+        }
+
+        // Apply appearance theme
+        function applyAppearance() {
+            const root = document.documentElement;
+            if (state.userPreferences.appearance === 'dark') {
+                root.style.setProperty('--dark', '#0f0f0f');
+                root.style.setProperty('--darker', '#0a0a0a');
+                root.style.setProperty('--dark-card', '#1a1a1a');
+                root.style.setProperty('--dark-card-hover', '#2a2a2a');
+                root.style.setProperty('--text', '#ffffff');
+                root.style.setProperty('--text-dim', '#aaaaaa');
+            } else if (state.userPreferences.appearance === 'light') {
+                root.style.setProperty('--dark', '#ffffff');
+                root.style.setProperty('--darker', '#f5f5f5');
+                root.style.setProperty('--dark-card', '#ffffff');
+                root.style.setProperty('--dark-card-hover', '#f0f0f0');
+                root.style.setProperty('--text', '#000000');
+                root.style.setProperty('--text-dim', '#666666');
+                root.style.setProperty('--border', 'rgba(0, 0, 0, 0.1)');
+            } else {
+                // Device theme - detect system preference
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (isDark) {
+                    root.style.setProperty('--dark', '#0f0f0f');
+                    root.style.setProperty('--darker', '#0a0a0a');
+                    root.style.setProperty('--dark-card', '#1a1a1a');
+                    root.style.setProperty('--dark-card-hover', '#2a2a2a');
+                    root.style.setProperty('--text', '#ffffff');
+                    root.style.setProperty('--text-dim', '#aaaaaa');
+                } else {
+                    root.style.setProperty('--dark', '#ffffff');
+                    root.style.setProperty('--darker', '#f5f5f5');
+                    root.style.setProperty('--dark-card', '#ffffff');
+                    root.style.setProperty('--dark-card-hover', '#f0f0f0');
+                    root.style.setProperty('--text', '#000000');
+                    root.style.setProperty('--text-dim', '#666666');
+                    root.style.setProperty('--border', 'rgba(0, 0, 0, 0.1)');
+                }
+            }
+        }
+
         // Load user data from Firestore
         async function loadUserData(user) {
             try {
@@ -1565,8 +1070,16 @@
                     if (userDoc.data().username) {
                         state.usernameMap.set(userDoc.data().username, user.uid);
                     }
+                    
+                    // Check if user has channel
+                    if (userDoc.data().hasChannel) {
+                        const channelDoc = await getDoc(doc(db, 'channels', user.uid));
+                        if (channelDoc.exists()) {
+                            state.currentUser.channel = channelDoc.data();
+                        }
+                    }
                 } else {
-                    // Create new user document with a unique username
+                    // Create basic user document (no channel yet)
                     const baseUsername = user.displayName || user.email.split('@')[0];
                     let username = baseUsername.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
                     let counter = 1;
@@ -1582,7 +1095,7 @@
                         displayName: user.displayName || baseUsername,
                         email: user.email,
                         avatar: user.photoURL || '',
-                        description: '',
+                        hasChannel: false,
                         subscribers: 0,
                         subscribedTo: [],
                         videos: [],
@@ -1625,9 +1138,6 @@
             if (elements.thumbnailFile) {
                 elements.thumbnailFile.addEventListener('change', handleThumbnailSelect);
             }
-            if (elements.channelAvatarFile) {
-                elements.channelAvatarFile.addEventListener('change', handleChannelAvatarSelect);
-            }
             
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
@@ -1635,6 +1145,15 @@
                     if (e.key === 'Enter') searchVideos();
                 });
             }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const dropdown = document.querySelector('.user-dropdown');
+                const avatar = document.querySelector('.user-avatar');
+                if (dropdown && avatar && !avatar.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
         }
 
         // Handle video file selection
@@ -1673,18 +1192,6 @@
             }
         }
 
-        // Handle channel avatar selection
-        function handleChannelAvatarSelect(e) {
-            const file = e.target.files[0];
-            if (file && elements.currentChannelAvatar) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    elements.currentChannelAvatar.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
         // Load all videos
         async function loadVideos() {
             try {
@@ -1700,7 +1207,7 @@
                     // Only show public videos or user's own videos
                     if (videoData.privacy === 'public' || (state.currentUser && videoData.channelId === state.currentUser.uid)) {
                         // Get channel info
-                        const channelDoc = await getDoc(doc(db, 'users', videoData.channelId));
+                        const channelDoc = await getDoc(doc(db, 'channels', videoData.channelId));
                         
                         if (channelDoc.exists()) {
                             state.videos.push({
@@ -1729,11 +1236,15 @@
                     <button class="btn btn-primary" onclick="window.app.openUploadModal()">
                         <i class="fas fa-upload"></i> Upload
                     </button>
-                    <img src="${state.currentUser.avatar || 'https://via.placeholder.com/40'}" 
-                         class="user-avatar" 
-                         onclick="window.app.goToChannel('${state.currentUser.username}')"
-                         onerror="this.src='https://via.placeholder.com/40'">
+                    <div class="user-avatar-container">
+                        <img src="${state.currentUser.avatar || 'https://via.placeholder.com/40'}" 
+                             class="user-avatar" 
+                             onclick="window.app.toggleUserDropdown(event)"
+                             onerror="this.src='https://via.placeholder.com/40'">
+                        <div class="user-dropdown" id="userDropdown"></div>
+                    </div>
                 `;
+                updateUserDropdown();
             } else {
                 elements.navButtons.innerHTML = `
                     <button class="btn btn-primary" onclick="window.app.openAuthModal()">
@@ -1741,6 +1252,316 @@
                     </button>
                 `;
             }
+        }
+
+        // Update user dropdown content
+        function updateUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            if (!dropdown || !state.currentUser) return;
+
+            const hasChannel = state.currentUser.hasChannel;
+            const channel = state.currentUser.channel || {};
+            const displayName = channel.name || state.currentUser.displayName || state.currentUser.username;
+            const handle = channel.handle || `@${state.currentUser.username}`;
+
+            dropdown.innerHTML = `
+                <!-- User Info -->
+                <div class="dropdown-header">
+                    <div class="user-info-row" onclick="window.app.viewAccount()">
+                        <img src="${channel.avatar || state.currentUser.avatar || 'https://via.placeholder.com/48'}" 
+                             class="dropdown-user-avatar"
+                             onerror="this.src='https://via.placeholder.com/48'">
+                        <div class="dropdown-user-details">
+                            <div class="dropdown-display-name">${escapeHtml(displayName)}</div>
+                            <div class="dropdown-username">${escapeHtml(handle)}</div>
+                            <div class="dropdown-email">${escapeHtml(state.currentUser.email)}</div>
+                        </div>
+                    </div>
+                    ${hasChannel ? `
+                        <button class="view-channel-btn" onclick="window.app.goToChannel('${channel.handle || state.currentUser.username}')">
+                            View your channel
+                        </button>
+                    ` : ''}
+                </div>
+
+                <!-- Account Section -->
+                <div class="dropdown-section">
+                    <div class="dropdown-item" onclick="window.app.switchAccount()">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span class="dropdown-item-text">Switch account</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.app.manageAccounts()">
+                        <i class="fas fa-users"></i>
+                        <span class="dropdown-item-text">Manage accounts</span>
+                    </div>
+                </div>
+
+                <!-- YouTube Studio Section -->
+                <div class="dropdown-section">
+                    ${hasChannel ? `
+                        <div class="dropdown-item" onclick="window.app.openStudio()">
+                            <i class="fas fa-video"></i>
+                            <span class="dropdown-item-text">YouTube Studio</span>
+                        </div>
+                    ` : `
+                        <div class="dropdown-item" onclick="window.app.openCreateChannelModal()">
+                            <i class="fas fa-plus-circle"></i>
+                            <span class="dropdown-item-text">Create a channel</span>
+                        </div>
+                    `}
+                    <div class="dropdown-item" onclick="window.app.openPurchases()">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="dropdown-item-text">Purchases and memberships</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.app.openData()">
+                        <i class="fas fa-database"></i>
+                        <span class="dropdown-item-text">Your data in YouTube</span>
+                    </div>
+                </div>
+
+                <!-- Appearance Section -->
+                <div class="dropdown-section">
+                    <div class="dropdown-item" onclick="window.app.toggleAppearanceMenu()">
+                        <i class="fas fa-paint-brush"></i>
+                        <span class="dropdown-item-text">Appearance:</span>
+                        <span class="dropdown-item-right">${getAppearanceText()}</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.app.toggleLanguageMenu()">
+                        <i class="fas fa-language"></i>
+                        <span class="dropdown-item-text">Display language:</span>
+                        <span class="dropdown-item-right">${getLanguageText()}</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.app.toggleRestrictedMode()">
+                        <i class="fas fa-shield-alt"></i>
+                        <span class="dropdown-item-text">Restricted Mode:</span>
+                        <span class="dropdown-item-right">${state.userPreferences.restrictedMode ? 'On' : 'Off'}</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.app.toggleLocationMenu()">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span class="dropdown-item-text">Location:</span>
+                        <span class="dropdown-item-right">${getLocationText()}</span>
+                    </div>
+                    <div class="dropdown-item" onclick="window.app.toggleKeyboardShortcuts()">
+                        <i class="fas fa-keyboard"></i>
+                        <span class="dropdown-item-text">Keyboard shortcuts</span>
+                        <span class="dropdown-item-right">${state.userPreferences.keyboardShortcuts ? 'On' : 'Off'}</span>
+                    </div>
+                </div>
+
+                <!-- Sign Out -->
+                <div class="dropdown-section">
+                    <div class="dropdown-item" onclick="window.app.logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="dropdown-item-text">Sign out</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper functions for dropdown display
+        function getAppearanceText() {
+            const appearance = state.userPreferences.appearance;
+            if (appearance === 'dark') return 'Dark theme';
+            if (appearance === 'light') return 'Light theme';
+            return 'Device theme';
+        }
+
+        function getLanguageText() {
+            const languages = {
+                'en-US': 'English',
+                'es': 'Español',
+                'fr': 'Français',
+                'de': 'Deutsch',
+                'ja': '日本語',
+                'ko': '한국어',
+                'zh': '中文'
+            };
+            return languages[state.userPreferences.language] || 'English';
+        }
+
+        function getLocationText() {
+            const locations = {
+                'US': 'United States',
+                'UK': 'United Kingdom',
+                'CA': 'Canada',
+                'AU': 'Australia',
+                'IN': 'India',
+                'JP': 'Japan',
+                'Other': 'Other'
+            };
+            return locations[state.userPreferences.location] || 'United States';
+        }
+
+        // Toggle user dropdown
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('active');
+                updateUserDropdown(); // Refresh content
+            }
+        }
+
+        // Create channel
+        async function createChannel() {
+            if (!state.currentUser) return;
+
+            const name = document.getElementById('channelName').value;
+            const handle = document.getElementById('channelHandle').value;
+            const description = document.getElementById('channelDescription').value;
+            const country = document.getElementById('channelCountry').value;
+            
+            // Get links
+            const linkInputs = document.querySelectorAll('.channel-link');
+            const links = Array.from(linkInputs)
+                .map(input => input.value.trim())
+                .filter(link => link);
+
+            if (!name || !handle) {
+                showNotification('Please enter channel name and handle', 'error');
+                return;
+            }
+
+            // Validate handle format
+            if (!/^[a-zA-Z0-9_]+$/.test(handle)) {
+                showNotification('Handle can only contain letters, numbers, and underscores', 'error');
+                return;
+            }
+
+            try {
+                showNotification('Creating your channel...', 'info');
+
+                // Check if handle is available
+                const channelsRef = collection(db, 'channels');
+                const q = query(channelsRef, where('handle', '==', handle));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    showNotification('This handle is already taken', 'error');
+                    return;
+                }
+
+                // Upload banner if selected
+                const bannerFile = document.getElementById('channelBannerFile').files[0];
+                let bannerUrl = '';
+                if (bannerFile) {
+                    const bannerRef = ref(storage, `channel_banners/${state.currentUser.uid}/banner`);
+                    await uploadBytes(bannerRef, bannerFile);
+                    bannerUrl = await getDownloadURL(bannerRef);
+                }
+
+                // Upload avatar if selected
+                const avatarFile = document.getElementById('channelAvatarFile').files[0];
+                let avatarUrl = state.currentUser.avatar;
+                if (avatarFile) {
+                    const avatarRef = ref(storage, `channel_avatars/${state.currentUser.uid}/avatar`);
+                    await uploadBytes(avatarRef, avatarFile);
+                    avatarUrl = await getDownloadURL(avatarRef);
+                }
+
+                // Create channel document
+                const channelData = {
+                    name,
+                    handle: `@${handle}`,
+                    description,
+                    country,
+                    links,
+                    banner: bannerUrl,
+                    avatar: avatarUrl,
+                    subscribers: 0,
+                    videos: [],
+                    createdAt: new Date().toISOString()
+                };
+
+                await setDoc(doc(db, 'channels', state.currentUser.uid), channelData);
+
+                // Update user document
+                await updateDoc(doc(db, 'users', state.currentUser.uid), {
+                    hasChannel: true,
+                    channelName: name,
+                    channelHandle: handle,
+                    avatar: avatarUrl
+                });
+
+                // Update state
+                state.currentUser.hasChannel = true;
+                state.currentUser.channel = channelData;
+                state.currentUser.avatar = avatarUrl;
+
+                showNotification('Channel created successfully!', 'success');
+                closeCreateChannelModal();
+                updateNavbar();
+
+                // Go to channel page
+                goToChannel(`@${handle}`);
+
+            } catch (error) {
+                console.error('Error creating channel:', error);
+                showNotification('Error creating channel', 'error');
+            }
+        }
+
+        // Channel creation steps
+        let currentStep = 1;
+
+        function nextChannelStep() {
+            if (currentStep < 3) {
+                // Validate step 1
+                if (currentStep === 1) {
+                    const name = document.getElementById('channelName').value;
+                    const handle = document.getElementById('channelHandle').value;
+                    if (!name || !handle) {
+                        showNotification('Please fill in channel name and handle', 'error');
+                        return;
+                    }
+                }
+
+                document.getElementById(`channelStep${currentStep}`).style.display = 'none';
+                document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('completed');
+                document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+                
+                currentStep++;
+                
+                document.getElementById(`channelStep${currentStep}`).style.display = 'block';
+                document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+                
+                document.getElementById('prevStepBtn').style.display = 'block';
+                
+                if (currentStep === 3) {
+                    document.getElementById('nextStepBtn').style.display = 'none';
+                    document.getElementById('createChannelBtn').style.display = 'block';
+                }
+            }
+        }
+
+        function prevChannelStep() {
+            if (currentStep > 1) {
+                document.getElementById(`channelStep${currentStep}`).style.display = 'none';
+                document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+                
+                currentStep--;
+                
+                document.getElementById(`channelStep${currentStep}`).style.display = 'block';
+                document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+                
+                document.getElementById('nextStepBtn').style.display = 'block';
+                document.getElementById('createChannelBtn').style.display = 'none';
+                
+                if (currentStep === 1) {
+                    document.getElementById('prevStepBtn').style.display = 'none';
+                }
+            }
+        }
+
+        function addLinkField() {
+            const container = document.getElementById('linksContainer');
+            const newLink = document.createElement('div');
+            newLink.className = 'link-input-group';
+            newLink.innerHTML = `
+                <input type="text" placeholder="https://..." class="channel-link">
+                <i class="fas fa-times remove-link" onclick="this.parentElement.remove()"></i>
+            `;
+            container.appendChild(newLink);
         }
 
         // Load sidebar
@@ -1779,7 +1600,7 @@
                     <span>Library</span>
                 </div>
                 
-                ${state.currentUser ? `
+                ${state.currentUser && state.currentUser.hasChannel ? `
                     <div class="sidebar-item" onclick="window.app.navigateTo('manage-videos')">
                         <i class="fas fa-video"></i>
                         <span>Manage Videos</span>
@@ -1803,8 +1624,9 @@
                 loadVideoPlayer(videoId);
             } else if (hash.startsWith('#channel=')) {
                 const identifier = hash.replace('#channel=', '');
-                // Check if identifier is username or ID
-                resolveChannelIdentifier(identifier).then(channelId => {
+                // Remove @ if present for lookup
+                const cleanIdentifier = identifier.replace('@', '');
+                resolveChannelIdentifier(cleanIdentifier).then(channelId => {
                     if (channelId) {
                         loadChannelPage(channelId);
                     } else {
@@ -1825,24 +1647,24 @@
             }
         }
 
-        // Resolve channel identifier (username or ID) to actual user ID
+        // Resolve channel identifier (username or handle) to actual user ID
         async function resolveChannelIdentifier(identifier) {
-            // First check if it's a valid user ID format (Firestore IDs are 20+ chars)
-            if (identifier.length >= 20) {
-                // Try to get user by ID
-                const userDoc = await getDoc(doc(db, 'users', identifier));
-                if (userDoc.exists()) {
-                    return identifier;
-                }
+            // First check channels collection by handle
+            const channelsRef = collection(db, 'channels');
+            const handleQuery = query(channelsRef, where('handle', '==', `@${identifier}`));
+            const handleSnapshot = await getDocs(handleQuery);
+            
+            if (!handleSnapshot.empty) {
+                return handleSnapshot.docs[0].id;
             }
             
-            // Try to find by username
+            // Then check users by username
             const usersRef = collection(db, 'users');
-            const q = query(usersRef, where('username', '==', identifier));
-            const querySnapshot = await getDocs(q);
+            const usernameQuery = query(usersRef, where('username', '==', identifier));
+            const usernameSnapshot = await getDocs(usernameQuery);
             
-            if (!querySnapshot.empty) {
-                return querySnapshot.docs[0].id;
+            if (!usernameSnapshot.empty) {
+                return usernameSnapshot.docs[0].id;
             }
             
             return null;
@@ -1975,7 +1797,7 @@
         function showManageVideos() {
             if (!elements.mainContent) return;
             
-            if (!state.currentUser) {
+            if (!state.currentUser || !state.currentUser.hasChannel) {
                 navigateTo('home');
                 return;
             }
@@ -2081,6 +1903,9 @@
                 statusBadge = `<span class="video-status private">${video.privacy}</span>`;
             }
             
+            const channelHandle = video.channel?.handle || `@${video.channel?.username || 'channel'}`;
+            const channelName = video.channel?.name || video.channel?.displayName || 'Unknown';
+            
             return `
                 <div class="video-card" onclick="window.app.watchVideo('${video.id}')">
                     <div class="video-thumbnail">
@@ -2104,12 +1929,12 @@
                     <div class="video-info">
                         <img src="${video.channel?.avatar || 'https://via.placeholder.com/40'}" 
                              class="channel-avatar" 
-                             onclick="event.stopPropagation(); window.app.goToChannel('${video.channel?.username || video.channelId}')"
+                             onclick="event.stopPropagation(); window.app.goToChannel('${channelHandle}')"
                              onerror="this.src='https://via.placeholder.com/40'">
                         <div class="video-details">
                             <div class="video-title">${escapeHtml(video.title)}</div>
-                            <div class="video-channel" onclick="event.stopPropagation(); window.app.goToChannel('${video.channel?.username || video.channelId}')">
-                                ${escapeHtml(video.channel?.displayName || video.channel?.username || 'Unknown')}
+                            <div class="video-channel" onclick="event.stopPropagation(); window.app.goToChannel('${channelHandle}')">
+                                ${escapeHtml(channelName)}
                             </div>
                             <div class="video-meta">
                                 <span>${views} views</span>
@@ -2150,7 +1975,7 @@
                 }
                 
                 // Get channel info
-                const channelDoc = await getDoc(doc(db, 'users', video.channelId));
+                const channelDoc = await getDoc(doc(db, 'channels', video.channelId));
                 video.channel = channelDoc.exists() ? channelDoc.data() : null;
                 
                 // Increment views if not owner and video is public
@@ -2172,6 +1997,8 @@
                 const isSubscribed = state.currentUser && state.subscriptions.includes(video.channelId);
                 const isLiked = state.currentUser && video.likes?.includes(state.currentUser.uid);
                 const isDisliked = state.currentUser && video.dislikes?.includes(state.currentUser.uid);
+                const channelHandle = video.channel?.handle || `@${video.channel?.username || 'channel'}`;
+                const channelName = video.channel?.name || video.channel?.displayName || 'Unknown';
                 
                 elements.mainContent.innerHTML = `
                     <div class="video-player-container">
@@ -2208,11 +2035,11 @@
                                     <div class="channel-details">
                                         <img src="${video.channel?.avatar || 'https://via.placeholder.com/60'}" 
                                              class="channel-large-avatar" 
-                                             onclick="window.app.goToChannel('${video.channel?.username || video.channelId}')"
+                                             onclick="window.app.goToChannel('${channelHandle}')"
                                              onerror="this.src='https://via.placeholder.com/60'">
                                         <div class="channel-meta">
-                                            <h3 onclick="window.app.goToChannel('${video.channel?.username || video.channelId}')">
-                                                ${escapeHtml(video.channel?.displayName || video.channel?.username || 'Unknown')}
+                                            <h3 onclick="window.app.goToChannel('${channelHandle}')">
+                                                ${escapeHtml(channelName)}
                                             </h3>
                                             <p>${formatNumber(video.channel?.subscribers || 0)} subscribers</p>
                                         </div>
@@ -2263,7 +2090,7 @@
                                     </div>
                                     <div class="recommended-info">
                                         <div class="recommended-title">${escapeHtml(v.title)}</div>
-                                        <div class="recommended-channel">${escapeHtml(v.channel?.displayName || v.channel?.username || 'Unknown')}</div>
+                                        <div class="recommended-channel">${escapeHtml(v.channel?.name || v.channel?.displayName || 'Unknown')}</div>
                                         <div class="recommended-meta">${formatNumber(v.views || 0)} views • ${getTimeAgo(v.createdAt)}</div>
                                     </div>
                                 </div>
@@ -2296,7 +2123,7 @@
             elements.mainContent.innerHTML = '<div class="loading"></div>';
             
             try {
-                const channelDoc = await getDoc(doc(db, 'users', channelId));
+                const channelDoc = await getDoc(doc(db, 'channels', channelId));
                 
                 if (!channelDoc.exists()) {
                     showNotification('Channel not found', 'error');
@@ -2309,9 +2136,9 @@
                     ...channelDoc.data()
                 };
                 
-                // Update URL to use username if available
-                if (channel.username && window.location.hash !== `#channel=${channel.username}`) {
-                    window.location.hash = `channel=${channel.username}`;
+                // Update URL to use handle if available
+                if (channel.handle && window.location.hash !== `#channel=${channel.handle}`) {
+                    window.location.hash = `channel=${channel.handle}`;
                     return;
                 }
                 
@@ -2325,36 +2152,51 @@
                 
                 elements.mainContent.innerHTML = `
                     <div class="channel-header">
-                        <img src="${channel.avatar || 'https://via.placeholder.com/120'}" 
-                             class="channel-header-avatar"
-                             onerror="this.src='https://via.placeholder.com/120'">
-                        <div class="channel-header-info">
-                            <h1>${escapeHtml(channel.displayName || channel.username)}</h1>
-                            <div class="channel-stats">
-                                <span>${formatNumber(channel.subscribers || 0)} subscribers</span>
-                                <span>•</span>
-                                <span>${channelVideos.length} videos</span>
-                            </div>
-                            
-                            <div class="channel-actions">
-                                ${state.currentUser && state.currentUser.uid !== channelId ? `
-                                    <button class="btn ${isSubscribed ? 'btn-outline' : 'btn-primary'}" 
-                                            onclick="window.app.toggleSubscribe('${channelId}')">
-                                        <i class="fas ${isSubscribed ? 'fa-bell-slash' : 'fa-bell'}"></i>
-                                        ${isSubscribed ? 'Subscribed' : 'Subscribe'}
-                                    </button>
+                        ${channel.banner ? `
+                            <img src="${channel.banner}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; z-index: 0;">
+                        ` : ''}
+                        <div style="position: relative; z-index: 1; display: flex; gap: 30px; align-items: center; width: 100%;">
+                            <img src="${channel.avatar || 'https://via.placeholder.com/120'}" 
+                                 class="channel-header-avatar"
+                                 onerror="this.src='https://via.placeholder.com/120'">
+                            <div class="channel-header-info">
+                                <h1>${escapeHtml(channel.name)}</h1>
+                                <div class="channel-stats">
+                                    <span>${channel.handle || '@channel'}</span>
+                                    <span>•</span>
+                                    <span>${formatNumber(channel.subscribers || 0)} subscribers</span>
+                                    <span>•</span>
+                                    <span>${channelVideos.length} videos</span>
+                                </div>
+                                
+                                <div class="channel-actions">
+                                    ${state.currentUser && state.currentUser.uid !== channelId ? `
+                                        <button class="btn ${isSubscribed ? 'btn-outline' : 'btn-primary'}" 
+                                                onclick="window.app.toggleSubscribe('${channelId}')">
+                                            <i class="fas ${isSubscribed ? 'fa-bell-slash' : 'fa-bell'}"></i>
+                                            ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                                        </button>
+                                    ` : ''}
+                                    
+                                    ${isOwnChannel ? `
+                                        <button class="btn btn-outline" onclick="window.app.openEditChannelModal()">
+                                            <i class="fas fa-edit"></i> Edit Channel
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                
+                                ${channel.description ? `
+                                    <p style="margin-top: 15px; color: var(--text-dim);">${escapeHtml(channel.description)}</p>
                                 ` : ''}
                                 
-                                ${isOwnChannel ? `
-                                    <button class="btn btn-outline" onclick="window.app.openEditChannelModal()">
-                                        <i class="fas fa-edit"></i> Edit Channel
-                                    </button>
+                                ${channel.links && channel.links.length > 0 ? `
+                                    <div style="margin-top: 15px; display: flex; gap: 15px;">
+                                        ${channel.links.map(link => `
+                                            <a href="${link}" target="_blank" style="color: var(--secondary);">${new URL(link).hostname}</a>
+                                        `).join('')}
+                                    </div>
                                 ` : ''}
                             </div>
-                            
-                            ${channel.description ? `
-                                <p style="margin-top: 15px; color: var(--text-dim);">${escapeHtml(channel.description)}</p>
-                            ` : ''}
                         </div>
                     </div>
                     
@@ -2585,7 +2427,7 @@
             }
             
             try {
-                const channelRef = doc(db, 'users', channelId);
+                const channelRef = doc(db, 'channels', channelId);
                 const userRef = doc(db, 'users', state.currentUser.uid);
                 
                 const channelDoc = await getDoc(channelRef);
@@ -2604,7 +2446,7 @@
                     });
                     
                     state.subscriptions = state.subscriptions.filter(id => id !== channelId);
-                    showNotification(`Unsubscribed from ${channel.displayName || channel.username}`, 'success');
+                    showNotification(`Unsubscribed from ${channel.name}`, 'success');
                     
                 } else {
                     // Subscribe
@@ -2617,7 +2459,7 @@
                     });
                     
                     state.subscriptions.push(channelId);
-                    showNotification(`Subscribed to ${channel.displayName || channel.username}!`, 'success');
+                    showNotification(`Subscribed to ${channel.name}!`, 'success');
                 }
                 
                 // Refresh current page
@@ -2654,8 +2496,8 @@
                 (v.privacy === 'public' || (state.currentUser && v.channelId === state.currentUser.uid)) &&
                 (v.title.toLowerCase().includes(query) || 
                 v.description?.toLowerCase().includes(query) ||
-                v.channel?.displayName?.toLowerCase().includes(query) ||
-                v.channel?.username?.toLowerCase().includes(query))
+                v.channel?.name?.toLowerCase().includes(query) ||
+                v.channel?.handle?.toLowerCase().includes(query))
             );
             
             if (elements.mainContent) {
@@ -2678,8 +2520,9 @@
 
         // Publish video
         async function publishVideo() {
-            if (!state.currentUser) {
-                openAuthModal();
+            if (!state.currentUser || !state.currentUser.hasChannel) {
+                showNotification('You need to create a channel first', 'warning');
+                openCreateChannelModal();
                 return;
             }
             
@@ -2751,9 +2594,8 @@
                         video.onloadedmetadata = function() {
                             const duration = formatDuration(video.duration);
                             
-                            // Simulate copyright check (in real app, you'd have a backend process)
+                            // Simulate copyright check
                             setTimeout(() => {
-                                // Save to Firestore with processing status
                                 saveVideoToFirestore({
                                     title,
                                     description,
@@ -2795,6 +2637,12 @@
                     createdAt: new Date().toISOString()
                 });
                 
+                // Update channel's videos array
+                const channelRef = doc(db, 'channels', state.currentUser.uid);
+                await updateDoc(channelRef, {
+                    videos: arrayUnion(videoRef.id)
+                });
+                
                 // Update user's videos array
                 const userRef = doc(db, 'users', state.currentUser.uid);
                 await updateDoc(userRef, {
@@ -2804,7 +2652,7 @@
                 showNotification('Video uploaded successfully! It may take a few minutes to process.', 'success');
                 closeUploadModal();
                 
-                // Simulate processing completion after 10 seconds (in real app, this would be a cloud function)
+                // Simulate processing completion after 10 seconds
                 setTimeout(async () => {
                     try {
                         await updateDoc(videoRef, {
@@ -2968,6 +2816,12 @@
                 // Delete video document
                 await deleteDoc(videoRef);
                 
+                // Remove from channel's videos array
+                const channelRef = doc(db, 'channels', state.currentUser.uid);
+                await updateDoc(channelRef, {
+                    videos: arrayRemove(videoId)
+                });
+                
                 // Remove from user's videos array
                 const userRef = doc(db, 'users', state.currentUser.uid);
                 await updateDoc(userRef, {
@@ -2991,94 +2845,6 @@
             } catch (error) {
                 console.error('Error deleting video:', error);
                 showNotification('Error deleting video', 'error');
-            }
-        }
-
-        // Open edit channel modal
-        function openEditChannelModal() {
-            if (!state.currentUser) return;
-            
-            document.getElementById('currentChannelAvatar').src = state.currentUser.avatar || 'https://via.placeholder.com/100';
-            document.getElementById('editChannelName').value = state.currentUser.displayName || state.currentUser.username || '';
-            document.getElementById('editChannelUsername').value = state.currentUser.username || '';
-            document.getElementById('editChannelDescription').value = state.currentUser.description || '';
-            
-            if (elements.editChannelModal) {
-                elements.editChannelModal.classList.add('active');
-            }
-        }
-
-        // Update channel
-        async function updateChannel() {
-            if (!state.currentUser) return;
-            
-            const displayName = document.getElementById('editChannelName').value;
-            const username = document.getElementById('editChannelUsername').value;
-            const description = document.getElementById('editChannelDescription').value;
-            const avatarFile = elements.channelAvatarFile ? elements.channelAvatarFile.files[0] : null;
-            
-            if (!displayName || !username) {
-                showNotification('Channel name and username are required', 'error');
-                return;
-            }
-            
-            // Validate username format
-            if (!/^[a-zA-Z0-9]+$/.test(username)) {
-                showNotification('Username can only contain letters and numbers', 'error');
-                return;
-            }
-            
-            try {
-                // Check if username is already taken (and not by current user)
-                if (username !== state.currentUser.username) {
-                    const usersRef = collection(db, 'users');
-                    const q = query(usersRef, where('username', '==', username));
-                    const querySnapshot = await getDocs(q);
-                    
-                    if (!querySnapshot.empty) {
-                        showNotification('Username is already taken', 'error');
-                        return;
-                    }
-                }
-                
-                let avatarUrl = state.currentUser.avatar;
-                
-                // Upload new avatar if selected
-                if (avatarFile) {
-                    const avatarRef = ref(storage, `avatars/${state.currentUser.uid}/${Date.now()}_${avatarFile.name}`);
-                    await uploadBytes(avatarRef, avatarFile);
-                    avatarUrl = await getDownloadURL(avatarRef);
-                }
-                
-                // Update user document
-                const userRef = doc(db, 'users', state.currentUser.uid);
-                await updateDoc(userRef, {
-                    displayName,
-                    username,
-                    description,
-                    avatar: avatarUrl
-                });
-                
-                // Update state
-                state.currentUser.displayName = displayName;
-                state.currentUser.username = username;
-                state.currentUser.description = description;
-                state.currentUser.avatar = avatarUrl;
-                
-                // Update username map
-                state.usernameMap.set(username, state.currentUser.uid);
-                
-                showNotification('Channel updated successfully!', 'success');
-                closeEditChannelModal();
-                
-                // Refresh channel page
-                if (window.location.hash.startsWith('#channel=')) {
-                    await loadChannelPage(state.currentUser.uid);
-                }
-                
-            } catch (error) {
-                console.error('Error updating channel:', error);
-                showNotification('Error updating channel', 'error');
             }
         }
 
@@ -3183,6 +2949,11 @@
                 openAuthModal();
                 return;
             }
+            if (!state.currentUser.hasChannel) {
+                showNotification('You need to create a channel first', 'warning');
+                openCreateChannelModal();
+                return;
+            }
             if (elements.uploadModal) {
                 elements.uploadModal.classList.add('active');
             }
@@ -3225,18 +2996,37 @@
             }
         }
 
-        function closeEditVideoModal() {
-            if (elements.editVideoModal) {
-                elements.editVideoModal.classList.remove('active');
+        function openCreateChannelModal() {
+            if (!state.currentUser) {
+                openAuthModal();
+                return;
+            }
+            if (elements.createChannelModal) {
+                elements.createChannelModal.classList.add('active');
+                // Reset form
+                currentStep = 1;
+                document.getElementById('channelStep1').style.display = 'block';
+                document.getElementById('channelStep2').style.display = 'none';
+                document.getElementById('channelStep3').style.display = 'none';
+                document.querySelectorAll('.step').forEach(step => {
+                    step.classList.remove('active', 'completed');
+                });
+                document.querySelector('[data-step="1"]').classList.add('active');
+                document.getElementById('prevStepBtn').style.display = 'none';
+                document.getElementById('nextStepBtn').style.display = 'block';
+                document.getElementById('createChannelBtn').style.display = 'none';
             }
         }
 
-        function closeEditChannelModal() {
-            if (elements.editChannelModal) {
-                elements.editChannelModal.classList.remove('active');
+        function closeCreateChannelModal() {
+            if (elements.createChannelModal) {
+                elements.createChannelModal.classList.remove('active');
             }
-            if (elements.channelAvatarFile) {
-                elements.channelAvatarFile.value = '';
+        }
+
+        function closeEditVideoModal() {
+            if (elements.editVideoModal) {
+                elements.editVideoModal.classList.remove('active');
             }
         }
 
@@ -3270,6 +3060,96 @@
             }
         }
 
+        // Dropdown menu functions
+        function viewAccount() {
+            // Implement account view
+            showNotification('Account settings', 'info');
+        }
+
+        function switchAccount() {
+            // Implement account switching
+            showNotification('Switch account feature coming soon', 'info');
+        }
+
+        function manageAccounts() {
+            // Implement account management
+            showNotification('Manage accounts feature coming soon', 'info');
+        }
+
+        function openStudio() {
+            navigateTo('manage-videos');
+        }
+
+        function openPurchases() {
+            showNotification('Purchases feature coming soon', 'info');
+        }
+
+        function openData() {
+            showNotification('Your data feature coming soon', 'info');
+        }
+
+        function toggleAppearanceMenu() {
+            // Simple appearance toggle - in production, you'd show a submenu
+            const appearances = ['device', 'dark', 'light'];
+            const currentIndex = appearances.indexOf(state.userPreferences.appearance);
+            const nextIndex = (currentIndex + 1) % appearances.length;
+            state.userPreferences.appearance = appearances[nextIndex];
+            saveUserPreferences();
+            updateUserDropdown();
+        }
+
+        function toggleLanguageMenu() {
+            // Simple language toggle - in production, you'd show a submenu
+            const languages = ['en-US', 'es', 'fr', 'de', 'ja'];
+            const currentIndex = languages.indexOf(state.userPreferences.language);
+            const nextIndex = (currentIndex + 1) % languages.length;
+            state.userPreferences.language = languages[nextIndex];
+            saveUserPreferences();
+            updateUserDropdown();
+        }
+
+        function toggleRestrictedMode() {
+            state.userPreferences.restrictedMode = !state.userPreferences.restrictedMode;
+            saveUserPreferences();
+            updateUserDropdown();
+            showNotification(`Restricted Mode ${state.userPreferences.restrictedMode ? 'enabled' : 'disabled'}`, 'info');
+        }
+
+        function toggleLocationMenu() {
+            // Simple location toggle - in production, you'd show a submenu
+            const locations = ['US', 'UK', 'CA', 'AU', 'Other'];
+            const currentIndex = locations.indexOf(state.userPreferences.location);
+            const nextIndex = (currentIndex + 1) % locations.length;
+            state.userPreferences.location = locations[nextIndex];
+            saveUserPreferences();
+            updateUserDropdown();
+        }
+
+        function toggleKeyboardShortcuts() {
+            state.userPreferences.keyboardShortcuts = !state.userPreferences.keyboardShortcuts;
+            saveUserPreferences();
+            updateUserDropdown();
+            
+            // Enable/disable keyboard shortcuts
+            if (state.userPreferences.keyboardShortcuts) {
+                document.addEventListener('keydown', handleKeyboardShortcuts);
+                showNotification('Keyboard shortcuts enabled', 'success');
+            } else {
+                document.removeEventListener('keydown', handleKeyboardShortcuts);
+                showNotification('Keyboard shortcuts disabled', 'info');
+            }
+        }
+
+        function handleKeyboardShortcuts(e) {
+            // Implement keyboard shortcuts
+            if (e.key === '/' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                document.getElementById('searchInput')?.focus();
+            } else if (e.key === '?' && e.shiftKey) {
+                showNotification('Keyboard shortcuts help', 'info');
+            }
+        }
+
         // Navigation functions
         function navigateTo(page) {
             if (page === 'home') {
@@ -3277,14 +3157,18 @@
             } else {
                 window.location.hash = page;
             }
+            // Close dropdown after navigation
+            document.querySelector('.user-dropdown')?.classList.remove('active');
         }
 
         function watchVideo(videoId) {
             window.location.hash = `watch=${videoId}`;
+            document.querySelector('.user-dropdown')?.classList.remove('active');
         }
 
         function goToChannel(identifier) {
             window.location.hash = `channel=${identifier}`;
+            document.querySelector('.user-dropdown')?.classList.remove('active');
         }
 
         function shareVideo(videoId) {
@@ -3380,10 +3264,25 @@
             searchVideos,
             openUploadModal,
             closeUploadModal,
-            openEditVideoModal: editVideo,
+            openCreateChannelModal,
+            closeCreateChannelModal,
+            editVideo,
             closeEditVideoModal,
-            openEditChannelModal,
-            closeEditChannelModal,
+            updateVideo,
+            deleteVideo,
+            createChannel,
+            toggleUserDropdown,
+            viewAccount,
+            switchAccount,
+            manageAccounts,
+            openStudio,
+            openPurchases,
+            openData,
+            toggleAppearanceMenu,
+            toggleLanguageMenu,
+            toggleRestrictedMode,
+            toggleLocationMenu,
+            toggleKeyboardShortcuts,
             openAuthModal,
             closeAuthModal,
             switchAuthTab,
@@ -3392,10 +3291,6 @@
             loginWithGoogle,
             logout,
             publishVideo,
-            editVideo,
-            updateVideo,
-            deleteVideo,
-            updateChannel,
             likeVideo,
             dislikeVideo,
             likeComment,
@@ -3406,6 +3301,11 @@
 
         // Assign to window
         window.app = app;
+
+        // Add global functions for channel creation
+        window.nextChannelStep = nextChannelStep;
+        window.prevChannelStep = prevChannelStep;
+        window.addLinkField = addLinkField;
 
         // Start the app
         init();
