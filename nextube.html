@@ -71,24 +71,6 @@
             --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
-        /* Device theme (follows system) */
-        @media (prefers-color-scheme: light) {
-            [data-theme="device"] {
-                --dark: #ffffff;
-                --darker: #f5f5f5;
-                --dark-card: #ffffff;
-                --dark-card-hover: #f0f0f0;
-                --text: #000000;
-                --text-dim: #666666;
-                --text-dimmer: #999999;
-                --border: rgba(0, 0, 0, 0.1);
-                --border-hover: rgba(0, 0, 0, 0.2);
-                --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-                --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
-            }
-        }
-
         body {
             font-family: 'Inter', sans-serif;
             background: var(--dark);
@@ -260,21 +242,11 @@
             z-index: 1000;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            background: rgba(var(--darker-rgb), 0.95);
+            background: rgba(10, 10, 10, 0.95);
         }
 
-        :root {
-            --darker-rgb: 10, 10, 10;
-        }
-
-        [data-theme="light"] {
-            --darker-rgb: 245, 245, 245;
-        }
-
-        @media (prefers-color-scheme: light) {
-            [data-theme="device"] {
-                --darker-rgb: 245, 245, 245;
-            }
+        [data-theme="light"] .navbar {
+            background: rgba(245, 245, 245, 0.95);
         }
 
         .logo {
@@ -507,21 +479,11 @@
             overflow: hidden;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            background: rgba(var(--dark-card-rgb), 0.95);
+            background: rgba(26, 26, 26, 0.95);
         }
 
-        :root {
-            --dark-card-rgb: 26, 26, 26;
-        }
-
-        [data-theme="light"] {
-            --dark-card-rgb: 255, 255, 255;
-        }
-
-        @media (prefers-color-scheme: light) {
-            [data-theme="device"] {
-                --dark-card-rgb: 255, 255, 255;
-            }
+        [data-theme="light"] .user-dropdown {
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .user-dropdown.active {
@@ -2420,7 +2382,7 @@
                         <div class="banner-upload-overlay">
                             <i class="fas fa-camera"></i> Upload Banner
                         </div>
-                        <input type="file" id="channelBannerFile" accept="image/*" style="display: none;">
+                        <input type="file" id="channelBannerFile" accept="image/*" style="display: none;" onchange="previewBanner(this)">
                     </div>
 
                     <!-- Avatar Upload -->
@@ -2430,7 +2392,7 @@
                             <div class="avatar-upload-overlay">
                                 <i class="fas fa-camera"></i>
                             </div>
-                            <input type="file" id="channelAvatarFile" accept="image/*" style="display: none;">
+                            <input type="file" id="channelAvatarFile" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
                         </div>
                     </div>
 
@@ -2647,9 +2609,13 @@
         function loadUserPreferences() {
             const savedPrefs = localStorage.getItem('vertexTube_preferences');
             if (savedPrefs) {
-                state.userPreferences = JSON.parse(savedPrefs);
-                applyAppearance();
+                try {
+                    state.userPreferences = JSON.parse(savedPrefs);
+                } catch (e) {
+                    console.error('Error parsing preferences:', e);
+                }
             }
+            applyAppearance();
         }
 
         // Save user preferences
@@ -2661,17 +2627,6 @@
         // Apply appearance theme
         function applyAppearance() {
             document.body.setAttribute('data-theme', state.userPreferences.appearance);
-            
-            // Update RGB variables for backdrop blur
-            const root = document.documentElement;
-            if (state.userPreferences.appearance === 'dark' || 
-                (state.userPreferences.appearance === 'device' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                root.style.setProperty('--darker-rgb', '10, 10, 10');
-                root.style.setProperty('--dark-card-rgb', '26, 26, 26');
-            } else {
-                root.style.setProperty('--darker-rgb', '245, 245, 245');
-                root.style.setProperty('--dark-card-rgb', '255, 255, 255');
-            }
         }
 
         // Load user data from Firestore
@@ -3032,13 +2987,39 @@
             }
         }
 
+        // Preview banner image
+        window.previewBanner = function(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('bannerPreview').src = e.target.result;
+                    document.getElementById('bannerPreview').style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        // Preview avatar image
+        window.previewAvatar = function(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('channelAvatarPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
         // Create channel
         async function createChannel() {
-            if (!state.currentUser) return;
+            if (!state.currentUser) {
+                showNotification('Please sign in first', 'error');
+                return;
+            }
 
-            const name = document.getElementById('channelName').value;
-            const handle = document.getElementById('channelHandle').value;
-            const description = document.getElementById('channelDescription').value;
+            const name = document.getElementById('channelName').value.trim();
+            let handle = document.getElementById('channelHandle').value.trim();
+            const description = document.getElementById('channelDescription').value.trim();
             const country = document.getElementById('channelCountry').value;
             
             // Get links
@@ -3047,10 +3028,18 @@
                 .map(input => input.value.trim())
                 .filter(link => link);
 
-            if (!name || !handle) {
-                showNotification('Please enter channel name and handle', 'error');
+            if (!name) {
+                showNotification('Please enter channel name', 'error');
                 return;
             }
+
+            if (!handle) {
+                showNotification('Please enter channel handle', 'error');
+                return;
+            }
+
+            // Remove @ if user included it
+            handle = handle.replace('@', '');
 
             // Validate handle format
             if (!/^[a-zA-Z0-9_]+$/.test(handle)) {
@@ -3063,7 +3052,7 @@
 
                 // Check if handle is available
                 const channelsRef = collection(db, 'channels');
-                const q = query(channelsRef, where('handle', '==', handle));
+                const q = query(channelsRef, where('handle', '==', `@${handle}`));
                 const querySnapshot = await getDocs(q);
                 
                 if (!querySnapshot.empty) {
@@ -3075,7 +3064,7 @@
                 const bannerFile = document.getElementById('channelBannerFile').files[0];
                 let bannerUrl = '';
                 if (bannerFile) {
-                    const bannerRef = ref(storage, `channel_banners/${state.currentUser.uid}/banner`);
+                    const bannerRef = ref(storage, `channel_banners/${state.currentUser.uid}/banner_${Date.now()}`);
                     await uploadBytes(bannerRef, bannerFile);
                     bannerUrl = await getDownloadURL(bannerRef);
                 }
@@ -3084,7 +3073,7 @@
                 const avatarFile = document.getElementById('channelAvatarFile').files[0];
                 let avatarUrl = state.currentUser.avatar;
                 if (avatarFile) {
-                    const avatarRef = ref(storage, `channel_avatars/${state.currentUser.uid}/avatar`);
+                    const avatarRef = ref(storage, `channel_avatars/${state.currentUser.uid}/avatar_${Date.now()}`);
                     await uploadBytes(avatarRef, avatarFile);
                     avatarUrl = await getDownloadURL(avatarRef);
                 }
@@ -3108,8 +3097,6 @@
                 // Update user document
                 await updateDoc(doc(db, 'users', state.currentUser.uid), {
                     hasChannel: true,
-                    channelName: name,
-                    channelHandle: handle,
                     avatar: avatarUrl
                 });
 
@@ -3127,21 +3114,25 @@
 
             } catch (error) {
                 console.error('Error creating channel:', error);
-                showNotification('Error creating channel', 'error');
+                showNotification('Error creating channel: ' + error.message, 'error');
             }
         }
 
         // Channel creation steps
         let currentStep = 1;
 
-        function nextChannelStep() {
+        window.nextChannelStep = function() {
             if (currentStep < 3) {
                 // Validate step 1
                 if (currentStep === 1) {
-                    const name = document.getElementById('channelName').value;
-                    const handle = document.getElementById('channelHandle').value;
-                    if (!name || !handle) {
-                        showNotification('Please fill in channel name and handle', 'error');
+                    const name = document.getElementById('channelName').value.trim();
+                    const handle = document.getElementById('channelHandle').value.trim();
+                    if (!name) {
+                        showNotification('Please enter channel name', 'error');
+                        return;
+                    }
+                    if (!handle) {
+                        showNotification('Please enter channel handle', 'error');
                         return;
                     }
                 }
@@ -3162,9 +3153,9 @@
                     document.getElementById('createChannelBtn').style.display = 'block';
                 }
             }
-        }
+        };
 
-        function prevChannelStep() {
+        window.prevChannelStep = function() {
             if (currentStep > 1) {
                 document.getElementById(`channelStep${currentStep}`).style.display = 'none';
                 document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
@@ -3181,9 +3172,9 @@
                     document.getElementById('prevStepBtn').style.display = 'none';
                 }
             }
-        }
+        };
 
-        function addLinkField() {
+        window.addLinkField = function() {
             const container = document.getElementById('linksContainer');
             const newLink = document.createElement('div');
             newLink.className = 'link-input-group';
@@ -3195,7 +3186,7 @@
             
             // Add animation
             newLink.style.animation = 'slideIn 0.4s ease';
-        }
+        };
 
         // Load sidebar
         function loadSidebar() {
@@ -3769,11 +3760,9 @@
                     ...channelDoc.data()
                 };
                 
-                // Update URL to use handle if available
-                if (channel.handle && window.location.hash !== `#channel=${channel.handle}`) {
-                    window.location.hash = `channel=${channel.handle}`;
-                    return;
-                }
+                // Get user info for this channel
+                const userDoc = await getDoc(doc(db, 'users', channelId));
+                const user = userDoc.exists() ? userDoc.data() : null;
                 
                 const channelVideos = state.videos.filter(v => 
                     v.channelId === channelId && 
@@ -3788,7 +3777,7 @@
                         ${channel.banner ? `
                             <img src="${channel.banner}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; z-index: 0;">
                         ` : ''}
-                        <div style="position: relative; z-index: 1; display: flex; gap: 30px; align-items: center; width: 100%;">
+                        <div style="position: relative; z-index: 1; display: flex; gap: 30px; align-items: center; width: 100%; padding: 40px;">
                             <img src="${channel.avatar || 'https://via.placeholder.com/120'}" 
                                  class="channel-header-avatar"
                                  onerror="this.src='https://via.placeholder.com/120'">
@@ -3824,9 +3813,14 @@
                                 
                                 ${channel.links && channel.links.length > 0 ? `
                                     <div style="margin-top: 15px; display: flex; gap: 15px;">
-                                        ${channel.links.map(link => `
-                                            <a href="${link}" target="_blank" style="color: var(--secondary);">${new URL(link).hostname}</a>
-                                        `).join('')}
+                                        ${channel.links.map(link => {
+                                            try {
+                                                const url = new URL(link);
+                                                return `<a href="${link}" target="_blank" style="color: var(--secondary);">${url.hostname}</a>`;
+                                            } catch {
+                                                return `<a href="${link}" target="_blank" style="color: var(--secondary);">${link}</a>`;
+                                            }
+                                        }).join('')}
                                     </div>
                                 ` : ''}
                             </div>
@@ -4166,8 +4160,8 @@
             const categorySelect = document.getElementById('videoCategory');
             const privacySelect = document.getElementById('videoPrivacy');
             
-            const title = titleInput ? titleInput.value : '';
-            const description = descriptionInput ? descriptionInput.value : '';
+            const title = titleInput ? titleInput.value.trim() : '';
+            const description = descriptionInput ? descriptionInput.value.trim() : '';
             const category = categorySelect ? categorySelect.value : 'Other';
             const privacy = privacySelect ? privacySelect.value : 'public';
             
@@ -4227,21 +4221,19 @@
                         video.onloadedmetadata = function() {
                             const duration = formatDuration(video.duration);
                             
-                            // Simulate copyright check
-                            setTimeout(() => {
-                                saveVideoToFirestore({
-                                    title,
-                                    description,
-                                    category,
-                                    privacy,
-                                    videoUrl,
-                                    thumbnail: thumbnailUrl,
-                                    duration,
-                                    channelId: state.currentUser.uid,
-                                    status: 'processing',
-                                    copyrightStatus: 'pending'
-                                });
-                            }, 2000);
+                            // Save video to Firestore
+                            saveVideoToFirestore({
+                                title,
+                                description,
+                                category,
+                                privacy,
+                                videoUrl,
+                                thumbnail: thumbnailUrl,
+                                duration,
+                                channelId: state.currentUser.uid,
+                                status: 'processing',
+                                copyrightStatus: 'pending'
+                            });
                         };
                     }
                 );
@@ -4355,8 +4347,8 @@
             if (!state.currentUser) return;
             
             const videoId = document.getElementById('editVideoId').value;
-            const title = document.getElementById('editVideoTitle').value;
-            const description = document.getElementById('editVideoDescription').value;
+            const title = document.getElementById('editVideoTitle').value.trim();
+            const description = document.getElementById('editVideoDescription').value.trim();
             const category = document.getElementById('editVideoCategory').value;
             const privacy = document.getElementById('editVideoPrivacy').value;
             const copyrightStatus = document.getElementById('editVideoCopyright').value;
@@ -4427,14 +4419,22 @@
                 
                 // Delete video from storage
                 if (video.videoUrl) {
-                    const videoStorageRef = ref(storage, video.videoUrl);
-                    await deleteObject(videoStorageRef).catch(() => {});
+                    try {
+                        const videoStorageRef = ref(storage, video.videoUrl);
+                        await deleteObject(videoStorageRef);
+                    } catch (e) {
+                        console.warn('Error deleting video from storage:', e);
+                    }
                 }
                 
                 // Delete thumbnail from storage
                 if (video.thumbnail) {
-                    const thumbStorageRef = ref(storage, video.thumbnail);
-                    await deleteObject(thumbStorageRef).catch(() => {});
+                    try {
+                        const thumbStorageRef = ref(storage, video.thumbnail);
+                        await deleteObject(thumbStorageRef);
+                    } catch (e) {
+                        console.warn('Error deleting thumbnail from storage:', e);
+                    }
                 }
                 
                 // Delete comments
@@ -4516,6 +4516,11 @@
             const email = emailInput ? emailInput.value : '';
             const password = passwordInput ? passwordInput.value : '';
             
+            if (!email || !password) {
+                showNotification('Please enter email and password', 'error');
+                return;
+            }
+            
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 showNotification('Logged in successfully!', 'success');
@@ -4530,7 +4535,7 @@
             const emailInput = document.getElementById('signupEmail');
             const passwordInput = document.getElementById('signupPassword');
             
-            const username = usernameInput ? usernameInput.value : '';
+            const username = usernameInput ? usernameInput.value.trim() : '';
             const email = emailInput ? emailInput.value : '';
             const password = passwordInput ? passwordInput.value : '';
             
@@ -4648,6 +4653,22 @@
                 document.getElementById('prevStepBtn').style.display = 'none';
                 document.getElementById('nextStepBtn').style.display = 'block';
                 document.getElementById('createChannelBtn').style.display = 'none';
+                
+                // Clear form fields
+                document.getElementById('channelName').value = '';
+                document.getElementById('channelHandle').value = '';
+                document.getElementById('channelDescription').value = '';
+                document.getElementById('channelCountry').value = '';
+                document.getElementById('channelAvatarPreview').src = 'https://via.placeholder.com/100';
+                document.getElementById('bannerPreview').style.display = 'none';
+                
+                // Clear links
+                document.getElementById('linksContainer').innerHTML = `
+                    <div class="link-input-group">
+                        <input type="text" placeholder="https://youtube.com/..." class="channel-link">
+                        <i class="fas fa-times remove-link" onclick="this.parentElement.remove()"></i>
+                    </div>
+                `;
             }
         }
 
@@ -4666,6 +4687,13 @@
         function openAuthModal() {
             if (elements.authModal) {
                 elements.authModal.classList.add('active');
+                // Reset forms
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('signupName').value = '';
+                document.getElementById('signupEmail').value = '';
+                document.getElementById('signupPassword').value = '';
+                switchAuthTab('login');
             }
         }
 
@@ -4856,6 +4884,10 @@
         }
 
         function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
@@ -4919,11 +4951,6 @@
 
         // Assign to window
         window.app = app;
-
-        // Add global functions for channel creation
-        window.nextChannelStep = nextChannelStep;
-        window.prevChannelStep = prevChannelStep;
-        window.addLinkField = addLinkField;
 
         // Start the app
         init();
