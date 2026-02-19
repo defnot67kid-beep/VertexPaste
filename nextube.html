@@ -9,11 +9,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  <!-- Google Sign-In -->
-  <meta name="google-signin-client_id" content="572074212370-k56l9us4reqog2m61b9ni53lcg60ktne.apps.googleusercontent.com">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <!-- Cloudinary SDK -->
-  <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
@@ -593,7 +588,14 @@
 
   <!-- Main Content -->
   <main class="main-content" id="mainContent">
-    <div class="video-grid" id="videoGrid"></div>
+    <div class="video-grid" id="videoGrid">
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+        <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+        <h3>Welcome to VertexTube!</h3>
+        <p style="color: var(--text-secondary); margin: 16px 0;">Sign in and create a channel to start uploading videos</p>
+        <button class="btn btn-primary" onclick="toggleAuthModal()">Get Started</button>
+      </div>
+    </div>
   </main>
 
   <!-- Auth Modal -->
@@ -603,36 +605,34 @@
         <h2>Sign In to VertexTube</h2>
         <span class="close-modal" onclick="closeAuthModal()">&times;</span>
       </div>
-      <div style="text-align: center; margin-bottom: 20px;">
-        <div id="g_id_onload"
-             data-client_id="572074212370-k56l9us4reqog2m61b9ni53lcg60ktne.apps.googleusercontent.com"
-             data-context="signin"
-             data-ux_mode="popup"
-             data-callback="handleGoogleSignIn"
-             data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin"
-             data-type="standard"
-             data-shape="rectangular"
-             data-theme="dark"
-             data-text="signin_with"
-             data-size="large"
-             data-logo_alignment="left">
-        </div>
-      </div>
-      <div style="text-align: center; color: var(--text-secondary); margin: 20px 0;">or</div>
+      
+      <!-- Email/Password Sign In -->
       <form id="emailSignInForm">
         <div class="form-group">
-          <input type="email" id="signinEmail" placeholder="Email" required>
+          <label>Email</label>
+          <input type="email" id="signinEmail" placeholder="Enter your email" required>
         </div>
         <div class="form-group">
-          <input type="password" id="signinPassword" placeholder="Password" required>
+          <label>Password</label>
+          <input type="password" id="signinPassword" placeholder="Enter your password" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">Sign In</button>
       </form>
-      <p style="text-align: center; margin-top: 20px;">
-        Don't have an account? <a href="#" onclick="showSignUp()">Sign up</a>
-      </p>
+
+      <div style="text-align: center; color: var(--text-secondary); margin: 20px 0;">or</div>
+
+      <!-- Sign Up Form -->
+      <form id="emailSignUpForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="signupEmail" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signupPassword" placeholder="Choose a password (min 6 characters)" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+      </form>
     </div>
   </div>
 
@@ -646,27 +646,21 @@
       <form id="channelForm">
         <div class="form-group">
           <label>Channel Name</label>
-          <input type="text" id="channelName" required>
+          <input type="text" id="channelName" placeholder="Enter channel name" required>
         </div>
         <div class="form-group">
           <label>Channel Description</label>
-          <textarea id="channelDescription" rows="3"></textarea>
+          <textarea id="channelDescription" rows="3" placeholder="Tell viewers about your channel"></textarea>
         </div>
         <div class="form-group">
-          <label>Profile Picture</label>
-          <div class="upload-area" onclick="uploadChannelImage('profile')">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Click to upload profile picture</p>
-            <input type="file" id="profileUpload" style="display: none;" accept="image/*">
-          </div>
+          <label>Profile Picture URL</label>
+          <input type="url" id="profilePicture" placeholder="https://example.com/profile.jpg">
+          <small style="color: var(--text-secondary);">Enter a direct image URL (optional)</small>
         </div>
         <div class="form-group">
-          <label>Channel Banner</label>
-          <div class="upload-area" onclick="uploadChannelImage('banner')">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Click to upload banner</p>
-            <input type="file" id="bannerUpload" style="display: none;" accept="image/*">
-          </div>
+          <label>Channel Banner URL</label>
+          <input type="url" id="channelBanner" placeholder="https://example.com/banner.jpg">
+          <small style="color: var(--text-secondary);">Enter a direct image URL (optional)</small>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Create Channel</button>
       </form>
@@ -683,11 +677,11 @@
       <form id="uploadForm">
         <div class="form-group">
           <label>Video Title</label>
-          <input type="text" id="videoTitle" required>
+          <input type="text" id="videoTitle" placeholder="Enter video title" required>
         </div>
         <div class="form-group">
           <label>Description</label>
-          <textarea id="videoDescription" rows="3"></textarea>
+          <textarea id="videoDescription" rows="3" placeholder="Describe your video"></textarea>
         </div>
         <div class="form-group">
           <label>Visibility</label>
@@ -698,20 +692,14 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Video File</label>
-          <div class="upload-area" onclick="uploadVideoFile()">
-            <i class="fas fa-video"></i>
-            <p>Click to select video</p>
-            <input type="file" id="videoFile" style="display: none;" accept="video/*">
-          </div>
+          <label>Video URL</label>
+          <input type="url" id="videoUrl" placeholder="https://example.com/video.mp4" required>
+          <small style="color: var(--text-secondary);">Enter a direct video URL (MP4 recommended)</small>
         </div>
         <div class="form-group">
-          <label>Thumbnail</label>
-          <div class="upload-area" onclick="uploadThumbnail()">
-            <i class="fas fa-image"></i>
-            <p>Click to upload thumbnail</p>
-            <input type="file" id="thumbnailFile" style="display: none;" accept="image/*">
-          </div>
+          <label>Thumbnail URL</label>
+          <input type="url" id="thumbnailUrl" placeholder="https://example.com/thumbnail.jpg">
+          <small style="color: var(--text-secondary);">Enter a direct image URL (optional)</small>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Publish Video</button>
       </form>
@@ -739,65 +727,43 @@
     const db = firebase.firestore();
     const storage = firebase.storage();
 
-    // Cloudinary Configuration
-    const cloudinaryConfig = {
-      cloudName: 'dsv2sthkf',
-      uploadPreset: 'portfoliohub_uploads',
-      apiKey: '725361572671118',
-      apiSecret: '4YroGoXPGaiaiLQb0yPsRsxqSgM'
-    };
-
     // Global variables
     let currentUser = null;
     let currentChannel = null;
     let notifications = [];
     let unreadCount = 0;
 
-    // Initialize Cloudinary upload widget
-    const cloudinaryWidget = cloudinary.createUploadWidget({
-      cloudName: cloudinaryConfig.cloudName,
-      uploadPreset: cloudinaryConfig.uploadPreset,
-      apiKey: cloudinaryConfig.apiKey,
-      sources: ['local', 'url', 'camera'],
-      multiple: false,
-      maxFiles: 1,
-      styles: {
-        palette: {
-          window: "#1a1a1a",
-          windowBorder: "#303030",
-          tabIcon: "#3ea6ff",
-          menuIcons: "#aaaaaa",
-          textDark: "#ffffff",
-          textLight: "#ffffff",
-          link: "#3ea6ff",
-          action: "#ff0000",
-          inactiveTabIcon: "#aaaaaa",
-          error: "#ff0000",
-          inProgress: "#3ea6ff",
-          complete: "#4caf50",
-          sourceBg: "#272727"
-        }
+    // Email/Password Sign Up
+    document.getElementById('emailSignUpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+
+      if (password.length < 6) {
+        showToast('Password must be at least 6 characters', 'error');
+        return;
       }
-    }, (error, result) => {
-      if (!error && result && result.event === "success") {
-        handleCloudinaryUpload(result.info);
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        showToast('Account created successfully!', 'success');
+        closeAuthModal();
+        
+        // Create welcome notification
+        await db.collection('notifications').add({
+          userId: userCredential.user.uid,
+          title: 'Welcome to VertexTube!',
+          message: 'Create your channel to start uploading videos',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          read: false,
+          type: 'welcome'
+        });
+      } catch (error) {
+        showToast('Error creating account: ' + error.message, 'error');
       }
     });
 
-    // Google Sign-In Handler
-    window.handleGoogleSignIn = async (response) => {
-      try {
-        const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
-        const userCredential = await auth.signInWithCredential(credential);
-        showToast('Successfully signed in!', 'success');
-        closeAuthModal();
-        loadUserData(userCredential.user);
-      } catch (error) {
-        showToast('Error signing in: ' + error.message, 'error');
-      }
-    };
-
-    // Email Sign In
+    // Email/Password Sign In
     document.getElementById('emailSignInForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('signinEmail').value;
@@ -807,7 +773,6 @@
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         showToast('Successfully signed in!', 'success');
         closeAuthModal();
-        loadUserData(userCredential.user);
       } catch (error) {
         showToast('Error signing in: ' + error.message, 'error');
       }
@@ -825,27 +790,48 @@
         currentUser = null;
         currentChannel = null;
         document.getElementById('userAvatar').innerHTML = '<i class="fas fa-user"></i>';
+        showWelcomeScreen();
       }
     });
 
+    function showWelcomeScreen() {
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+          <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+          <h3>Welcome to VertexTube!</h3>
+          <p style="color: var(--text-secondary); margin: 16px 0;">Sign in and create a channel to start uploading videos</p>
+          <button class="btn btn-primary" onclick="toggleAuthModal()">Get Started</button>
+        </div>
+      `;
+    }
+
     async function loadUserChannel(uid) {
-      const channelDoc = await db.collection('channels').doc(uid).get();
-      if (channelDoc.exists) {
-        currentChannel = channelDoc.data();
+      try {
+        const channelDoc = await db.collection('channels').doc(uid).get();
+        if (channelDoc.exists) {
+          currentChannel = channelDoc.data();
+        }
+      } catch (error) {
+        console.error('Error loading channel:', error);
       }
     }
 
     async function loadNotifications(uid) {
-      const snapshot = await db.collection('notifications')
-        .where('userId', '==', uid)
-        .orderBy('timestamp', 'desc')
-        .limit(50)
-        .get();
+      try {
+        const snapshot = await db.collection('notifications')
+          .where('userId', '==', uid)
+          .orderBy('timestamp', 'desc')
+          .limit(50)
+          .get();
 
-      notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      unreadCount = notifications.filter(n => !n.read).length;
-      updateNotificationBadge();
-      renderNotifications();
+        notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        unreadCount = notifications.filter(n => !n.read).length;
+        updateNotificationBadge();
+        renderNotifications();
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+      }
     }
 
     function updateNotificationBadge() {
@@ -875,24 +861,33 @@
     }
 
     async function markNotificationRead(id) {
-      await db.collection('notifications').doc(id).update({ read: true });
-      unreadCount--;
-      updateNotificationBadge();
-      loadNotifications(currentUser.uid);
+      try {
+        await db.collection('notifications').doc(id).update({ read: true });
+        unreadCount--;
+        updateNotificationBadge();
+        loadNotifications(currentUser.uid);
+      } catch (error) {
+        console.error('Error marking notification read:', error);
+      }
     }
 
     async function markAllNotificationsRead() {
-      const batch = db.batch();
-      notifications.forEach(notif => {
-        if (!notif.read) {
-          const ref = db.collection('notifications').doc(notif.id);
-          batch.update(ref, { read: true });
-        }
-      });
-      await batch.commit();
-      unreadCount = 0;
-      updateNotificationBadge();
-      loadNotifications(currentUser.uid);
+      try {
+        const batch = db.batch();
+        notifications.forEach(notif => {
+          if (!notif.read) {
+            const ref = db.collection('notifications').doc(notif.id);
+            batch.update(ref, { read: true });
+          }
+        });
+        await batch.commit();
+        unreadCount = 0;
+        updateNotificationBadge();
+        loadNotifications(currentUser.uid);
+        showToast('All notifications marked as read', 'success');
+      } catch (error) {
+        console.error('Error marking all read:', error);
+      }
     }
 
     function toggleNotifications() {
@@ -917,43 +912,23 @@
 
     function closeUploadModal() {
       document.getElementById('uploadModal').classList.remove('active');
-    }
-
-    function uploadVideoFile() {
-      document.getElementById('videoFile').click();
-    }
-
-    function uploadThumbnail() {
-      document.getElementById('thumbnailFile').click();
+      document.getElementById('uploadForm').reset();
     }
 
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const videoFile = document.getElementById('videoFile').files[0];
-      const thumbnailFile = document.getElementById('thumbnailFile').files[0];
+      const videoUrl = document.getElementById('videoUrl').value;
+      const thumbnailUrl = document.getElementById('thumbnailUrl').value || 'https://via.placeholder.com/320x180';
       
-      if (!videoFile) {
-        showToast('Please select a video file', 'error');
+      if (!videoUrl) {
+        showToast('Please enter a video URL', 'error');
         return;
       }
 
-      showToast('Uploading video...', 'success');
+      showToast('Publishing video...', 'success');
 
       try {
-        // Upload video to Firebase Storage
-        const videoRef = storage.ref(`videos/${Date.now()}_${videoFile.name}`);
-        await videoRef.put(videoFile);
-        const videoUrl = await videoRef.getDownloadURL();
-
-        // Upload thumbnail
-        let thumbnailUrl = '';
-        if (thumbnailFile) {
-          const thumbRef = storage.ref(`thumbnails/${Date.now()}_${thumbnailFile.name}`);
-          await thumbRef.put(thumbnailFile);
-          thumbnailUrl = await thumbRef.getDownloadURL();
-        }
-
         // Save video metadata to Firestore
         const videoData = {
           title: document.getElementById('videoTitle').value,
@@ -968,14 +943,19 @@
           likes: 0,
           comments: [],
           uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          duration: '0:00' // You might want to extract actual duration
+          duration: '0:00'
         };
 
         await db.collection('videos').add(videoData);
 
-        // Create notification for subscribers
+        // Update channel video count
+        await db.collection('channels').doc(currentUser.uid).update({
+          videos: firebase.firestore.FieldValue.increment(1)
+        });
+
+        // Create notification for all users (simplified - in real app would notify subscribers)
         await db.collection('notifications').add({
-          userId: currentUser.uid,
+          userId: 'global',
           title: 'New Video Uploaded',
           message: `${currentChannel.name} uploaded "${videoData.title}"`,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -983,11 +963,11 @@
           type: 'upload'
         });
 
-        showToast('Video uploaded successfully!', 'success');
+        showToast('Video published successfully!', 'success');
         closeUploadModal();
         loadVideos();
       } catch (error) {
-        showToast('Error uploading video: ' + error.message, 'error');
+        showToast('Error publishing video: ' + error.message, 'error');
       }
     });
 
@@ -1003,20 +983,7 @@
 
     function closeChannelModal() {
       document.getElementById('channelModal').classList.remove('active');
-    }
-
-    function uploadChannelImage(type) {
-      cloudinaryWidget.open();
-      window.currentUploadType = type;
-    }
-
-    function handleCloudinaryUpload(info) {
-      const type = window.currentUploadType;
-      if (type === 'profile') {
-        document.getElementById('profileUpload').dataset.url = info.secure_url;
-      } else if (type === 'banner') {
-        document.getElementById('bannerUpload').dataset.url = info.secure_url;
-      }
+      document.getElementById('channelForm').reset();
     }
 
     document.getElementById('channelForm').addEventListener('submit', async (e) => {
@@ -1025,8 +992,8 @@
       const channelData = {
         name: document.getElementById('channelName').value,
         description: document.getElementById('channelDescription').value,
-        profilePicture: document.getElementById('profileUpload').dataset.url || '',
-        banner: document.getElementById('bannerUpload').dataset.url || '',
+        profilePicture: document.getElementById('profilePicture').value || 'https://via.placeholder.com/100',
+        banner: document.getElementById('channelBanner').value || 'https://via.placeholder.com/1280x360',
         subscribers: 0,
         videos: 0,
         views: 0,
@@ -1040,6 +1007,16 @@
         showToast('Channel created successfully!', 'success');
         closeChannelModal();
         updateUserUI(currentUser);
+        
+        // Create notification
+        await db.collection('notifications').add({
+          userId: currentUser.uid,
+          title: 'Channel Created',
+          message: `Your channel "${channelData.name}" is now live!`,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          read: false,
+          type: 'channel'
+        });
       } catch (error) {
         showToast('Error creating channel: ' + error.message, 'error');
       }
@@ -1059,7 +1036,13 @@
         const snapshot = await query.get();
         
         if (snapshot.empty) {
-          grid.innerHTML = '<div style="text-align: center; padding: 40px;">No videos yet. Be the first to upload!</div>';
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+              <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+              <h3>No videos yet</h3>
+              <p style="color: var(--text-secondary);">Be the first to upload a video!</p>
+            </div>
+          `;
           return;
         }
 
@@ -1069,6 +1052,7 @@
           grid.appendChild(createVideoCard(video));
         });
       } catch (error) {
+        console.error('Error loading videos:', error);
         grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading videos</div>';
       }
     }
@@ -1099,80 +1083,15 @@
     }
 
     function playVideo(video) {
-      // Implement video player
+      // Open video in new tab
       window.open(video.videoUrl, '_blank');
-    }
-
-    // UI Helpers
-    function updateUserUI(user) {
-      const avatar = document.getElementById('userAvatar');
-      if (user.photoURL) {
-        avatar.innerHTML = `<img src="${user.photoURL}" alt="avatar">`;
-      } else if (currentChannel?.profilePicture) {
-        avatar.innerHTML = `<img src="${currentChannel.profilePicture}" alt="avatar">`;
-      } else {
-        avatar.innerHTML = `<i class="fas fa-user"></i>`;
-      }
-    }
-
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-        <span>${message}</span>
-      `;
       
-      container.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.remove();
-      }, 5000);
-    }
-
-    function formatTime(timestamp) {
-      if (!timestamp) return 'recent';
-      // Implement time formatting
-      return 'recent';
-    }
-
-    function toggleAuthModal() {
-      document.getElementById('authModal').classList.add('active');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('authModal').classList.remove('active');
-    }
-
-    function showSignUp() {
-      // Implement sign up
-      showToast('Sign up feature coming soon!', 'info');
-    }
-
-    function loadHome() {
-      loadVideos('home');
-    }
-
-    function loadTrending() {
-      loadVideos('trending');
-    }
-
-    function loadSubscriptions() {
-      if (!currentUser) {
-        showToast('Please sign in to see subscriptions', 'error');
-        toggleAuthModal();
-        return;
+      // Increment view count
+      if (video.id) {
+        db.collection('videos').doc(video.id).update({
+          views: firebase.firestore.FieldValue.increment(1)
+        }).catch(console.error);
       }
-      loadVideos('subscriptions');
-    }
-
-    function loadLibrary() {
-      showToast('Library feature coming soon!', 'info');
-    }
-
-    function loadHistory() {
-      showToast('History feature coming soon!', 'info');
     }
 
     // Search functionality
@@ -1186,39 +1105,6 @@
       const grid = document.getElementById('videoGrid');
       grid.innerHTML = '<div class="spinner"></div>';
 
-      const snapshot = await db.collection('videos')
-        .where('visibility', '==', 'public')
-        .get();
-
-      const filtered = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(video => 
-          video.title.toLowerCase().includes(term) || 
-          video.description?.toLowerCase().includes(term)
-        );
-
-      grid.innerHTML = '';
-      if (filtered.length === 0) {
-        grid.innerHTML = '<div style="text-align: center; padding: 40px;">No videos found</div>';
-      } else {
-        filtered.forEach(video => {
-          grid.appendChild(createVideoCard(video));
-        });
-      }
-    });
-
-    // Initialize
-    loadVideos();
-
-    // Close modals when clicking outside
-    window.onclick = (e) => {
-      if (e.target.classList.contains('modal')) {
-        e.target.classList.remove('active');
-      }
-      if (!e.target.closest('.notifications-panel') && !e.target.closest('.fa-bell')) {
-        document.getElementById('notificationsPanel').classList.remove('active');
-      }
-    };
-  </script>
-</body>
-</html>
+      try {
+        const snapshot = await db.collection('videos')
+          .where('visibility', '==',
