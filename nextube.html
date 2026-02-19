@@ -2583,6 +2583,7 @@
 
             // Auth state listener
             onAuthStateChanged(auth, async (user) => {
+                console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
                 if (user) {
                     await loadUserData(user);
                 } else {
@@ -2632,6 +2633,7 @@
         // Load user data from Firestore
         async function loadUserData(user) {
             try {
+                console.log('Loading user data for:', user.uid);
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 
                 if (userDoc.exists()) {
@@ -2641,6 +2643,8 @@
                         ...userDoc.data()
                     };
                     
+                    console.log('User data loaded:', state.currentUser);
+                    
                     // Add to username map
                     if (userDoc.data().username) {
                         state.usernameMap.set(userDoc.data().username, user.uid);
@@ -2648,12 +2652,22 @@
                     
                     // Check if user has channel
                     if (userDoc.data().hasChannel) {
+                        console.log('User has channel, loading channel data...');
                         const channelDoc = await getDoc(doc(db, 'channels', user.uid));
                         if (channelDoc.exists()) {
                             state.currentUser.channel = channelDoc.data();
+                            console.log('Channel data loaded:', state.currentUser.channel);
+                        } else {
+                            console.log('Channel document not found, updating hasChannel flag');
+                            // Channel flag is true but document doesn't exist, fix it
+                            await updateDoc(doc(db, 'users', user.uid), {
+                                hasChannel: false
+                            });
+                            state.currentUser.hasChannel = false;
                         }
                     }
                 } else {
+                    console.log('Creating new user document for:', user.uid);
                     // Create basic user document (no channel yet)
                     const baseUsername = user.displayName || user.email.split('@')[0];
                     let username = baseUsername.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
@@ -2680,6 +2694,7 @@
                     await setDoc(doc(db, 'users', user.uid), newUser);
                     state.currentUser = { uid: user.uid, ...newUser };
                     state.usernameMap.set(username, user.uid);
+                    console.log('New user document created:', state.currentUser);
                 }
                 
                 // Load subscriptions
@@ -3012,21 +3027,35 @@
 
         // Create channel
         async function createChannel() {
+            console.log('createChannel function called');
+            
             if (!state.currentUser) {
+                console.log('No current user');
                 showNotification('Please sign in first', 'error');
                 return;
             }
 
-            const name = document.getElementById('channelName').value.trim();
-            let handle = document.getElementById('channelHandle').value.trim();
-            const description = document.getElementById('channelDescription').value.trim();
-            const country = document.getElementById('channelCountry').value;
+            console.log('Current user:', state.currentUser);
+
+            const nameInput = document.getElementById('channelName');
+            const handleInput = document.getElementById('channelHandle');
+            const descriptionInput = document.getElementById('channelDescription');
+            const countrySelect = document.getElementById('channelCountry');
             
+            const name = nameInput ? nameInput.value.trim() : '';
+            let handle = handleInput ? handleInput.value.trim() : '';
+            const description = descriptionInput ? descriptionInput.value.trim() : '';
+            const country = countrySelect ? countrySelect.value : '';
+            
+            console.log('Form values:', { name, handle, description, country });
+
             // Get links
             const linkInputs = document.querySelectorAll('.channel-link');
             const links = Array.from(linkInputs)
                 .map(input => input.value.trim())
                 .filter(link => link);
+
+            console.log('Links:', links);
 
             if (!name) {
                 showNotification('Please enter channel name', 'error');
@@ -3049,33 +3078,42 @@
 
             try {
                 showNotification('Creating your channel...', 'info');
+                console.log('Starting channel creation process...');
 
                 // Check if handle is available
+                console.log('Checking if handle is available:', `@${handle}`);
                 const channelsRef = collection(db, 'channels');
                 const q = query(channelsRef, where('handle', '==', `@${handle}`));
                 const querySnapshot = await getDocs(q);
                 
                 if (!querySnapshot.empty) {
+                    console.log('Handle is already taken');
                     showNotification('This handle is already taken', 'error');
                     return;
                 }
+
+                console.log('Handle is available');
 
                 // Upload banner if selected
                 const bannerFile = document.getElementById('channelBannerFile').files[0];
                 let bannerUrl = '';
                 if (bannerFile) {
+                    console.log('Uploading banner...');
                     const bannerRef = ref(storage, `channel_banners/${state.currentUser.uid}/banner_${Date.now()}`);
                     await uploadBytes(bannerRef, bannerFile);
                     bannerUrl = await getDownloadURL(bannerRef);
+                    console.log('Banner uploaded:', bannerUrl);
                 }
 
                 // Upload avatar if selected
                 const avatarFile = document.getElementById('channelAvatarFile').files[0];
-                let avatarUrl = state.currentUser.avatar;
+                let avatarUrl = state.currentUser.avatar || '';
                 if (avatarFile) {
+                    console.log('Uploading avatar...');
                     const avatarRef = ref(storage, `channel_avatars/${state.currentUser.uid}/avatar_${Date.now()}`);
                     await uploadBytes(avatarRef, avatarFile);
                     avatarUrl = await getDownloadURL(avatarRef);
+                    console.log('Avatar uploaded:', avatarUrl);
                 }
 
                 // Create channel document
@@ -3089,28 +3127,41 @@
                     avatar: avatarUrl,
                     subscribers: 0,
                     videos: [],
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 };
 
+                console.log('Creating channel document with data:', channelData);
+                
+                // Save to Firestore
                 await setDoc(doc(db, 'channels', state.currentUser.uid), channelData);
+                console.log('Channel document created successfully');
 
                 // Update user document
+                console.log('Updating user document...');
                 await updateDoc(doc(db, 'users', state.currentUser.uid), {
                     hasChannel: true,
-                    avatar: avatarUrl
+                    avatar: avatarUrl,
+                    channelId: state.currentUser.uid
                 });
+                console.log('User document updated');
 
                 // Update state
                 state.currentUser.hasChannel = true;
                 state.currentUser.channel = channelData;
                 state.currentUser.avatar = avatarUrl;
 
+                console.log('State updated:', state.currentUser);
+
                 showNotification('Channel created successfully!', 'success');
                 closeCreateChannelModal();
                 updateNavbar();
 
                 // Go to channel page
-                goToChannel(`@${handle}`);
+                setTimeout(() => {
+                    console.log('Navigating to channel page...');
+                    goToChannel(`@${handle}`);
+                }, 500);
 
             } catch (error) {
                 console.error('Error creating channel:', error);
@@ -3122,6 +3173,7 @@
         let currentStep = 1;
 
         window.nextChannelStep = function() {
+            console.log('nextChannelStep called, current step:', currentStep);
             if (currentStep < 3) {
                 // Validate step 1
                 if (currentStep === 1) {
@@ -3156,6 +3208,7 @@
         };
 
         window.prevChannelStep = function() {
+            console.log('prevChannelStep called, current step:', currentStep);
             if (currentStep > 1) {
                 document.getElementById(`channelStep${currentStep}`).style.display = 'none';
                 document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
@@ -3175,6 +3228,7 @@
         };
 
         window.addLinkField = function() {
+            console.log('addLinkField called');
             const container = document.getElementById('linksContainer');
             const newLink = document.createElement('div');
             newLink.className = 'link-input-group';
@@ -3441,10 +3495,10 @@
                 </div>
                 
                 <div class="video-filters">
-                    <button class="filter-btn active" onclick="filterVideos('all')">All</button>
-                    <button class="filter-btn" onclick="filterVideos('public')">Public</button>
-                    <button class="filter-btn" onclick="filterVideos('private')">Private</button>
-                    <button class="filter-btn" onclick="filterVideos('processing')">Processing</button>
+                    <button class="filter-btn active" onclick="window.app.filterVideos('all')">All</button>
+                    <button class="filter-btn" onclick="window.app.filterVideos('public')">Public</button>
+                    <button class="filter-btn" onclick="window.app.filterVideos('private')">Private</button>
+                    <button class="filter-btn" onclick="window.app.filterVideos('processing')">Processing</button>
                 </div>
                 
                 ${processingVideos.length > 0 ? `
@@ -4635,11 +4689,21 @@
         }
 
         function openCreateChannelModal() {
+            console.log('openCreateChannelModal called');
             if (!state.currentUser) {
+                console.log('No current user, opening auth modal');
                 openAuthModal();
                 return;
             }
+            
+            if (state.currentUser.hasChannel) {
+                console.log('User already has channel');
+                showNotification('You already have a channel', 'info');
+                return;
+            }
+            
             if (elements.createChannelModal) {
+                console.log('Opening create channel modal');
                 elements.createChannelModal.classList.add('active');
                 // Reset form
                 currentStep = 1;
@@ -4669,10 +4733,13 @@
                         <i class="fas fa-times remove-link" onclick="this.parentElement.remove()"></i>
                     </div>
                 `;
+            } else {
+                console.error('createChannelModal element not found');
             }
         }
 
         function closeCreateChannelModal() {
+            console.log('closeCreateChannelModal called');
             if (elements.createChannelModal) {
                 elements.createChannelModal.classList.remove('active');
             }
