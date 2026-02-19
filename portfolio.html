@@ -11,6 +11,7 @@
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
+        /* Same CSS as before - keeping it identical */
         * {
             margin: 0;
             padding: 0;
@@ -1044,7 +1045,7 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, deleteDoc, increment, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // Firebase configuration (safe to expose)
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
             authDomain: "vertexpaste.firebaseapp.com",
@@ -1060,12 +1061,11 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // Cloudinary configuration with API credentials
+        // Cloudinary configuration
         const CLOUDINARY_CONFIG = {
-            cloudName: 'demo', // Using demo cloud - replace with your cloud name
+            cloudName: 'demo', // Using demo cloud
             uploadPreset: 'ml_default', // Default unsigned preset
-            apiKey: '725361572671118',
-            apiSecret: '4YroGoXPGaiaiLQb0yPsRsxqSgM' // WARNING: API secret exposed in client-side code
+            apiKey: '725361572671118'
         };
 
         // ============ APP STATE ============
@@ -1356,7 +1356,6 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-            formData.append('api_key', CLOUDINARY_CONFIG.apiKey);
             
             // Show progress
             const progressBar = document.querySelector(`.upload-progress.${type}`);
@@ -1560,8 +1559,12 @@
                 if (imageUrl) {
                     if (type === 'avatar') {
                         currentUser.avatar = imageUrl;
+                        // Update the preview with the Cloudinary URL
+                        preview.src = imageUrl;
                     } else {
                         currentUser.cover = imageUrl;
+                        // Update the preview with the Cloudinary URL
+                        preview.src = imageUrl;
                     }
                     showNotification('Image uploaded successfully!', 'success');
                 }
@@ -1619,6 +1622,19 @@
                 return;
             }
             
+            // Get the current preview image sources to ensure we have the latest URLs
+            const avatarPreview = document.getElementById('avatarPreview');
+            const coverPreview = document.getElementById('coverPreview');
+            
+            // Update currentUser with the latest image URLs from the preview elements
+            if (avatarPreview && avatarPreview.src && avatarPreview.src !== '' && !avatarPreview.src.includes('undefined')) {
+                currentUser.avatar = avatarPreview.src;
+            }
+            
+            if (coverPreview && coverPreview.src && coverPreview.src !== '' && !coverPreview.src.includes('undefined')) {
+                currentUser.cover = coverPreview.src;
+            }
+            
             try {
                 // Update user document in Firestore
                 const userRef = doc(db, 'users', currentUser.uid);
@@ -1632,14 +1648,16 @@
                     updatedAt: new Date().toISOString()
                 };
                 
-                // Only update images if they exist
-                if (currentUser.avatar) {
+                // Only update images if they exist and are valid Cloudinary URLs
+                if (currentUser.avatar && currentUser.avatar.includes('cloudinary')) {
                     updateData.avatar = currentUser.avatar;
                 }
                 
-                if (currentUser.cover) {
+                if (currentUser.cover && currentUser.cover.includes('cloudinary')) {
                     updateData.cover = currentUser.cover;
                 }
+                
+                console.log('Saving portfolio with data:', updateData); // Debug log
                 
                 await updateDoc(userRef, updateData);
                 
