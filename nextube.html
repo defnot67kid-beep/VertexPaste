@@ -8,7 +8,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
@@ -285,6 +284,105 @@
       color: var(--text-secondary);
     }
 
+    /* Video Player Page */
+    .video-player-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .video-player-wrapper {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 */
+      height: 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: black;
+    }
+
+    .video-player-wrapper iframe,
+    .video-player-wrapper video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .video-info-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+    }
+
+    .video-title-large {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .video-stats {
+      display: flex;
+      gap: 20px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .channel-info-large {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 20px 0;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .channel-avatar-large {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+
+    .channel-avatar-large img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .channel-details-large h3 {
+      margin-bottom: 5px;
+    }
+
+    .subscribe-btn {
+      background: var(--accent-red);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .video-description {
+      margin-top: 20px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: var(--accent-blue);
+      cursor: pointer;
+    }
+
+    .back-btn:hover {
+      text-decoration: underline;
+    }
+
     /* Modals */
     .modal {
       display: none;
@@ -380,25 +478,6 @@
 
     .btn:hover {
       opacity: 0.9;
-    }
-
-    .upload-area {
-      border: 2px dashed var(--border-color);
-      border-radius: 12px;
-      padding: 40px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-
-    .upload-area:hover {
-      border-color: var(--accent-blue);
-    }
-
-    .upload-area i {
-      font-size: 3rem;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
     }
 
     /* Notifications Panel */
@@ -520,7 +599,7 @@
 <body>
   <!-- Header -->
   <header class="header">
-    <div class="logo" onclick="location.reload()">
+    <div class="logo" onclick="window.location.hash = ''; location.reload()">
       <i class="fab fa-youtube"></i>
       <span>VertexTube</span>
     </div>
@@ -551,7 +630,7 @@
     <div class="notifications-list" id="notificationsList">
       <div class="notification-item unread">
         <strong>Welcome to VertexTube!</strong>
-        <p>Create your channel to start uploading</p>
+        <p>Sign in to start your journey</p>
         <small>Just now</small>
       </div>
     </div>
@@ -572,10 +651,6 @@
       <span>Subscriptions</span>
     </div>
     <div class="sidebar-divider"></div>
-    <div class="sidebar-item" onclick="loadLibrary()">
-      <i class="fas fa-book"></i>
-      <span>Library</span>
-    </div>
     <div class="sidebar-item" onclick="loadHistory()">
       <i class="fas fa-history"></i>
       <span>History</span>
@@ -588,14 +663,7 @@
 
   <!-- Main Content -->
   <main class="main-content" id="mainContent">
-    <div class="video-grid" id="videoGrid">
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-        <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
-        <h3>Welcome to VertexTube!</h3>
-        <p style="color: var(--text-secondary); margin: 16px 0;">Sign in and create a channel to start uploading videos</p>
-        <button class="btn btn-primary" onclick="toggleAuthModal()">Get Started</button>
-      </div>
-    </div>
+    <div class="video-grid" id="videoGrid"></div>
   </main>
 
   <!-- Auth Modal -->
@@ -693,13 +761,18 @@
         </div>
         <div class="form-group">
           <label>Video URL</label>
-          <input type="url" id="videoUrl" placeholder="https://example.com/video.mp4" required>
-          <small style="color: var(--text-secondary);">Enter a direct video URL (MP4 recommended)</small>
+          <input type="url" id="videoUrl" placeholder="https://www.youtube.com/embed/VIDEO_ID or direct video URL" required>
+          <small style="color: var(--text-secondary);">Enter YouTube embed URL or direct video URL</small>
         </div>
         <div class="form-group">
           <label>Thumbnail URL</label>
           <input type="url" id="thumbnailUrl" placeholder="https://example.com/thumbnail.jpg">
           <small style="color: var(--text-secondary);">Enter a direct image URL (optional)</small>
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <input type="text" id="videoDuration" placeholder="10:30">
+          <small style="color: var(--text-secondary);">Format: MM:SS or HH:MM:SS</small>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Publish Video</button>
       </form>
@@ -711,7 +784,7 @@
 
   <!-- Firebase and App Script -->
   <script>
-    // Firebase Configuration
+    // Firebase Configuration - FIXED
     const firebaseConfig = {
       apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
       authDomain: "vertexpaste.firebaseapp.com",
@@ -725,13 +798,24 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const storage = firebase.storage();
 
     // Global variables
     let currentUser = null;
     let currentChannel = null;
     let notifications = [];
     let unreadCount = 0;
+    let subscriptions = [];
+
+    // Check for video ID in URL hash
+    function checkHash() {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#watch-')) {
+        const videoId = hash.replace('#watch-', '');
+        playVideoById(videoId);
+      } else {
+        loadHome();
+      }
+    }
 
     // Email/Password Sign Up
     document.getElementById('emailSignUpForm').addEventListener('submit', async (e) => {
@@ -785,25 +869,35 @@
         updateUserUI(user);
         await loadUserChannel(user.uid);
         await loadNotifications(user.uid);
-        await loadVideos();
+        await loadSubscriptions(user.uid);
+        checkHash(); // Check hash after login
       } else {
         currentUser = null;
         currentChannel = null;
+        subscriptions = [];
         document.getElementById('userAvatar').innerHTML = '<i class="fas fa-user"></i>';
-        showWelcomeScreen();
+        checkHash(); // Still check hash for public videos
       }
     });
 
-    function showWelcomeScreen() {
-      const grid = document.getElementById('videoGrid');
-      grid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-          <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
-          <h3>Welcome to VertexTube!</h3>
-          <p style="color: var(--text-secondary); margin: 16px 0;">Sign in and create a channel to start uploading videos</p>
-          <button class="btn btn-primary" onclick="toggleAuthModal()">Get Started</button>
-        </div>
-      `;
+    async function loadSubscriptions(uid) {
+      try {
+        const snapshot = await db.collection('subscriptions')
+          .where('subscriberId', '==', uid)
+          .get();
+        subscriptions = snapshot.docs.map(doc => doc.data().channelId);
+      } catch (error) {
+        console.error('Error loading subscriptions:', error);
+      }
+    }
+
+    function updateUserUI(user) {
+      const avatar = document.getElementById('userAvatar');
+      if (currentChannel && currentChannel.profilePicture) {
+        avatar.innerHTML = `<img src="${currentChannel.profilePicture}" alt="Avatar">`;
+      } else {
+        avatar.innerHTML = `<i class="fas fa-user"></i>`;
+      }
     }
 
     async function loadUserChannel(uid) {
@@ -811,6 +905,7 @@
         const channelDoc = await db.collection('channels').doc(uid).get();
         if (channelDoc.exists) {
           currentChannel = channelDoc.data();
+          updateUserUI();
         }
       } catch (error) {
         console.error('Error loading channel:', error);
@@ -865,7 +960,7 @@
         await db.collection('notifications').doc(id).update({ read: true });
         unreadCount--;
         updateNotificationBadge();
-        loadNotifications(currentUser.uid);
+        if (currentUser) loadNotifications(currentUser.uid);
       } catch (error) {
         console.error('Error marking notification read:', error);
       }
@@ -883,7 +978,7 @@
         await batch.commit();
         unreadCount = 0;
         updateNotificationBadge();
-        loadNotifications(currentUser.uid);
+        if (currentUser) loadNotifications(currentUser.uid);
         showToast('All notifications marked as read', 'success');
       } catch (error) {
         console.error('Error marking all read:', error);
@@ -891,6 +986,11 @@
     }
 
     function toggleNotifications() {
+      if (!currentUser) {
+        showToast('Please sign in to view notifications', 'error');
+        toggleAuthModal();
+        return;
+      }
       const panel = document.getElementById('notificationsPanel');
       panel.classList.toggle('active');
     }
@@ -918,8 +1018,14 @@
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      if (!currentUser || !currentChannel) {
+        showToast('You must be signed in with a channel to upload', 'error');
+        return;
+      }
+
       const videoUrl = document.getElementById('videoUrl').value;
       const thumbnailUrl = document.getElementById('thumbnailUrl').value || 'https://via.placeholder.com/320x180';
+      const duration = document.getElementById('videoDuration').value || '0:00';
       
       if (!videoUrl) {
         showToast('Please enter a video URL', 'error');
@@ -943,29 +1049,39 @@
           likes: 0,
           comments: [],
           uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          duration: '0:00'
+          duration: duration
         };
 
-        await db.collection('videos').add(videoData);
+        const docRef = await db.collection('videos').add(videoData);
 
         // Update channel video count
         await db.collection('channels').doc(currentUser.uid).update({
           videos: firebase.firestore.FieldValue.increment(1)
         });
 
-        // Create notification for all users (simplified - in real app would notify subscribers)
-        await db.collection('notifications').add({
-          userId: 'global',
-          title: 'New Video Uploaded',
-          message: `${currentChannel.name} uploaded "${videoData.title}"`,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          read: false,
-          type: 'upload'
+        // Create notification for subscribers
+        const subscribers = await db.collection('subscriptions')
+          .where('channelId', '==', currentUser.uid)
+          .get();
+
+        const batch = db.batch();
+        subscribers.docs.forEach(sub => {
+          const notifRef = db.collection('notifications').doc();
+          batch.set(notifRef, {
+            userId: sub.data().subscriberId,
+            title: 'New Video Uploaded',
+            message: `${currentChannel.name} uploaded "${videoData.title}"`,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            read: false,
+            type: 'upload',
+            videoId: docRef.id
+          });
         });
+        await batch.commit();
 
         showToast('Video published successfully!', 'success');
         closeUploadModal();
-        loadVideos();
+        loadHome();
       } catch (error) {
         showToast('Error publishing video: ' + error.message, 'error');
       }
@@ -988,6 +1104,11 @@
 
     document.getElementById('channelForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (!currentUser) {
+        showToast('Please sign in first', 'error');
+        return;
+      }
 
       const channelData = {
         name: document.getElementById('channelName').value,
@@ -1022,45 +1143,182 @@
       }
     });
 
-    // Load videos
-    async function loadVideos(filter = 'home') {
+    // Load videos for Home
+    async function loadHome() {
+      setActiveSidebar('home');
+      window.location.hash = '';
       const grid = document.getElementById('videoGrid');
       grid.innerHTML = '<div class="spinner"></div>';
 
       try {
-        let query = db.collection('videos')
+        const snapshot = await db.collection('videos')
           .where('visibility', '==', 'public')
           .orderBy('uploadedAt', 'desc')
-          .limit(50);
-
-        const snapshot = await query.get();
+          .limit(50)
+          .get();
         
-        if (snapshot.empty) {
-          grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-              <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
-              <h3>No videos yet</h3>
-              <p style="color: var(--text-secondary);">Be the first to upload a video!</p>
-            </div>
-          `;
-          return;
-        }
-
-        grid.innerHTML = '';
-        snapshot.forEach(doc => {
-          const video = { id: doc.id, ...doc.data() };
-          grid.appendChild(createVideoCard(video));
-        });
+        renderVideoGrid(snapshot);
       } catch (error) {
         console.error('Error loading videos:', error);
         grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading videos</div>';
       }
     }
 
+    // Load Trending videos (most viewed)
+    async function loadTrending() {
+      setActiveSidebar('trending');
+      window.location.hash = '';
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const snapshot = await db.collection('videos')
+          .where('visibility', '==', 'public')
+          .orderBy('views', 'desc')
+          .limit(50)
+          .get();
+        
+        renderVideoGrid(snapshot);
+      } catch (error) {
+        console.error('Error loading trending:', error);
+        grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading videos</div>';
+      }
+    }
+
+    // Load Subscriptions
+    async function loadSubscriptions() {
+      setActiveSidebar('subscriptions');
+      window.location.hash = '';
+      
+      if (!currentUser) {
+        showToast('Please sign in to view subscriptions', 'error');
+        loadHome();
+        return;
+      }
+
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        if (subscriptions.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+              <i class="fas fa-bell" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+              <h3>No subscriptions yet</h3>
+              <p style="color: var(--text-secondary);">Subscribe to channels to see their latest videos</p>
+            </div>
+          `;
+          return;
+        }
+
+        const snapshot = await db.collection('videos')
+          .where('visibility', '==', 'public')
+          .where('channelId', 'in', subscriptions)
+          .orderBy('uploadedAt', 'desc')
+          .limit(50)
+          .get();
+        
+        renderVideoGrid(snapshot);
+      } catch (error) {
+        console.error('Error loading subscriptions:', error);
+        grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading videos</div>';
+      }
+    }
+
+    // Load History
+    async function loadHistory() {
+      setActiveSidebar('history');
+      window.location.hash = '';
+      
+      if (!currentUser) {
+        showToast('Please sign in to view history', 'error');
+        loadHome();
+        return;
+      }
+
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const snapshot = await db.collection('watchHistory')
+          .where('userId', '==', currentUser.uid)
+          .orderBy('watchedAt', 'desc')
+          .limit(50)
+          .get();
+
+        if (snapshot.empty) {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+              <i class="fas fa-history" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+              <h3>No watch history</h3>
+              <p style="color: var(--text-secondary);">Videos you watch will appear here</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Get video details for each history item
+        const videoIds = snapshot.docs.map(doc => doc.data().videoId);
+        const videos = [];
+        
+        for (const videoId of videoIds) {
+          const videoDoc = await db.collection('videos').doc(videoId).get();
+          if (videoDoc.exists) {
+            videos.push({ id: videoDoc.id, ...videoDoc.data() });
+          }
+        }
+
+        renderVideoList(videos);
+      } catch (error) {
+        console.error('Error loading history:', error);
+        grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error loading history</div>';
+      }
+    }
+
+    function renderVideoGrid(snapshot) {
+      const grid = document.getElementById('videoGrid');
+      
+      if (snapshot.empty) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+            <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+            <h3>No videos yet</h3>
+            <p style="color: var(--text-secondary);">Be the first to upload a video!</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      snapshot.forEach(doc => {
+        const video = { id: doc.id, ...doc.data() };
+        grid.appendChild(createVideoCard(video));
+      });
+    }
+
+    function renderVideoList(videos) {
+      const grid = document.getElementById('videoGrid');
+      
+      if (videos.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+            <i class="fas fa-video" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+            <h3>No videos</h3>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      videos.forEach(video => {
+        grid.appendChild(createVideoCard(video));
+      });
+    }
+
     function createVideoCard(video) {
       const card = document.createElement('div');
       card.className = 'video-card';
-      card.onclick = () => playVideo(video);
+      card.onclick = () => window.location.hash = `watch-${video.id}`;
       
       card.innerHTML = `
         <div class="thumbnail-container">
@@ -1074,7 +1332,7 @@
           <div class="video-details">
             <div class="video-title">${video.title}</div>
             <div class="video-channel">${video.channelName}</div>
-            <div class="video-meta">${video.views || 0} views • ${formatTime(video.uploadedAt)}</div>
+            <div class="video-meta">${formatViews(video.views || 0)} views • ${formatTime(video.uploadedAt)}</div>
           </div>
         </div>
       `;
@@ -1082,15 +1340,170 @@
       return card;
     }
 
-    function playVideo(video) {
-      // Open video in new tab
-      window.open(video.videoUrl, '_blank');
-      
-      // Increment view count
-      if (video.id) {
-        db.collection('videos').doc(video.id).update({
+    async function playVideoById(videoId) {
+      const mainContent = document.getElementById('mainContent');
+      mainContent.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const videoDoc = await db.collection('videos').doc(videoId).get();
+        
+        if (!videoDoc.exists) {
+          showToast('Video not found', 'error');
+          loadHome();
+          return;
+        }
+
+        const video = { id: videoDoc.id, ...videoDoc.data() };
+
+        // Increment view count
+        await db.collection('videos').doc(videoId).update({
           views: firebase.firestore.FieldValue.increment(1)
-        }).catch(console.error);
+        });
+
+        // Add to watch history if user is logged in
+        if (currentUser) {
+          await db.collection('watchHistory').add({
+            userId: currentUser.uid,
+            videoId: videoId,
+            watchedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          // Keep only last 50 history items
+          const historySnapshot = await db.collection('watchHistory')
+            .where('userId', '==', currentUser.uid)
+            .orderBy('watchedAt', 'desc')
+            .get();
+
+          if (historySnapshot.size > 50) {
+            const toDelete = historySnapshot.docs.slice(50);
+            const batch = db.batch();
+            toDelete.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+          }
+        }
+
+        // Check if user is subscribed
+        let isSubscribed = false;
+        if (currentUser) {
+          const subDoc = await db.collection('subscriptions')
+            .where('subscriberId', '==', currentUser.uid)
+            .where('channelId', '==', video.channelId)
+            .get();
+          isSubscribed = !subDoc.empty;
+        }
+
+        renderVideoPlayer(video, isSubscribed);
+      } catch (error) {
+        console.error('Error loading video:', error);
+        showToast('Error loading video', 'error');
+        loadHome();
+      }
+    }
+
+    function renderVideoPlayer(video, isSubscribed) {
+      const mainContent = document.getElementById('mainContent');
+      
+      // Determine if it's a YouTube URL
+      const isYouTube = video.videoUrl.includes('youtube.com/embed') || 
+                        video.videoUrl.includes('youtu.be') ||
+                        video.videoUrl.includes('youtube.com/watch');
+
+      let embedUrl = video.videoUrl;
+      if (video.videoUrl.includes('youtube.com/watch')) {
+        const videoId = new URL(video.videoUrl).searchParams.get('v');
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      } else if (video.videoUrl.includes('youtu.be')) {
+        const videoId = video.videoUrl.split('/').pop();
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+
+      mainContent.innerHTML = `
+        <div class="video-player-container">
+          <div class="back-btn" onclick="loadHome()">
+            <i class="fas fa-arrow-left"></i> Back to Home
+          </div>
+          
+          <div class="video-player-wrapper">
+            ${isYouTube ? 
+              `<iframe src="${embedUrl}" allowfullscreen></iframe>` : 
+              `<video src="${video.videoUrl}" controls></video>`
+            }
+          </div>
+
+          <div class="video-info-section">
+            <h1 class="video-title-large">${video.title}</h1>
+            
+            <div class="video-stats">
+              <span>${formatViews(video.views)} views</span>
+              <span>${formatTime(video.uploadedAt)}</span>
+            </div>
+
+            <div class="channel-info-large">
+              <div class="channel-avatar-large">
+                <img src="${video.channelAvatar || 'https://via.placeholder.com/60'}" alt="">
+              </div>
+              <div class="channel-details-large">
+                <h3>${video.channelName}</h3>
+                <p>${formatSubscribers(video.subscribers || 0)} subscribers</p>
+              </div>
+              ${currentUser && currentUser.uid !== video.channelId ? 
+                `<button class="subscribe-btn" onclick="toggleSubscribe('${video.channelId}')">
+                  ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                </button>` : ''
+              }
+            </div>
+
+            <div class="video-description">
+              ${video.description || 'No description provided.'}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function toggleSubscribe(channelId) {
+      if (!currentUser) {
+        showToast('Please sign in to subscribe', 'error');
+        toggleAuthModal();
+        return;
+      }
+
+      try {
+        const subQuery = await db.collection('subscriptions')
+          .where('subscriberId', '==', currentUser.uid)
+          .where('channelId', '==', channelId)
+          .get();
+
+        if (subQuery.empty) {
+          // Subscribe
+          await db.collection('subscriptions').add({
+            subscriberId: currentUser.uid,
+            channelId: channelId,
+            subscribedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          await db.collection('channels').doc(channelId).update({
+            subscribers: firebase.firestore.FieldValue.increment(1)
+          });
+
+          showToast('Subscribed successfully!', 'success');
+        } else {
+          // Unsubscribe
+          await subQuery.docs[0].ref.delete();
+
+          await db.collection('channels').doc(channelId).update({
+            subscribers: firebase.firestore.FieldValue.increment(-1)
+          });
+
+          showToast('Unsubscribed', 'success');
+        }
+
+        // Refresh the current video to update button state
+        const videoId = window.location.hash.replace('#watch-', '');
+        await playVideoById(videoId);
+      } catch (error) {
+        console.error('Error toggling subscription:', error);
+        showToast('Error updating subscription', 'error');
       }
     }
 
@@ -1098,13 +1511,146 @@
     document.getElementById('searchBtn').addEventListener('click', async () => {
       const term = document.getElementById('searchInput').value.toLowerCase();
       if (!term) {
-        loadVideos();
+        loadHome();
         return;
       }
 
+      window.location.hash = '';
       const grid = document.getElementById('videoGrid');
       grid.innerHTML = '<div class="spinner"></div>';
 
       try {
         const snapshot = await db.collection('videos')
-          .where('visibility', '==',
+          .where('visibility', '==', 'public')
+          .get();
+
+        const filtered = snapshot.docs.filter(doc => {
+          const video = doc.data();
+          return video.title.toLowerCase().includes(term) || 
+                 (video.description && video.description.toLowerCase().includes(term));
+        });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+              <i class="fas fa-search" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+              <h3>No videos found for "${term}"</h3>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = '';
+        filtered.forEach(doc => {
+          const video = { id: doc.id, ...doc.data() };
+          grid.appendChild(createVideoCard(video));
+        });
+      } catch (error) {
+        console.error('Error searching:', error);
+        grid.innerHTML = '<div style="text-align: center; padding: 40px;">Error searching videos</div>';
+      }
+    });
+
+    // Enter key in search
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('searchBtn').click();
+      }
+    });
+
+    // Auth modal functions
+    function toggleAuthModal() {
+      document.getElementById('authModal').classList.toggle('active');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.remove('active');
+    }
+
+    // Set active sidebar item
+    function setActiveSidebar(section) {
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      const index = {
+        'home': 0,
+        'trending': 1,
+        'subscriptions': 2,
+        'history': 4
+      }[section];
+
+      if (index !== undefined) {
+        document.querySelectorAll('.sidebar-item')[index].classList.add('active');
+      }
+    }
+
+    // Utility functions
+    function formatViews(views) {
+      if (views >= 1000000) {
+        return (views / 1000000).toFixed(1) + 'M';
+      }
+      if (views >= 1000) {
+        return (views / 1000).toFixed(1) + 'K';
+      }
+      return views.toString();
+    }
+
+    function formatSubscribers(subscribers) {
+      if (subscribers >= 1000000) {
+        return (subscribers / 1000000).toFixed(1) + 'M subscribers';
+      }
+      if (subscribers >= 1000) {
+        return (subscribers / 1000).toFixed(1) + 'K subscribers';
+      }
+      return subscribers + ' subscribers';
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return 'recently';
+      
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000); // seconds
+
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+      if (diff < 604800) return Math.floor(diff / 86400) + ' days ago';
+      
+      return date.toLocaleDateString();
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+        <span>${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Initialize
+    window.addEventListener('load', () => {
+      checkHash();
+      
+      // Close modals when clicking outside
+      window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
+          event.target.classList.remove('active');
+        }
+      };
+    });
+
+    // Handle hash changes
+    window.addEventListener('hashchange', checkHash);
+  </script>
+</body>
+</html>
