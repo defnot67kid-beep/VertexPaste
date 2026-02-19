@@ -1602,7 +1602,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Configure Google Provider with your client ID
         const googleProvider = new GoogleAuthProvider();
+        googleProvider.setCustomParameters({
+            client_id: "572074212370-k56l9us4reqog2m61b9ni53lcg60ktne.apps.googleusercontent.com"
+        });
 
         // Cloudinary configuration
         const CLOUDINARY_CONFIG = {
@@ -2334,10 +2339,22 @@
 
         window.loginWithGoogle = async function() {
             try {
-                await signInWithPopup(auth, googleProvider);
+                // Use the configured provider with your client ID
+                const result = await signInWithPopup(auth, googleProvider);
                 showNotification('Login successful!', 'success');
             } catch (error) {
-                showNotification(getUserFriendlyError(error), 'error');
+                console.error('Google Sign-In Error:', error);
+                
+                // Handle specific errors
+                if (error.code === 'auth/unauthorized-domain') {
+                    showNotification('This domain is not authorized. Please add it to Firebase console.', 'error');
+                } else if (error.code === 'auth/popup-blocked') {
+                    showNotification('Pop-up blocked. Please allow pop-ups for this site.', 'error');
+                } else if (error.code === 'auth/account-exists-with-different-credential') {
+                    showNotification('An account already exists with the same email address but different sign-in credentials.', 'error');
+                } else {
+                    showNotification(getUserFriendlyError(error), 'error');
+                }
             }
         };
 
@@ -2365,6 +2382,8 @@
                     return 'Incorrect password. Please try again.';
                 case 'auth/user-not-found':
                     return 'No account found with this email.';
+                case 'auth/popup-closed-by-user':
+                    return 'Sign-in cancelled. Please try again.';
                 default:
                     return 'An error occurred. Please try again.';
             }
