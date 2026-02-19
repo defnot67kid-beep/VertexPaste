@@ -9,6 +9,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* Previous styles remain the same - keeping all your existing CSS */
         * {
             margin: 0;
             padding: 0;
@@ -182,6 +183,15 @@
             color: white;
         }
 
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -265,6 +275,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border: 1px solid var(--border);
+            position: relative;
         }
 
         .video-card:hover {
@@ -296,6 +307,78 @@
             border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
+        }
+
+        .video-status {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(255, 193, 7, 0.9);
+            color: black;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .video-status.private {
+            background: rgba(108, 117, 125, 0.9);
+            color: white;
+        }
+
+        .video-status.processing {
+            background: rgba(255, 193, 7, 0.9);
+        }
+
+        .video-status.copyright {
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+        }
+
+        .video-edit-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 3;
+        }
+
+        .video-card:hover .video-edit-overlay {
+            opacity: 1;
+        }
+
+        .video-edit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-edit-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .video-edit-btn.delete {
+            background: #dc3545;
+        }
+
+        .video-edit-btn.delete:hover {
+            background: #c82333;
         }
 
         .video-info {
@@ -627,6 +710,7 @@
             display: flex;
             gap: 30px;
             align-items: center;
+            position: relative;
         }
 
         .channel-header-avatar {
@@ -651,6 +735,12 @@
             gap: 20px;
             color: rgba(255, 255, 255, 0.9);
             margin-bottom: 15px;
+        }
+
+        .channel-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .channel-tabs {
@@ -780,6 +870,25 @@
             transition: width 0.3s ease;
         }
 
+        .upload-progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: var(--text-dim);
+        }
+
+        .copyright-warning {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #dc3545;
+        }
+
+        .copyright-warning i {
+            margin-right: 10px;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -900,6 +1009,10 @@
             border-left-color: var(--error);
         }
 
+        .notification.warning {
+            border-left-color: #ffc107;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -930,6 +1043,138 @@
             color: var(--text);
         }
 
+        /* Manage Videos Page */
+        .manage-videos-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .video-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            cursor: pointer;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .video-management-card {
+            background: var(--dark-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .video-management-row {
+            display: flex;
+            padding: 15px;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .management-thumbnail {
+            width: 160px;
+            aspect-ratio: 16/9;
+            background: var(--darker);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .management-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .management-info {
+            flex: 1;
+        }
+
+        .management-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .management-meta {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .management-stats {
+            display: flex;
+            gap: 20px;
+            color: var(--text-dimmer);
+            font-size: 0.9rem;
+        }
+
+        .management-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .management-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--dark-card-hover);
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .management-btn:hover {
+            background: var(--primary);
+        }
+
+        .management-btn.delete:hover {
+            background: #dc3545;
+        }
+
+        /* Edit Channel Modal */
+        .avatar-upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .current-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+        }
+
+        .avatar-upload-btn {
+            background: var(--dark-card-hover);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .video-player-container {
@@ -953,6 +1198,10 @@
             .channel-header {
                 flex-direction: column;
                 text-align: center;
+            }
+            
+            .management-thumbnail {
+                width: 120px;
             }
         }
     </style>
@@ -994,15 +1243,21 @@
                 <button class="close-btn" onclick="window.app.closeUploadModal()">&times;</button>
             </div>
             <div class="modal-body">
+                <div class="copyright-warning" id="copyrightWarning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Your video is being checked for copyright content. This may take a few minutes.</span>
+                </div>
+                
                 <div class="upload-area" onclick="document.getElementById('videoFile').click()" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <h3>Select video to upload</h3>
-                    <p style="color: var(--text-dim); margin: 10px 0;">MP4, WebM, MOV files supported</p>
+                    <p style="color: var(--text-dim); margin: 10px 0;">MP4, WebM, MOV files supported (Max 1GB)</p>
                     <input type="file" id="videoFile" accept="video/*" style="display: none;">
                 </div>
                 
                 <div class="upload-progress" id="uploadProgress">
                     <div class="upload-progress-bar" id="uploadProgressBar"></div>
+                    <div class="upload-progress-text" id="uploadProgressText">0%</div>
                 </div>
                 
                 <div id="videoDetails" style="display: none;">
@@ -1055,6 +1310,104 @@
                         <i class="fas fa-check"></i> Publish Video
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Video Modal -->
+    <div id="editVideoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Edit Video</h2>
+                <button class="close-btn" onclick="window.app.closeEditVideoModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editVideoId">
+                
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="editVideoTitle" placeholder="Enter video title">
+                </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="editVideoDescription" rows="4" placeholder="Describe your video"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="editVideoCategory">
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Music">Music</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Education">Education</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Sports">Sports</option>
+                        <option value="News">News</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Privacy</label>
+                    <select id="editVideoPrivacy">
+                        <option value="public">Public</option>
+                        <option value="unlisted">Unlisted</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Copyright Status</label>
+                    <select id="editVideoCopyright">
+                        <option value="none">No Copyright Issues</option>
+                        <option value="pending">Pending Review</option>
+                        <option value="flagged">Copyright Flagged</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%;" onclick="window.app.updateVideo()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Channel Modal -->
+    <div id="editChannelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Edit Channel</h2>
+                <button class="close-btn" onclick="window.app.closeEditChannelModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-upload-area">
+                    <img src="" alt="Channel Avatar" class="current-avatar" id="currentChannelAvatar">
+                    <div class="avatar-upload-btn" onclick="document.getElementById('channelAvatarFile').click()">
+                        <i class="fas fa-camera"></i> Change Avatar
+                    </div>
+                    <input type="file" id="channelAvatarFile" accept="image/*" style="display: none;">
+                </div>
+                
+                <div class="form-group">
+                    <label>Channel Name</label>
+                    <input type="text" id="editChannelName" placeholder="Enter channel name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Channel URL (username)</label>
+                    <input type="text" id="editChannelUsername" placeholder="username (no spaces)">
+                    <small style="color: var(--text-dim);">This will be used in your channel URL</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="editChannelDescription" rows="4" placeholder="Tell viewers about your channel"></textarea>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%;" onclick="window.app.updateChannel()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
             </div>
         </div>
     </div>
@@ -1118,15 +1471,15 @@
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, uploadBytesResumable, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
             authDomain: "vertexpaste.firebaseapp.com",
             projectId: "vertexpaste",
-            storageBucket: "vertexpaste.appspot.com", // Fixed: Changed from .firebasestorage.app to .appspot.com
+            storageBucket: "vertexpaste.appspot.com",
             messagingSenderId: "255275350380",
             appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
         };
@@ -1145,7 +1498,8 @@
             currentVideo: null,
             currentChannel: null,
             subscriptions: [],
-            searchQuery: ''
+            searchQuery: '',
+            usernameMap: new Map() // Map to store username to ID mappings
         };
 
         // DOM elements
@@ -1154,14 +1508,19 @@
             sidebar: document.getElementById('sidebar'),
             mainContent: document.getElementById('mainContent'),
             uploadModal: document.getElementById('uploadModal'),
+            editVideoModal: document.getElementById('editVideoModal'),
+            editChannelModal: document.getElementById('editChannelModal'),
             authModal: document.getElementById('authModal'),
             uploadArea: document.getElementById('uploadArea'),
             videoDetails: document.getElementById('videoDetails'),
             uploadProgress: document.getElementById('uploadProgress'),
             uploadProgressBar: document.getElementById('uploadProgressBar'),
+            uploadProgressText: document.getElementById('uploadProgressText'),
             thumbnailPreview: document.getElementById('thumbnailPreview'),
             videoFile: document.getElementById('videoFile'),
-            thumbnailFile: document.getElementById('thumbnailFile')
+            thumbnailFile: document.getElementById('thumbnailFile'),
+            channelAvatarFile: document.getElementById('channelAvatarFile'),
+            copyrightWarning: document.getElementById('copyrightWarning')
         };
 
         // Initialize app
@@ -1201,12 +1560,29 @@
                         email: user.email,
                         ...userDoc.data()
                     };
+                    
+                    // Add to username map
+                    if (userDoc.data().username) {
+                        state.usernameMap.set(userDoc.data().username, user.uid);
+                    }
                 } else {
-                    // Create new user document
+                    // Create new user document with a unique username
+                    const baseUsername = user.displayName || user.email.split('@')[0];
+                    let username = baseUsername.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                    let counter = 1;
+                    
+                    // Check if username exists
+                    while (await usernameExists(username)) {
+                        username = `${baseUsername}${counter}`.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                        counter++;
+                    }
+                    
                     const newUser = {
-                        username: user.displayName || user.email.split('@')[0],
+                        username: username,
+                        displayName: user.displayName || baseUsername,
                         email: user.email,
                         avatar: user.photoURL || '',
+                        description: '',
                         subscribers: 0,
                         subscribedTo: [],
                         videos: [],
@@ -1215,6 +1591,7 @@
                     
                     await setDoc(doc(db, 'users', user.uid), newUser);
                     state.currentUser = { uid: user.uid, ...newUser };
+                    state.usernameMap.set(username, user.uid);
                 }
                 
                 // Load subscriptions
@@ -1227,6 +1604,19 @@
             }
         }
 
+        // Check if username exists
+        async function usernameExists(username) {
+            try {
+                const usersRef = collection(db, 'users');
+                const q = query(usersRef, where('username', '==', username));
+                const querySnapshot = await getDocs(q);
+                return !querySnapshot.empty;
+            } catch (error) {
+                console.error('Error checking username:', error);
+                return false;
+            }
+        }
+
         // Setup event listeners
         function setupEventListeners() {
             if (elements.videoFile) {
@@ -1234,6 +1624,9 @@
             }
             if (elements.thumbnailFile) {
                 elements.thumbnailFile.addEventListener('change', handleThumbnailSelect);
+            }
+            if (elements.channelAvatarFile) {
+                elements.channelAvatarFile.addEventListener('change', handleChannelAvatarSelect);
             }
             
             const searchInput = document.getElementById('searchInput');
@@ -1248,6 +1641,12 @@
         function handleVideoSelect(e) {
             const file = e.target.files[0];
             if (file && elements.uploadArea && elements.videoDetails) {
+                // Check file size (max 1GB)
+                if (file.size > 1024 * 1024 * 1024) {
+                    showNotification('File too large. Maximum size is 1GB.', 'error');
+                    return;
+                }
+                
                 elements.uploadArea.innerHTML = `
                     <i class="fas fa-check-circle" style="color: var(--success);"></i>
                     <h3>${file.name}</h3>
@@ -1274,11 +1673,23 @@
             }
         }
 
+        // Handle channel avatar selection
+        function handleChannelAvatarSelect(e) {
+            const file = e.target.files[0];
+            if (file && elements.currentChannelAvatar) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    elements.currentChannelAvatar.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
         // Load all videos
         async function loadVideos() {
             try {
                 const videosRef = collection(db, 'videos');
-                const q = query(videosRef, where('privacy', '==', 'public'), orderBy('createdAt', 'desc'));
+                const q = query(videosRef, orderBy('createdAt', 'desc'));
                 const querySnapshot = await getDocs(q);
                 
                 state.videos = [];
@@ -1286,15 +1697,18 @@
                 for (const doc of querySnapshot.docs) {
                     const videoData = doc.data();
                     
-                    // Get channel info
-                    const channelDoc = await getDoc(doc(db, 'users', videoData.channelId));
-                    
-                    if (channelDoc.exists()) {
-                        state.videos.push({
-                            id: doc.id,
-                            ...videoData,
-                            channel: channelDoc.data()
-                        });
+                    // Only show public videos or user's own videos
+                    if (videoData.privacy === 'public' || (state.currentUser && videoData.channelId === state.currentUser.uid)) {
+                        // Get channel info
+                        const channelDoc = await getDoc(doc(db, 'users', videoData.channelId));
+                        
+                        if (channelDoc.exists()) {
+                            state.videos.push({
+                                id: doc.id,
+                                ...videoData,
+                                channel: channelDoc.data()
+                            });
+                        }
                     }
                 }
                 
@@ -1317,7 +1731,7 @@
                     </button>
                     <img src="${state.currentUser.avatar || 'https://via.placeholder.com/40'}" 
                          class="user-avatar" 
-                         onclick="window.app.goToChannel('${state.currentUser.uid}')"
+                         onclick="window.app.goToChannel('${state.currentUser.username}')"
                          onerror="this.src='https://via.placeholder.com/40'">
                 `;
             } else {
@@ -1365,6 +1779,13 @@
                     <span>Library</span>
                 </div>
                 
+                ${state.currentUser ? `
+                    <div class="sidebar-item" onclick="window.app.navigateTo('manage-videos')">
+                        <i class="fas fa-video"></i>
+                        <span>Manage Videos</span>
+                    </div>
+                ` : ''}
+                
                 ${subscriptionsHTML ? `
                     <div class="sidebar-divider"></div>
                     <h4 style="padding: 10px; color: var(--text-dim);">Subscriptions</h4>
@@ -1381,28 +1802,63 @@
                 const videoId = hash.replace('#watch=', '');
                 loadVideoPlayer(videoId);
             } else if (hash.startsWith('#channel=')) {
-                const channelId = hash.replace('#channel=', '');
-                loadChannelPage(channelId);
+                const identifier = hash.replace('#channel=', '');
+                // Check if identifier is username or ID
+                resolveChannelIdentifier(identifier).then(channelId => {
+                    if (channelId) {
+                        loadChannelPage(channelId);
+                    } else {
+                        showNotification('Channel not found', 'error');
+                        navigateTo('home');
+                    }
+                });
             } else if (hash === '#trending') {
                 showTrending();
             } else if (hash === '#subscriptions') {
                 showSubscriptions();
             } else if (hash === '#library') {
                 showLibrary();
+            } else if (hash === '#manage-videos') {
+                showManageVideos();
             } else {
                 showHome();
             }
+        }
+
+        // Resolve channel identifier (username or ID) to actual user ID
+        async function resolveChannelIdentifier(identifier) {
+            // First check if it's a valid user ID format (Firestore IDs are 20+ chars)
+            if (identifier.length >= 20) {
+                // Try to get user by ID
+                const userDoc = await getDoc(doc(db, 'users', identifier));
+                if (userDoc.exists()) {
+                    return identifier;
+                }
+            }
+            
+            // Try to find by username
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('username', '==', identifier));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                return querySnapshot.docs[0].id;
+            }
+            
+            return null;
         }
 
         // Show home page
         function showHome() {
             if (!elements.mainContent) return;
             
+            const publicVideos = state.videos.filter(v => v.privacy === 'public');
+            
             elements.mainContent.innerHTML = `
                 <div class="video-grid">
-                    ${state.videos.map(video => createVideoCard(video)).join('')}
+                    ${publicVideos.map(video => createVideoCard(video)).join('')}
                     
-                    ${state.videos.length === 0 ? `
+                    ${publicVideos.length === 0 ? `
                         <div class="empty-state">
                             <i class="fas fa-video"></i>
                             <h3>No videos yet</h3>
@@ -1417,7 +1873,9 @@
         function showTrending() {
             if (!elements.mainContent) return;
             
-            const trending = [...state.videos].sort((a, b) => (b.views || 0) - (a.views || 0));
+            const trending = [...state.videos]
+                .filter(v => v.privacy === 'public')
+                .sort((a, b) => (b.views || 0) - (a.views || 0));
             
             elements.mainContent.innerHTML = `
                 <h2 style="margin-bottom: 20px;">Trending</h2>
@@ -1454,7 +1912,7 @@
             }
             
             const subscribedVideos = state.videos.filter(v => 
-                state.subscriptions.includes(v.channelId)
+                state.subscriptions.includes(v.channelId) && v.privacy === 'public'
             );
             
             elements.mainContent.innerHTML = `
@@ -1497,7 +1955,7 @@
             elements.mainContent.innerHTML = `
                 <h2 style="margin-bottom: 20px;">Your Videos</h2>
                 <div class="video-grid">
-                    ${userVideos.map(video => createVideoCard(video)).join('')}
+                    ${userVideos.map(video => createVideoCard(video, true)).join('')}
                     
                     ${userVideos.length === 0 ? `
                         <div class="empty-state">
@@ -1513,10 +1971,115 @@
             `;
         }
 
+        // Show manage videos page
+        function showManageVideos() {
+            if (!elements.mainContent) return;
+            
+            if (!state.currentUser) {
+                navigateTo('home');
+                return;
+            }
+            
+            const userVideos = state.videos.filter(v => v.channelId === state.currentUser.uid);
+            
+            // Sort videos by status
+            const processingVideos = userVideos.filter(v => v.status === 'processing');
+            const publishedVideos = userVideos.filter(v => v.status !== 'processing');
+            
+            elements.mainContent.innerHTML = `
+                <div class="manage-videos-header">
+                    <h2>Manage Videos</h2>
+                    <button class="btn btn-primary" onclick="window.app.openUploadModal()">
+                        <i class="fas fa-upload"></i> Upload New Video
+                    </button>
+                </div>
+                
+                <div class="video-filters">
+                    <button class="filter-btn active" onclick="filterVideos('all')">All</button>
+                    <button class="filter-btn" onclick="filterVideos('public')">Public</button>
+                    <button class="filter-btn" onclick="filterVideos('private')">Private</button>
+                    <button class="filter-btn" onclick="filterVideos('processing')">Processing</button>
+                </div>
+                
+                ${processingVideos.length > 0 ? `
+                    <h3 style="margin: 20px 0 10px;">Processing (${processingVideos.length})</h3>
+                    ${processingVideos.map(video => createManageVideoRow(video)).join('')}
+                ` : ''}
+                
+                <h3 style="margin: 20px 0 10px;">Published (${publishedVideos.length})</h3>
+                ${publishedVideos.map(video => createManageVideoRow(video)).join('')}
+                
+                ${userVideos.length === 0 ? `
+                    <div class="empty-state">
+                        <i class="fas fa-video"></i>
+                        <h3>No videos yet</h3>
+                        <p>Upload your first video to get started!</p>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Create manage video row
+        function createManageVideoRow(video) {
+            const views = formatNumber(video.views || 0);
+            const likes = video.likes?.length || 0;
+            const dislikes = video.dislikes?.length || 0;
+            
+            let statusBadge = '';
+            if (video.status === 'processing') {
+                statusBadge = '<span class="video-status processing">Processing</span>';
+            } else if (video.copyrightStatus === 'flagged') {
+                statusBadge = '<span class="video-status copyright">Copyright Flagged</span>';
+            } else if (video.privacy === 'private') {
+                statusBadge = '<span class="video-status private">Private</span>';
+            }
+            
+            return `
+                <div class="video-management-card">
+                    <div class="video-management-row">
+                        <div class="management-thumbnail">
+                            <img src="${video.thumbnail || 'https://via.placeholder.com/320x180'}" 
+                                 alt="${escapeHtml(video.title)}"
+                                 onerror="this.src='https://via.placeholder.com/320x180'">
+                            ${statusBadge}
+                        </div>
+                        <div class="management-info">
+                            <div class="management-title">${escapeHtml(video.title)}</div>
+                            <div class="management-meta">
+                                Uploaded ${getTimeAgo(video.createdAt)} • ${video.duration || '00:00'}
+                            </div>
+                            <div class="management-stats">
+                                <span><i class="fas fa-eye"></i> ${views}</span>
+                                <span><i class="fas fa-thumbs-up"></i> ${likes}</span>
+                                <span><i class="fas fa-thumbs-down"></i> ${dislikes}</span>
+                            </div>
+                        </div>
+                        <div class="management-actions">
+                            <button class="management-btn" onclick="window.app.editVideo('${video.id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="management-btn delete" onclick="window.app.deleteVideo('${video.id}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Create video card HTML
-        function createVideoCard(video) {
+        function createVideoCard(video, showEdit = false) {
             const views = formatNumber(video.views || 0);
             const timeAgo = getTimeAgo(video.createdAt);
+            
+            let statusBadge = '';
+            if (video.status === 'processing') {
+                statusBadge = '<span class="video-status processing">Processing</span>';
+            } else if (video.copyrightStatus === 'flagged') {
+                statusBadge = '<span class="video-status copyright">Copyright Flagged</span>';
+            } else if (video.privacy !== 'public') {
+                statusBadge = `<span class="video-status private">${video.privacy}</span>`;
+            }
             
             return `
                 <div class="video-card" onclick="window.app.watchVideo('${video.id}')">
@@ -1525,16 +2088,28 @@
                              alt="${escapeHtml(video.title)}"
                              onerror="this.src='https://via.placeholder.com/320x180'">
                         <span class="video-duration">${video.duration || '00:00'}</span>
+                        ${statusBadge}
+                        
+                        ${showEdit ? `
+                            <div class="video-edit-overlay">
+                                <button class="video-edit-btn" onclick="event.stopPropagation(); window.app.editVideo('${video.id}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="video-edit-btn delete" onclick="event.stopPropagation(); window.app.deleteVideo('${video.id}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                     <div class="video-info">
                         <img src="${video.channel?.avatar || 'https://via.placeholder.com/40'}" 
                              class="channel-avatar" 
-                             onclick="event.stopPropagation(); window.app.goToChannel('${video.channelId}')"
+                             onclick="event.stopPropagation(); window.app.goToChannel('${video.channel?.username || video.channelId}')"
                              onerror="this.src='https://via.placeholder.com/40'">
                         <div class="video-details">
                             <div class="video-title">${escapeHtml(video.title)}</div>
-                            <div class="video-channel" onclick="event.stopPropagation(); window.app.goToChannel('${video.channelId}')">
-                                ${escapeHtml(video.channel?.username || 'Unknown')}
+                            <div class="video-channel" onclick="event.stopPropagation(); window.app.goToChannel('${video.channel?.username || video.channelId}')">
+                                ${escapeHtml(video.channel?.displayName || video.channel?.username || 'Unknown')}
                             </div>
                             <div class="video-meta">
                                 <span>${views} views</span>
@@ -1567,12 +2142,19 @@
                     ...videoDoc.data()
                 };
                 
+                // Check if user can view this video
+                if (video.privacy !== 'public' && (!state.currentUser || state.currentUser.uid !== video.channelId)) {
+                    showNotification('This video is private', 'error');
+                    navigateTo('home');
+                    return;
+                }
+                
                 // Get channel info
                 const channelDoc = await getDoc(doc(db, 'users', video.channelId));
                 video.channel = channelDoc.exists() ? channelDoc.data() : null;
                 
-                // Increment views if not owner
-                if (!state.currentUser || state.currentUser.uid !== video.channelId) {
+                // Increment views if not owner and video is public
+                if (video.privacy === 'public' && (!state.currentUser || state.currentUser.uid !== video.channelId)) {
                     await updateDoc(doc(db, 'videos', videoId), {
                         views: increment(1)
                     });
@@ -1626,11 +2208,11 @@
                                     <div class="channel-details">
                                         <img src="${video.channel?.avatar || 'https://via.placeholder.com/60'}" 
                                              class="channel-large-avatar" 
-                                             onclick="window.app.goToChannel('${video.channelId}')"
+                                             onclick="window.app.goToChannel('${video.channel?.username || video.channelId}')"
                                              onerror="this.src='https://via.placeholder.com/60'">
                                         <div class="channel-meta">
-                                            <h3 onclick="window.app.goToChannel('${video.channelId}')">
-                                                ${escapeHtml(video.channel?.username || 'Unknown')}
+                                            <h3 onclick="window.app.goToChannel('${video.channel?.username || video.channelId}')">
+                                                ${escapeHtml(video.channel?.displayName || video.channel?.username || 'Unknown')}
                                             </h3>
                                             <p>${formatNumber(video.channel?.subscribers || 0)} subscribers</p>
                                         </div>
@@ -1681,7 +2263,7 @@
                                     </div>
                                     <div class="recommended-info">
                                         <div class="recommended-title">${escapeHtml(v.title)}</div>
-                                        <div class="recommended-channel">${escapeHtml(v.channel?.username || 'Unknown')}</div>
+                                        <div class="recommended-channel">${escapeHtml(v.channel?.displayName || v.channel?.username || 'Unknown')}</div>
                                         <div class="recommended-meta">${formatNumber(v.views || 0)} views • ${getTimeAgo(v.createdAt)}</div>
                                     </div>
                                 </div>
@@ -1727,8 +2309,19 @@
                     ...channelDoc.data()
                 };
                 
-                const channelVideos = state.videos.filter(v => v.channelId === channelId);
+                // Update URL to use username if available
+                if (channel.username && window.location.hash !== `#channel=${channel.username}`) {
+                    window.location.hash = `channel=${channel.username}`;
+                    return;
+                }
+                
+                const channelVideos = state.videos.filter(v => 
+                    v.channelId === channelId && 
+                    (v.privacy === 'public' || (state.currentUser && state.currentUser.uid === channelId))
+                );
+                
                 const isSubscribed = state.currentUser && state.subscriptions.includes(channelId);
+                const isOwnChannel = state.currentUser && state.currentUser.uid === channelId;
                 
                 elements.mainContent.innerHTML = `
                     <div class="channel-header">
@@ -1736,18 +2329,31 @@
                              class="channel-header-avatar"
                              onerror="this.src='https://via.placeholder.com/120'">
                         <div class="channel-header-info">
-                            <h1>${escapeHtml(channel.username)}</h1>
+                            <h1>${escapeHtml(channel.displayName || channel.username)}</h1>
                             <div class="channel-stats">
                                 <span>${formatNumber(channel.subscribers || 0)} subscribers</span>
                                 <span>•</span>
                                 <span>${channelVideos.length} videos</span>
                             </div>
-                            ${state.currentUser && state.currentUser.uid !== channelId ? `
-                                <button class="btn ${isSubscribed ? 'btn-outline' : 'btn-primary'}" 
-                                        onclick="window.app.toggleSubscribe('${channelId}')">
-                                    <i class="fas ${isSubscribed ? 'fa-bell-slash' : 'fa-bell'}"></i>
-                                    ${isSubscribed ? 'Subscribed' : 'Subscribe'}
-                                </button>
+                            
+                            <div class="channel-actions">
+                                ${state.currentUser && state.currentUser.uid !== channelId ? `
+                                    <button class="btn ${isSubscribed ? 'btn-outline' : 'btn-primary'}" 
+                                            onclick="window.app.toggleSubscribe('${channelId}')">
+                                        <i class="fas ${isSubscribed ? 'fa-bell-slash' : 'fa-bell'}"></i>
+                                        ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                                    </button>
+                                ` : ''}
+                                
+                                ${isOwnChannel ? `
+                                    <button class="btn btn-outline" onclick="window.app.openEditChannelModal()">
+                                        <i class="fas fa-edit"></i> Edit Channel
+                                    </button>
+                                ` : ''}
+                            </div>
+                            
+                            ${channel.description ? `
+                                <p style="margin-top: 15px; color: var(--text-dim);">${escapeHtml(channel.description)}</p>
                             ` : ''}
                         </div>
                     </div>
@@ -1758,7 +2364,7 @@
                     </div>
                     
                     <div class="video-grid">
-                        ${channelVideos.map(video => createVideoCard(video)).join('')}
+                        ${channelVideos.map(video => createVideoCard(video, isOwnChannel)).join('')}
                         
                         ${channelVideos.length === 0 ? `
                             <div class="empty-state">
@@ -1816,12 +2422,12 @@
                 <div class="comment">
                     <img src="${comment.user?.avatar || 'https://via.placeholder.com/40'}" 
                          class="comment-avatar" 
-                         onclick="window.app.goToChannel('${comment.userId}')"
+                         onclick="window.app.goToChannel('${comment.user?.username || comment.userId}')"
                          onerror="this.src='https://via.placeholder.com/40'">
                     <div class="comment-content">
                         <div class="comment-header">
-                            <span class="comment-author" onclick="window.app.goToChannel('${comment.userId}')">
-                                ${escapeHtml(comment.user?.username || 'Unknown')}
+                            <span class="comment-author" onclick="window.app.goToChannel('${comment.user?.username || comment.userId}')">
+                                ${escapeHtml(comment.user?.displayName || comment.user?.username || 'Unknown')}
                             </span>
                             <span class="comment-time">${timeAgo}</span>
                         </div>
@@ -1998,7 +2604,7 @@
                     });
                     
                     state.subscriptions = state.subscriptions.filter(id => id !== channelId);
-                    showNotification('Unsubscribed', 'success');
+                    showNotification(`Unsubscribed from ${channel.displayName || channel.username}`, 'success');
                     
                 } else {
                     // Subscribe
@@ -2011,7 +2617,7 @@
                     });
                     
                     state.subscriptions.push(channelId);
-                    showNotification('Subscribed!', 'success');
+                    showNotification(`Subscribed to ${channel.displayName || channel.username}!`, 'success');
                 }
                 
                 // Refresh current page
@@ -2019,8 +2625,11 @@
                     const videoId = window.location.hash.replace('#watch=', '');
                     await loadVideoPlayer(videoId);
                 } else if (window.location.hash.startsWith('#channel=')) {
-                    const id = window.location.hash.replace('#channel=', '');
-                    await loadChannelPage(id);
+                    const identifier = window.location.hash.replace('#channel=', '');
+                    const resolvedId = await resolveChannelIdentifier(identifier);
+                    if (resolvedId) {
+                        await loadChannelPage(resolvedId);
+                    }
                 }
                 
             } catch (error) {
@@ -2042,9 +2651,11 @@
             }
             
             const filtered = state.videos.filter(v => 
-                v.title.toLowerCase().includes(query) || 
+                (v.privacy === 'public' || (state.currentUser && v.channelId === state.currentUser.uid)) &&
+                (v.title.toLowerCase().includes(query) || 
                 v.description?.toLowerCase().includes(query) ||
-                v.channel?.username.toLowerCase().includes(query)
+                v.channel?.displayName?.toLowerCase().includes(query) ||
+                v.channel?.username?.toLowerCase().includes(query))
             );
             
             if (elements.mainContent) {
@@ -2094,6 +2705,9 @@
                 if (elements.uploadProgress) {
                     elements.uploadProgress.classList.add('active');
                 }
+                if (elements.copyrightWarning) {
+                    elements.copyrightWarning.style.display = 'block';
+                }
                 
                 // Upload video
                 const videoRef = ref(storage, `videos/${state.currentUser.uid}/${Date.now()}_${videoFile.name}`);
@@ -2105,12 +2719,18 @@
                         if (elements.uploadProgressBar) {
                             elements.uploadProgressBar.style.width = percentage + '%';
                         }
+                        if (elements.uploadProgressText) {
+                            elements.uploadProgressText.textContent = Math.round(percentage) + '%';
+                        }
                     },
                     (error) => {
                         console.error('Upload error:', error);
                         showNotification('Error uploading video', 'error');
                         if (elements.uploadProgress) {
                             elements.uploadProgress.classList.remove('active');
+                        }
+                        if (elements.copyrightWarning) {
+                            elements.copyrightWarning.style.display = 'none';
                         }
                     },
                     async () => {
@@ -2131,17 +2751,22 @@
                         video.onloadedmetadata = function() {
                             const duration = formatDuration(video.duration);
                             
-                            // Save to Firestore
-                            saveVideoToFirestore({
-                                title,
-                                description,
-                                category,
-                                privacy,
-                                videoUrl,
-                                thumbnail: thumbnailUrl,
-                                duration,
-                                channelId: state.currentUser.uid
-                            });
+                            // Simulate copyright check (in real app, you'd have a backend process)
+                            setTimeout(() => {
+                                // Save to Firestore with processing status
+                                saveVideoToFirestore({
+                                    title,
+                                    description,
+                                    category,
+                                    privacy,
+                                    videoUrl,
+                                    thumbnail: thumbnailUrl,
+                                    duration,
+                                    channelId: state.currentUser.uid,
+                                    status: 'processing',
+                                    copyrightStatus: 'pending'
+                                });
+                            }, 2000);
                         };
                     }
                 );
@@ -2151,6 +2776,9 @@
                 showNotification('Error publishing video', 'error');
                 if (elements.uploadProgress) {
                     elements.uploadProgress.classList.remove('active');
+                }
+                if (elements.copyrightWarning) {
+                    elements.copyrightWarning.style.display = 'none';
                 }
             }
         }
@@ -2173,15 +2801,312 @@
                     videos: arrayUnion(videoRef.id)
                 });
                 
-                showNotification('Video published successfully!', 'success');
+                showNotification('Video uploaded successfully! It may take a few minutes to process.', 'success');
                 closeUploadModal();
+                
+                // Simulate processing completion after 10 seconds (in real app, this would be a cloud function)
+                setTimeout(async () => {
+                    try {
+                        await updateDoc(videoRef, {
+                            status: 'completed',
+                            copyrightStatus: 'none'
+                        });
+                        await loadVideos();
+                        showNotification('Video processing completed!', 'success');
+                    } catch (error) {
+                        console.error('Error updating video status:', error);
+                    }
+                }, 10000);
+                
                 await loadVideos();
-                navigateTo('library');
+                navigateTo('manage-videos');
                 
             } catch (error) {
                 console.error('Error saving video:', error);
                 showNotification('Error saving video', 'error');
             }
+        }
+
+        // Edit video
+        async function editVideo(videoId) {
+            if (!state.currentUser) {
+                openAuthModal();
+                return;
+            }
+            
+            try {
+                const videoDoc = await getDoc(doc(db, 'videos', videoId));
+                
+                if (!videoDoc.exists()) {
+                    showNotification('Video not found', 'error');
+                    return;
+                }
+                
+                const video = videoDoc.data();
+                
+                // Check if user owns this video
+                if (video.channelId !== state.currentUser.uid) {
+                    showNotification('You can only edit your own videos', 'error');
+                    return;
+                }
+                
+                // Populate edit form
+                document.getElementById('editVideoId').value = videoId;
+                document.getElementById('editVideoTitle').value = video.title || '';
+                document.getElementById('editVideoDescription').value = video.description || '';
+                document.getElementById('editVideoCategory').value = video.category || 'Other';
+                document.getElementById('editVideoPrivacy').value = video.privacy || 'public';
+                document.getElementById('editVideoCopyright').value = video.copyrightStatus || 'none';
+                
+                // Show modal
+                if (elements.editVideoModal) {
+                    elements.editVideoModal.classList.add('active');
+                }
+                
+            } catch (error) {
+                console.error('Error loading video for edit:', error);
+                showNotification('Error loading video', 'error');
+            }
+        }
+
+        // Update video
+        async function updateVideo() {
+            if (!state.currentUser) return;
+            
+            const videoId = document.getElementById('editVideoId').value;
+            const title = document.getElementById('editVideoTitle').value;
+            const description = document.getElementById('editVideoDescription').value;
+            const category = document.getElementById('editVideoCategory').value;
+            const privacy = document.getElementById('editVideoPrivacy').value;
+            const copyrightStatus = document.getElementById('editVideoCopyright').value;
+            
+            if (!title) {
+                showNotification('Title is required', 'error');
+                return;
+            }
+            
+            try {
+                const videoRef = doc(db, 'videos', videoId);
+                await updateDoc(videoRef, {
+                    title,
+                    description,
+                    category,
+                    privacy,
+                    copyrightStatus
+                });
+                
+                showNotification('Video updated successfully!', 'success');
+                closeEditVideoModal();
+                await loadVideos();
+                
+                // Refresh current page
+                if (window.location.hash.startsWith('#watch=')) {
+                    const id = window.location.hash.replace('#watch=', '');
+                    await loadVideoPlayer(id);
+                } else if (window.location.hash.startsWith('#channel=')) {
+                    const identifier = window.location.hash.replace('#channel=', '');
+                    const resolvedId = await resolveChannelIdentifier(identifier);
+                    if (resolvedId) {
+                        await loadChannelPage(resolvedId);
+                    }
+                } else {
+                    handleRouting();
+                }
+                
+            } catch (error) {
+                console.error('Error updating video:', error);
+                showNotification('Error updating video', 'error');
+            }
+        }
+
+        // Delete video
+        async function deleteVideo(videoId) {
+            if (!state.currentUser) return;
+            
+            if (!confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const videoRef = doc(db, 'videos', videoId);
+                const videoDoc = await getDoc(videoRef);
+                
+                if (!videoDoc.exists()) {
+                    showNotification('Video not found', 'error');
+                    return;
+                }
+                
+                const video = videoDoc.data();
+                
+                // Check if user owns this video
+                if (video.channelId !== state.currentUser.uid) {
+                    showNotification('You can only delete your own videos', 'error');
+                    return;
+                }
+                
+                // Delete video from storage
+                if (video.videoUrl) {
+                    const videoStorageRef = ref(storage, video.videoUrl);
+                    await deleteObject(videoStorageRef).catch(() => {});
+                }
+                
+                // Delete thumbnail from storage
+                if (video.thumbnail) {
+                    const thumbStorageRef = ref(storage, video.thumbnail);
+                    await deleteObject(thumbStorageRef).catch(() => {});
+                }
+                
+                // Delete comments
+                const commentsRef = collection(db, 'comments');
+                const q = query(commentsRef, where('videoId', '==', videoId));
+                const commentSnapshot = await getDocs(q);
+                
+                for (const doc of commentSnapshot.docs) {
+                    await deleteDoc(doc.ref);
+                }
+                
+                // Delete video document
+                await deleteDoc(videoRef);
+                
+                // Remove from user's videos array
+                const userRef = doc(db, 'users', state.currentUser.uid);
+                await updateDoc(userRef, {
+                    videos: arrayRemove(videoId)
+                });
+                
+                showNotification('Video deleted successfully!', 'success');
+                await loadVideos();
+                
+                // Refresh current page
+                if (window.location.hash.startsWith('#channel=')) {
+                    const identifier = window.location.hash.replace('#channel=', '');
+                    const resolvedId = await resolveChannelIdentifier(identifier);
+                    if (resolvedId) {
+                        await loadChannelPage(resolvedId);
+                    }
+                } else {
+                    handleRouting();
+                }
+                
+            } catch (error) {
+                console.error('Error deleting video:', error);
+                showNotification('Error deleting video', 'error');
+            }
+        }
+
+        // Open edit channel modal
+        function openEditChannelModal() {
+            if (!state.currentUser) return;
+            
+            document.getElementById('currentChannelAvatar').src = state.currentUser.avatar || 'https://via.placeholder.com/100';
+            document.getElementById('editChannelName').value = state.currentUser.displayName || state.currentUser.username || '';
+            document.getElementById('editChannelUsername').value = state.currentUser.username || '';
+            document.getElementById('editChannelDescription').value = state.currentUser.description || '';
+            
+            if (elements.editChannelModal) {
+                elements.editChannelModal.classList.add('active');
+            }
+        }
+
+        // Update channel
+        async function updateChannel() {
+            if (!state.currentUser) return;
+            
+            const displayName = document.getElementById('editChannelName').value;
+            const username = document.getElementById('editChannelUsername').value;
+            const description = document.getElementById('editChannelDescription').value;
+            const avatarFile = elements.channelAvatarFile ? elements.channelAvatarFile.files[0] : null;
+            
+            if (!displayName || !username) {
+                showNotification('Channel name and username are required', 'error');
+                return;
+            }
+            
+            // Validate username format
+            if (!/^[a-zA-Z0-9]+$/.test(username)) {
+                showNotification('Username can only contain letters and numbers', 'error');
+                return;
+            }
+            
+            try {
+                // Check if username is already taken (and not by current user)
+                if (username !== state.currentUser.username) {
+                    const usersRef = collection(db, 'users');
+                    const q = query(usersRef, where('username', '==', username));
+                    const querySnapshot = await getDocs(q);
+                    
+                    if (!querySnapshot.empty) {
+                        showNotification('Username is already taken', 'error');
+                        return;
+                    }
+                }
+                
+                let avatarUrl = state.currentUser.avatar;
+                
+                // Upload new avatar if selected
+                if (avatarFile) {
+                    const avatarRef = ref(storage, `avatars/${state.currentUser.uid}/${Date.now()}_${avatarFile.name}`);
+                    await uploadBytes(avatarRef, avatarFile);
+                    avatarUrl = await getDownloadURL(avatarRef);
+                }
+                
+                // Update user document
+                const userRef = doc(db, 'users', state.currentUser.uid);
+                await updateDoc(userRef, {
+                    displayName,
+                    username,
+                    description,
+                    avatar: avatarUrl
+                });
+                
+                // Update state
+                state.currentUser.displayName = displayName;
+                state.currentUser.username = username;
+                state.currentUser.description = description;
+                state.currentUser.avatar = avatarUrl;
+                
+                // Update username map
+                state.usernameMap.set(username, state.currentUser.uid);
+                
+                showNotification('Channel updated successfully!', 'success');
+                closeEditChannelModal();
+                
+                // Refresh channel page
+                if (window.location.hash.startsWith('#channel=')) {
+                    await loadChannelPage(state.currentUser.uid);
+                }
+                
+            } catch (error) {
+                console.error('Error updating channel:', error);
+                showNotification('Error updating channel', 'error');
+            }
+        }
+
+        // Filter videos in manage page
+        function filterVideos(filter) {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(filterBtns).find(btn => btn.textContent.toLowerCase().includes(filter));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            const videoCards = document.querySelectorAll('.video-management-card');
+            videoCards.forEach(card => {
+                const statusElement = card.querySelector('.video-status');
+                const status = statusElement ? statusElement.textContent.toLowerCase() : 'published';
+                
+                if (filter === 'all') {
+                    card.style.display = 'block';
+                } else if (filter === 'processing' && status === 'processing') {
+                    card.style.display = 'block';
+                } else if (filter === 'public' && !statusElement) {
+                    card.style.display = 'block';
+                } else if (filter === 'private' && status === 'private') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
 
         // Auth functions
@@ -2279,12 +3204,39 @@
             if (elements.thumbnailPreview) {
                 elements.thumbnailPreview.classList.remove('show');
             }
+            if (elements.uploadProgress) {
+                elements.uploadProgress.classList.remove('active');
+            }
+            if (elements.uploadProgressBar) {
+                elements.uploadProgressBar.style.width = '0%';
+            }
+            if (elements.uploadProgressText) {
+                elements.uploadProgressText.textContent = '0%';
+            }
+            if (elements.copyrightWarning) {
+                elements.copyrightWarning.style.display = 'none';
+            }
             if (elements.uploadArea) {
                 elements.uploadArea.innerHTML = `
                     <i class="fas fa-cloud-upload-alt"></i>
                     <h3>Select video to upload</h3>
-                    <p style="color: var(--text-dim); margin: 10px 0;">MP4, WebM, MOV files supported</p>
+                    <p style="color: var(--text-dim); margin: 10px 0;">MP4, WebM, MOV files supported (Max 1GB)</p>
                 `;
+            }
+        }
+
+        function closeEditVideoModal() {
+            if (elements.editVideoModal) {
+                elements.editVideoModal.classList.remove('active');
+            }
+        }
+
+        function closeEditChannelModal() {
+            if (elements.editChannelModal) {
+                elements.editChannelModal.classList.remove('active');
+            }
+            if (elements.channelAvatarFile) {
+                elements.channelAvatarFile.value = '';
             }
         }
 
@@ -2331,8 +3283,8 @@
             window.location.hash = `watch=${videoId}`;
         }
 
-        function goToChannel(channelId) {
-            window.location.hash = `channel=${channelId}`;
+        function goToChannel(identifier) {
+            window.location.hash = `channel=${identifier}`;
         }
 
         function shareVideo(videoId) {
@@ -2428,6 +3380,10 @@
             searchVideos,
             openUploadModal,
             closeUploadModal,
+            openEditVideoModal: editVideo,
+            closeEditVideoModal,
+            openEditChannelModal,
+            closeEditChannelModal,
             openAuthModal,
             closeAuthModal,
             switchAuthTab,
@@ -2436,11 +3392,16 @@
             loginWithGoogle,
             logout,
             publishVideo,
+            editVideo,
+            updateVideo,
+            deleteVideo,
+            updateChannel,
             likeVideo,
             dislikeVideo,
             likeComment,
             toggleSubscribe,
-            shareVideo
+            shareVideo,
+            filterVideos
         };
 
         // Assign to window
