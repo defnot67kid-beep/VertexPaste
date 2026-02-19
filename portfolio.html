@@ -11,7 +11,6 @@
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
-        /* Same CSS as before - keeping it identical */
         * {
             margin: 0;
             padding: 0;
@@ -82,31 +81,64 @@
             padding: 20px;
         }
 
-        /* Animated Background */
-        .animated-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
+        /* Support Banner */
+        .support-banner {
+            background: var(--gradient-primary);
+            padding: 15px 30px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideInDown 0.5s ease;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--blur);
         }
 
-        .animated-bg::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
-            animation: rotate 30s linear infinite;
+        .support-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .support-banner i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .support-banner-text {
+            color: white;
+            font-weight: 600;
+        }
+
+        .support-banner-link {
+            background: white;
+            color: var(--primary);
+            padding: 10px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .support-banner-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .locked-banner {
+            background: var(--danger);
+            padding: 15px 30px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-weight: 600;
         }
 
         /* Navbar */
@@ -233,6 +265,11 @@
             color: white;
         }
 
+        .btn-subscribe {
+            background: var(--accent);
+            color: white;
+        }
+
         .btn-icon {
             padding: 12px;
             border-radius: 12px;
@@ -273,6 +310,56 @@
         .auth-tab.active {
             background: var(--gradient-primary);
             color: white;
+        }
+
+        /* Support Verification */
+        .support-verification {
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: var(--blur);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid var(--glass-border);
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .support-verification i {
+            font-size: 80px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .support-verification h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .support-verification p {
+            color: var(--text-dim);
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .support-link-input {
+            display: flex;
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .support-link-input input {
+            flex: 1;
+            padding: 15px;
+            background: var(--darker);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .support-link-input input:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         /* Create Portfolio Form */
@@ -334,6 +421,62 @@
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
         }
 
+        /* Color Picker */
+        .color-picker-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .color-preset {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-preset:hover {
+            transform: scale(1.2);
+            border-color: white;
+        }
+
+        .color-preset.selected {
+            border-color: white;
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .color-preset.primary { background: #6366f1; }
+        .color-preset.success { background: #10b981; }
+        .color-preset.danger { background: #ef4444; }
+        .color-preset.warning { background: #f59e0b; }
+        .color-preset.purple { background: #8b5cf6; }
+        .color-preset.pink { background: #ec4899; }
+        .color-preset.indigo { background: #4f46e5; }
+        .color-preset.teal { background: #14b8a6; }
+
+        .color-hex-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+        }
+
+        .color-hex-input input[type="color"] {
+            width: 60px;
+            height: 60px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .color-hex-input input[type="text"] {
+            flex: 1;
+        }
+
         /* Privacy Settings */
         .privacy-settings {
             display: flex;
@@ -392,11 +535,6 @@
             font-size: 48px;
             color: var(--primary);
             margin-bottom: 15px;
-        }
-
-        .image-upload-area.uploading {
-            opacity: 0.7;
-            pointer-events: none;
         }
 
         .image-preview {
@@ -547,28 +685,6 @@
             box-shadow: var(--shadow-lg), var(--shadow-glow);
         }
 
-        .portfolio-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 20px;
-            padding: 2px;
-            background: var(--gradient-primary);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .portfolio-card:hover::before {
-            opacity: 1;
-        }
-
         .privacy-badge {
             position: absolute;
             top: 15px;
@@ -657,10 +773,6 @@
             color: white;
         }
 
-        .social-link i {
-            font-size: 1.1rem;
-        }
-
         .portfolio-footer {
             padding: 20px 25px;
             border-top: 1px solid var(--border);
@@ -673,6 +785,9 @@
         .portfolio-views {
             color: var(--text-dim);
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         /* Portfolio Detail View */
@@ -768,23 +883,6 @@
             overflow: hidden;
         }
 
-        .link-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-primary);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 0;
-        }
-
-        .link-card:hover::before {
-            opacity: 0.1;
-        }
-
         .link-card:hover {
             transform: translateY(-5px);
             border-color: var(--primary);
@@ -824,12 +922,127 @@
             z-index: 1;
         }
 
-        .link-description {
+        /* Stats Grid */
+        .stats-grid {
+            display: flex;
+            gap: 20px;
+            padding: 0 30px 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-card i {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .stat-label {
             color: var(--text-dim);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            position: relative;
-            z-index: 1;
+            font-size: 0.9rem;
+        }
+
+        .device-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .device-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .device-item i {
+            width: 20px;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        /* Subscribers Section */
+        .subscribers-section {
+            padding: 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .subscriber-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .subscriber-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .subscriber-card {
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .subscriber-info h4 {
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .subscriber-info p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        /* Create Portfolio Banner */
+        .create-portfolio-banner {
+            background: var(--gradient-primary);
+            border-radius: 30px;
+            padding: 40px;
+            margin-top: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .create-portfolio-banner:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .create-portfolio-banner h3 {
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .create-portfolio-banner p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
         }
 
         /* Modal */
@@ -912,7 +1125,28 @@
             border-color: transparent;
         }
 
-        /* Animations */
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .loading::after {
+            content: "";
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @keyframes slideInDown {
             from {
                 transform: translateY(-100%);
@@ -962,28 +1196,6 @@
             }
         }
 
-        /* Loading */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-
-        .loading::after {
-            content: "";
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .portfolio-detail-name {
@@ -1003,6 +1215,10 @@
                 flex-direction: column;
                 gap: 15px;
             }
+            
+            .stats-grid {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -1015,6 +1231,23 @@
             <div class="logo" onclick="window.location.hash='#dashboard'">PortfolioHub Pro</div>
             <div class="nav-buttons" id="navButtons"></div>
         </nav>
+
+        <!-- Support Banner (shown to users who haven't supported) -->
+        <div id="supportBanner" style="display: none;" class="support-banner">
+            <div class="support-banner-content">
+                <i class="fas fa-heart"></i>
+                <span class="support-banner-text">Support us to create your portfolio!</span>
+            </div>
+            <a href="https://earnpaste.com/?ref=dgSmzLFiRlbidd4iWrmRRxn4SYv2" target="_blank" class="support-banner-link">
+                <i class="fas fa-external-link-alt"></i> Support Now
+            </a>
+        </div>
+
+        <!-- Locked Banner -->
+        <div id="lockedBanner" style="display: none;" class="locked-banner">
+            <i class="fas fa-lock"></i>
+            <span>You need to support us to create portfolios. Click the support banner above!</span>
+        </div>
 
         <!-- Main Content -->
         <div id="mainContent">
@@ -1038,12 +1271,28 @@
         </div>
     </div>
 
+    <!-- Subscribe Modal -->
+    <div id="subscribeModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-bell"></i> Subscribe to Portfolio</h2>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Get notified when this portfolio updates!</p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-success" onclick="confirmSubscribe()">
+                    <i class="fas fa-check"></i> Confirm Subscribe
+                </button>
+                <button class="btn btn-danger" onclick="closeSubscribeModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Import Firebase -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, deleteDoc, increment, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, updateDoc, deleteDoc, increment, arrayUnion, arrayRemove, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -1063,18 +1312,26 @@
 
         // Cloudinary configuration
         const CLOUDINARY_CONFIG = {
-            cloudName: 'dsv2sthkf', // Using demo cloud
-            uploadPreset: 'portfoliohub_uploads', // Default unsigned preset
+            cloudName: 'dsv2sthkf',
+            uploadPreset: 'portfoliohub_uploads',
             apiKey: '725361572671118'
         };
 
+        // Support link requirement
+        const SUPPORT_LINK = 'https://earnpaste.com/?ref=dgSmzLFiRlbidd4iWrmRRxn4SYv2';
+        
         // ============ APP STATE ============
         let currentUser = null;
         let allPortfolios = [];
-        let currentFilter = 'all'; // all, public, private, unlisted
+        let currentFilter = 'all';
+        let currentViewingPortfolio = null;
+        let hasSupported = false;
 
         // ============ INITIALIZATION ============
         function init() {
+            // Check local storage for support status
+            hasSupported = localStorage.getItem('portfoliohub_supported') === 'true';
+            
             // Auth state observer
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
@@ -1089,6 +1346,12 @@
                                 displayName: userDoc.data().displayName || user.displayName || user.email.split('@')[0],
                                 ...userDoc.data()
                             };
+                            
+                            // Check if user has supported
+                            if (userDoc.data().hasSupported) {
+                                hasSupported = true;
+                                localStorage.setItem('portfoliohub_supported', 'true');
+                            }
                         } else {
                             // Create new user document
                             const newUser = {
@@ -1096,7 +1359,12 @@
                                 email: user.email,
                                 createdAt: new Date().toISOString(),
                                 portfolioViews: 0,
-                                portfolioLinks: []
+                                portfolioLinks: [],
+                                subscribers: [],
+                                subscribedTo: [],
+                                viewedDevices: [],
+                                hasSupported: false,
+                                themeColor: '#6366f1'
                             };
                             
                             await setDoc(doc(db, 'users', user.uid), newUser);
@@ -1118,12 +1386,53 @@
                 }
                 
                 updateNavbar();
+                updateSupportBanner();
                 handleRouting();
             });
             
             // Check URL hash on load
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
+            
+            // Get device info
+            trackDeviceInfo();
+        }
+
+        // ============ TRACK DEVICE INFO ============
+        function trackDeviceInfo() {
+            const deviceInfo = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screenSize: `${window.screen.width}x${window.screen.height}`,
+                timestamp: new Date().toISOString(),
+                deviceId: getDeviceId()
+            };
+            
+            // Store in session storage for this session
+            sessionStorage.setItem('deviceInfo', JSON.stringify(deviceInfo));
+            
+            return deviceInfo;
+        }
+
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('deviceId');
+            if (!deviceId) {
+                deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('deviceId', deviceId);
+            }
+            return deviceId;
+        }
+
+        function getDeviceType() {
+            const ua = navigator.userAgent;
+            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                return 'tablet';
+            }
+            if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                return 'mobile';
+            }
+            return 'desktop';
         }
 
         // ============ LOAD ALL PORTFOLIOS ============
@@ -1135,7 +1444,6 @@
                 allPortfolios = [];
                 usersSnapshot.forEach((doc) => {
                     const data = doc.data();
-                    // Only show public and unlisted portfolios to non-owners
                     if (data.privacy === 'public' || data.privacy === 'unlisted' || (currentUser && currentUser.uid === doc.id)) {
                         allPortfolios.push({
                             uid: doc.id,
@@ -1165,9 +1473,11 @@
                         }
                         <span>${currentUser.displayName}</span>
                     </div>
-                    <button class="btn btn-primary" onclick="window.location.hash='#create'">
-                        <i class="fas fa-plus"></i> Edit Portfolio
-                    </button>
+                    ${hasSupported ? `
+                        <button class="btn btn-primary" onclick="window.location.hash='#create'">
+                            <i class="fas fa-plus"></i> Edit Portfolio
+                        </button>
+                    ` : ''}
                     <button class="btn btn-danger" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
@@ -1181,6 +1491,50 @@
             }
         }
 
+        // ============ UPDATE SUPPORT BANNER ============
+        function updateSupportBanner() {
+            const supportBanner = document.getElementById('supportBanner');
+            const lockedBanner = document.getElementById('lockedBanner');
+            
+            if (currentUser && !hasSupported) {
+                supportBanner.style.display = 'flex';
+                
+                // Show locked banner if trying to access create
+                if (window.location.hash === '#create') {
+                    lockedBanner.style.display = 'flex';
+                } else {
+                    lockedBanner.style.display = 'none';
+                }
+            } else {
+                supportBanner.style.display = 'none';
+                lockedBanner.style.display = 'none';
+            }
+        }
+
+        // ============ VERIFY SUPPORT ============
+        window.verifySupport = async function() {
+            const supportInput = document.getElementById('supportVerificationInput')?.value;
+            
+            // For demo purposes, we'll accept any input that contains the support link
+            // In production, you'd want to verify this properly
+            if (supportInput && supportInput.includes('earnpaste.com')) {
+                hasSupported = true;
+                localStorage.setItem('portfoliohub_supported', 'true');
+                
+                if (currentUser) {
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        hasSupported: true
+                    });
+                }
+                
+                showNotification('Thank you for your support! You can now create portfolios.', 'success');
+                window.location.hash = '#create';
+                updateSupportBanner();
+            } else {
+                showNotification('Please visit the support link first', 'error');
+            }
+        };
+
         // ============ HANDLE ROUTING ============
         function handleRouting() {
             const hash = window.location.hash;
@@ -1192,7 +1546,11 @@
                 showDashboard();
             } else if (hash === '#create') {
                 if (currentUser) {
-                    showCreatePortfolio();
+                    if (hasSupported) {
+                        showCreatePortfolio();
+                    } else {
+                        showSupportVerification();
+                    }
                 } else {
                     showNotification('Please login to create a portfolio', 'error');
                     showAuth();
@@ -1200,6 +1558,40 @@
             } else {
                 showDashboard();
             }
+            
+            updateSupportBanner();
+        }
+
+        // ============ SHOW SUPPORT VERIFICATION ============
+        function showSupportVerification() {
+            const container = document.getElementById('mainContent');
+            
+            container.innerHTML = `
+                <div class="support-verification">
+                    <i class="fas fa-heart"></i>
+                    <h2>Support Us to Continue</h2>
+                    <p>
+                        To create your portfolio, we ask for your support. Please visit our support link below, 
+                        then come back and verify. This helps us keep the platform running and provide free services.
+                    </p>
+                    
+                    <a href="${SUPPORT_LINK}" target="_blank" class="btn btn-primary" style="margin-bottom: 20px; display: inline-block;">
+                        <i class="fas fa-external-link-alt"></i> Support Now
+                    </a>
+                    
+                    <div class="support-link-input">
+                        <input type="text" id="supportVerificationInput" placeholder="Paste the URL you visited...">
+                        <button class="btn btn-success" onclick="verifySupport()">
+                            <i class="fas fa-check"></i> Verify
+                        </button>
+                    </div>
+                    
+                    <p style="font-size: 0.9rem; color: var(--text-dimmer);">
+                        <i class="fas fa-info-circle"></i> 
+                        After visiting the support link, paste the URL above to verify.
+                    </p>
+                </div>
+            `;
         }
 
         // ============ SHOW AUTH ============
@@ -1357,7 +1749,6 @@
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
             
-            // Show progress
             const progressBar = document.querySelector(`.upload-progress.${type}`);
             const progressBarInner = document.querySelector(`.upload-progress.${type} .upload-progress-bar`);
             
@@ -1366,7 +1757,6 @@
             }
             
             try {
-                // Simulate progress
                 let progress = 0;
                 const interval = setInterval(() => {
                     progress += 10;
@@ -1416,6 +1806,11 @@
                 return;
             }
             
+            if (!hasSupported) {
+                showSupportVerification();
+                return;
+            }
+            
             const container = document.getElementById('mainContent');
             
             container.innerHTML = `
@@ -1437,6 +1832,25 @@
                             <div class="form-group">
                                 <label><i class="fas fa-tag"></i> Title/Headline</label>
                                 <input type="text" id="portfolioTitle" value="${escapeHtml(currentUser.title || '')}" placeholder="e.g., Full Stack Developer">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label><i class="fas fa-palette"></i> Theme Color</label>
+                                <div class="color-picker-container">
+                                    <div class="color-preset primary ${(!currentUser.themeColor || currentUser.themeColor === '#6366f1') ? 'selected' : ''}" onclick="window.selectThemeColor('#6366f1')" style="background: #6366f1;"></div>
+                                    <div class="color-preset success ${currentUser.themeColor === '#10b981' ? 'selected' : ''}" onclick="window.selectThemeColor('#10b981')" style="background: #10b981;"></div>
+                                    <div class="color-preset danger ${currentUser.themeColor === '#ef4444' ? 'selected' : ''}" onclick="window.selectThemeColor('#ef4444')" style="background: #ef4444;"></div>
+                                    <div class="color-preset warning ${currentUser.themeColor === '#f59e0b' ? 'selected' : ''}" onclick="window.selectThemeColor('#f59e0b')" style="background: #f59e0b;"></div>
+                                    <div class="color-preset purple ${currentUser.themeColor === '#8b5cf6' ? 'selected' : ''}" onclick="window.selectThemeColor('#8b5cf6')" style="background: #8b5cf6;"></div>
+                                    <div class="color-preset pink ${currentUser.themeColor === '#ec4899' ? 'selected' : ''}" onclick="window.selectThemeColor('#ec4899')" style="background: #ec4899;"></div>
+                                    <div class="color-preset indigo ${currentUser.themeColor === '#4f46e5' ? 'selected' : ''}" onclick="window.selectThemeColor('#4f46e5')" style="background: #4f46e5;"></div>
+                                    <div class="color-preset teal ${currentUser.themeColor === '#14b8a6' ? 'selected' : ''}" onclick="window.selectThemeColor('#14b8a6')" style="background: #14b8a6;"></div>
+                                    
+                                    <div class="color-hex-input">
+                                        <input type="color" id="themeColorPicker" value="${currentUser.themeColor || '#6366f1'}" onchange="window.selectThemeColor(this.value)">
+                                        <input type="text" id="themeColorHex" value="${currentUser.themeColor || '#6366f1'}" placeholder="#HEX" onchange="window.selectThemeColor(this.value)">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -1531,6 +1945,31 @@
             `;
         }
 
+        // ============ THEME COLOR SELECTION ============
+        window.selectThemeColor = function(color) {
+            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+            document.getElementById('themeColorPicker').value = color;
+            document.getElementById('themeColorHex').value = color;
+            currentUser.themeColor = color;
+            
+            // Find and select preset if matches
+            const preset = Array.from(document.querySelectorAll('.color-preset')).find(p => 
+                p.style.backgroundColor === color || 
+                (color === '#6366f1' && p.classList.contains('primary')) ||
+                (color === '#10b981' && p.classList.contains('success')) ||
+                (color === '#ef4444' && p.classList.contains('danger')) ||
+                (color === '#f59e0b' && p.classList.contains('warning')) ||
+                (color === '#8b5cf6' && p.classList.contains('purple')) ||
+                (color === '#ec4899' && p.classList.contains('pink')) ||
+                (color === '#4f46e5' && p.classList.contains('indigo')) ||
+                (color === '#14b8a6' && p.classList.contains('teal'))
+            );
+            
+            if (preset) {
+                preset.classList.add('selected');
+            }
+        };
+
         // ============ PRIVACY SELECTION ============
         window.selectPrivacy = function(privacy) {
             document.querySelectorAll('.privacy-option').forEach(opt => {
@@ -1545,7 +1984,6 @@
             if (input.files && input.files[0]) {
                 const preview = document.getElementById(type === 'avatar' ? 'avatarPreview' : 'coverPreview');
                 
-                // Show local preview immediately
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     preview.src = e.target.result;
@@ -1553,17 +1991,14 @@
                 }
                 reader.readAsDataURL(input.files[0]);
                 
-                // Upload to Cloudinary
                 const imageUrl = await uploadImageToCloudinary(input.files[0], type);
                 
                 if (imageUrl) {
                     if (type === 'avatar') {
                         currentUser.avatar = imageUrl;
-                        // Update the preview with the Cloudinary URL
                         preview.src = imageUrl;
                     } else {
                         currentUser.cover = imageUrl;
-                        // Update the preview with the Cloudinary URL
                         preview.src = imageUrl;
                     }
                     showNotification('Image uploaded successfully!', 'success');
@@ -1616,17 +2051,16 @@
             const name = document.getElementById('portfolioName')?.value;
             const bio = document.getElementById('portfolioBio')?.value;
             const title = document.getElementById('portfolioTitle')?.value;
+            const themeColor = document.getElementById('themeColorHex')?.value || '#6366f1';
             
             if (!name) {
                 showNotification('Name is required', 'error');
                 return;
             }
             
-            // Get the current preview image sources to ensure we have the latest URLs
             const avatarPreview = document.getElementById('avatarPreview');
             const coverPreview = document.getElementById('coverPreview');
             
-            // Update currentUser with the latest image URLs from the preview elements
             if (avatarPreview && avatarPreview.src && avatarPreview.src !== '' && !avatarPreview.src.includes('undefined')) {
                 currentUser.avatar = avatarPreview.src;
             }
@@ -1636,7 +2070,6 @@
             }
             
             try {
-                // Update user document in Firestore
                 const userRef = doc(db, 'users', currentUser.uid);
                 
                 const updateData = {
@@ -1645,10 +2078,10 @@
                     title: title || '',
                     privacy: currentUser.privacy || 'public',
                     portfolioLinks: currentUser.portfolioLinks || [],
+                    themeColor: themeColor,
                     updatedAt: new Date().toISOString()
                 };
                 
-                // Only update images if they exist and are valid Cloudinary URLs
                 if (currentUser.avatar && currentUser.avatar.includes('cloudinary')) {
                     updateData.avatar = currentUser.avatar;
                 }
@@ -1657,11 +2090,8 @@
                     updateData.cover = currentUser.cover;
                 }
                 
-                console.log('Saving portfolio with data:', updateData); // Debug log
-                
                 await updateDoc(userRef, updateData);
                 
-                // Update current user object
                 currentUser = {
                     ...currentUser,
                     ...updateData
@@ -1703,7 +2133,8 @@
                     ...userDoc.data()
                 };
                 
-                // Check privacy settings
+                currentViewingPortfolio = portfolio;
+                
                 const canView = 
                     portfolio.privacy === 'public' || 
                     (portfolio.privacy === 'unlisted') ||
@@ -1723,23 +2154,80 @@
                     return;
                 }
                 
-                // Increment view count if not owner
-                if (!currentUser || currentUser.uid !== uid) {
-                    await updateDoc(doc(db, 'users', uid), {
-                        portfolioViews: increment(1)
+                // Advanced view tracking - per device, prevent stacking
+                const deviceId = getDeviceId();
+                const deviceType = getDeviceType();
+                const deviceInfo = JSON.parse(sessionStorage.getItem('deviceInfo') || '{}');
+                
+                let shouldIncrement = true;
+                let viewedDevices = portfolio.viewedDevices || [];
+                
+                // Check if this device has viewed before
+                const existingView = viewedDevices.find(d => d.deviceId === deviceId);
+                
+                if (existingView) {
+                    // Check if it's a new session (more than 1 hour old)
+                    const lastViewTime = new Date(existingView.timestamp).getTime();
+                    const currentTime = new Date().getTime();
+                    const hoursDiff = (currentTime - lastViewTime) / (1000 * 60 * 60);
+                    
+                    if (hoursDiff < 1) {
+                        shouldIncrement = false; // Same device, less than 1 hour - don't count
+                    } else {
+                        // Update existing view timestamp
+                        viewedDevices = viewedDevices.map(d => 
+                            d.deviceId === deviceId ? {...d, timestamp: new Date().toISOString()} : d
+                        );
+                    }
+                } else {
+                    // Add new device view
+                    viewedDevices.push({
+                        deviceId,
+                        deviceType,
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform,
+                        timestamp: new Date().toISOString(),
+                        sessionId: Math.random().toString(36).substr(2, 9)
                     });
-                    portfolio.portfolioViews = (portfolio.portfolioViews || 0) + 1;
                 }
                 
-                const coverStyle = portfolio.cover ? `background-image: url('${portfolio.cover}');` : 'background: linear-gradient(135deg, #6366f1, #8b5cf6);';
+                // Update view count and viewed devices if not owner
+                if (!currentUser || currentUser.uid !== uid) {
+                    const updateData = {
+                        viewedDevices: viewedDevices
+                    };
+                    
+                    if (shouldIncrement) {
+                        updateData.portfolioViews = increment(1);
+                        portfolio.portfolioViews = (portfolio.portfolioViews || 0) + 1;
+                    }
+                    
+                    await updateDoc(doc(db, 'users', uid), updateData);
+                }
+                
+                // Check if current user is subscribed
+                const isSubscribed = currentUser && portfolio.subscribers && portfolio.subscribers.includes(currentUser.uid);
+                const isOwner = currentUser && currentUser.uid === uid;
+                
+                const themeColor = portfolio.themeColor || '#6366f1';
+                const coverStyle = portfolio.cover ? 
+                    `background-image: url('${portfolio.cover}');` : 
+                    `background: linear-gradient(135deg, ${themeColor}, ${adjustColor(themeColor, 20)});`;
+                
                 const privacyInfo = {
                     public: { icon: 'fa-globe', text: 'Public Portfolio' },
                     private: { icon: 'fa-lock', text: 'Private Portfolio' },
                     unlisted: { icon: 'fa-link', text: 'Unlisted Portfolio' }
                 }[portfolio.privacy || 'public'];
                 
+                // Device stats
+                const deviceStats = (portfolio.viewedDevices || []).reduce((acc, d) => {
+                    acc[d.deviceType] = (acc[d.deviceType] || 0) + 1;
+                    return acc;
+                }, {});
+                
                 container.innerHTML = `
-                    <div class="portfolio-detail">
+                    <div class="portfolio-detail" style="--theme-color: ${themeColor};">
                         <div class="portfolio-cover" style="${coverStyle}">
                             <div class="portfolio-cover-overlay">
                                 <img src="${portfolio.avatar || 'https://via.placeholder.com/180'}" class="portfolio-detail-avatar" alt="Avatar">
@@ -1752,21 +2240,51 @@
                         </div>
                         
                         <div class="portfolio-detail-bio">
-                            <i class="fas fa-quote-left" style="color: var(--primary); opacity: 0.5; font-size: 24px; margin-right: 10px;"></i>
+                            <i class="fas fa-quote-left" style="color: ${themeColor}; opacity: 0.5; font-size: 24px; margin-right: 10px;"></i>
                             ${escapeHtml(portfolio.bio || 'No bio yet.')}
                         </div>
                         
-                        <div style="display: flex; gap: 20px; padding: 0 30px; color: var(--text-dim);">
-                            <span><i class="fas fa-eye"></i> ${portfolio.portfolioViews || 0} views</span>
-                            <span><i class="fas fa-calendar"></i> Joined ${new Date(portfolio.createdAt).toLocaleDateString()}</span>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <i class="fas fa-eye"></i>
+                                <div class="stat-value">${portfolio.portfolioViews || 0}</div>
+                                <div class="stat-label">Total Views</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <i class="fas fa-calendar"></i>
+                                <div class="stat-value">${new Date(portfolio.createdAt).toLocaleDateString()}</div>
+                                <div class="stat-label">Joined</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <i class="fas fa-users"></i>
+                                <div class="stat-value">${portfolio.subscribers ? portfolio.subscribers.length : 0}</div>
+                                <div class="stat-label">Subscribers</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <i class="fas fa-chart-pie"></i>
+                                <div class="stat-value">${Object.keys(deviceStats).length}</div>
+                                <div class="stat-label">Device Types</div>
+                                
+                                <div class="device-list">
+                                    ${Object.entries(deviceStats).map(([type, count]) => `
+                                        <div class="device-item">
+                                            <i class="fas ${type === 'mobile' ? 'fa-mobile-alt' : type === 'tablet' ? 'fa-tablet-alt' : 'fa-desktop'}"></i>
+                                            <span>${type}: ${count}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
                         </div>
                         
                         <h2 style="padding: 30px 30px 0;"><i class="fas fa-link"></i> Links</h2>
                         
                         <div class="links-grid">
                             ${portfolio.portfolioLinks && portfolio.portfolioLinks.map(link => `
-                                <a href="${escapeHtml(link.url)}" target="_blank" class="link-card" rel="noopener noreferrer">
-                                    <div class="link-icon">
+                                <a href="${escapeHtml(link.url)}" target="_blank" class="link-card" rel="noopener noreferrer" style="border-color: ${themeColor};">
+                                    <div class="link-icon" style="background: ${themeColor};">
                                         <i class="${getLinkIcon(link.type)}"></i>
                                     </div>
                                     <div class="link-title">${escapeHtml(link.title || getLinkTitle(link.type))}</div>
@@ -1779,15 +2297,52 @@
                                 ''}
                         </div>
                         
+                        ${!isOwner && portfolio.subscribers && portfolio.subscribers.length > 0 ? `
+                            <div class="subscribers-section">
+                                <h3><i class="fas fa-users"></i> Subscribers (${portfolio.subscribers.length})</h3>
+                                <div class="subscriber-grid">
+                                    ${portfolio.subscribers.slice(0, 6).map(subId => {
+                                        const sub = allPortfolios.find(p => p.uid === subId);
+                                        return sub ? `
+                                            <div class="subscriber-card" onclick="window.location.hash='#portfolio-${sub.uid}'">
+                                                <img src="${sub.avatar || 'https://via.placeholder.com/40'}" class="subscriber-avatar">
+                                                <div class="subscriber-info">
+                                                    <h4>${escapeHtml(sub.displayName)}</h4>
+                                                    <p>${escapeHtml(sub.title || 'Member')}</p>
+                                                </div>
+                                            </div>
+                                        ` : '';
+                                    }).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
                         <div style="padding: 30px; text-align: center;">
+                            ${!isOwner ? `
+                                <button class="btn ${isSubscribed ? 'btn-danger' : 'btn-subscribe'}" onclick="window.toggleSubscribe('${portfolio.uid}')">
+                                    <i class="fas ${isSubscribed ? 'fa-bell-slash' : 'fa-bell'}"></i>
+                                    ${isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+                                </button>
+                            ` : ''}
+                            
                             <button class="btn btn-primary" onclick="window.sharePortfolio('${portfolio.uid}')">
                                 <i class="fas fa-share-alt"></i> Share Portfolio
                             </button>
+                            
                             ${currentUser && currentUser.uid === uid ? `
                                 <button class="btn btn-success" style="margin-left: 10px;" onclick="window.location.hash='#create'">
                                     <i class="fas fa-edit"></i> Edit Portfolio
                                 </button>
                             ` : ''}
+                        </div>
+                        
+                        <!-- Create Your Own Portfolio Banner -->
+                        <div class="create-portfolio-banner" onclick="window.location.hash='#create'">
+                            <h3><i class="fas fa-magic"></i> Create Your Own Portfolio!</h3>
+                            <p>Join thousands of professionals showcasing their work. It's free and takes only minutes.</p>
+                            <button class="btn btn-primary" style="background: white; color: var(--primary);">
+                                <i class="fas fa-rocket"></i> Get Started
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1807,17 +2362,70 @@
             }
         }
 
+        // ============ SUBSCRIBE FUNCTIONALITY ============
+        window.toggleSubscribe = async function(portfolioUid) {
+            if (!currentUser) {
+                showNotification('Please login to subscribe', 'error');
+                showAuth();
+                return;
+            }
+            
+            if (currentUser.uid === portfolioUid) {
+                showNotification('You cannot subscribe to yourself', 'error');
+                return;
+            }
+            
+            try {
+                const portfolioRef = doc(db, 'users', portfolioUid);
+                const userRef = doc(db, 'users', currentUser.uid);
+                
+                const portfolio = await getDoc(portfolioRef);
+                const portfolioData = portfolio.data();
+                
+                const isSubscribed = portfolioData.subscribers && portfolioData.subscribers.includes(currentUser.uid);
+                
+                if (isSubscribed) {
+                    // Unsubscribe
+                    await updateDoc(portfolioRef, {
+                        subscribers: arrayRemove(currentUser.uid)
+                    });
+                    
+                    await updateDoc(userRef, {
+                        subscribedTo: arrayRemove(portfolioUid)
+                    });
+                    
+                    showNotification('Unsubscribed successfully', 'success');
+                } else {
+                    // Subscribe
+                    await updateDoc(portfolioRef, {
+                        subscribers: arrayUnion(currentUser.uid)
+                    });
+                    
+                    await updateDoc(userRef, {
+                        subscribedTo: arrayUnion(portfolioUid)
+                    });
+                    
+                    showNotification('Subscribed successfully! You will be notified of updates.', 'success');
+                }
+                
+                // Refresh portfolio view
+                viewPortfolio(portfolioUid);
+                
+            } catch (error) {
+                console.error('Subscribe error:', error);
+                showNotification('Error updating subscription', 'error');
+            }
+        };
+
         // ============ DASHBOARD ============
         function showDashboard() {
             const container = document.getElementById('mainContent');
             
-            // Filter portfolios based on privacy and current filter
             let filteredPortfolios = allPortfolios.filter(p => {
                 if (currentFilter === 'all') return p.privacy === 'public' || p.privacy === 'unlisted';
                 return p.privacy === currentFilter;
             });
             
-            // Add user's own private portfolios
             if (currentUser) {
                 const userPortfolios = allPortfolios.filter(p => 
                     p.uid === currentUser.uid && p.privacy === 'private'
@@ -1853,6 +2461,12 @@
                             <i class="fas fa-link" style="font-size: 40px; color: var(--accent); margin-bottom: 15px;"></i>
                             <h3 style="font-size: 2.5rem; color: var(--accent);">${allPortfolios.reduce((sum, p) => sum + (p.portfolioLinks?.length || 0), 0)}</h3>
                             <p style="color: var(--text-dim);">Total Links</p>
+                        </div>
+                        
+                        <div style="background: rgba(26, 26, 46, 0.8); backdrop-filter: var(--blur); border-radius: 20px; padding: 30px; text-align: center; border: 1px solid var(--border);">
+                            <i class="fas fa-bell" style="font-size: 40px; color: var(--info); margin-bottom: 15px;"></i>
+                            <h3 style="font-size: 2.5rem; color: var(--info);">${allPortfolios.reduce((sum, p) => sum + (p.subscribers?.length || 0), 0)}</h3>
+                            <p style="color: var(--text-dim);">Total Subscriptions</p>
                         </div>
                     </div>
                     
@@ -1898,7 +2512,7 @@
                                     <i class="fas ${portfolio.privacy === 'private' ? 'fa-lock' : portfolio.privacy === 'unlisted' ? 'fa-link' : 'fa-globe'}"></i>
                                     ${portfolio.privacy || 'public'}
                                 </div>
-                                <div class="portfolio-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                                <div class="portfolio-header" style="background: linear-gradient(135deg, ${portfolio.themeColor || '#6366f1'}, ${adjustColor(portfolio.themeColor || '#6366f1', 20)});">
                                     <img src="${portfolio.avatar || 'https://via.placeholder.com/120'}" class="portfolio-avatar" alt="Avatar">
                                     <div class="portfolio-name">${escapeHtml(portfolio.displayName)}</div>
                                     <div class="portfolio-username">${escapeHtml(portfolio.title || 'Professional Portfolio')}</div>
@@ -1922,7 +2536,7 @@
                                         <i class="fas fa-eye"></i> ${portfolio.portfolioViews || 0} views
                                     </div>
                                     <div class="portfolio-views">
-                                        <i class="fas fa-calendar"></i> ${new Date(portfolio.createdAt).toLocaleDateString()}
+                                        <i class="fas fa-bell"></i> ${portfolio.subscribers?.length || 0}
                                     </div>
                                 </div>
                             </div>
@@ -1938,33 +2552,22 @@
             `;
         }
 
-        // ============ SET FILTER ============
-        window.setFilter = function(filter) {
-            currentFilter = filter;
-            showDashboard();
-        };
-
-        // ============ SHARE FUNCTIONALITY ============
-        window.sharePortfolio = function(uid) {
-            const shareModal = document.getElementById('shareModal');
-            const shareLink = document.getElementById('shareLink');
-            shareLink.value = `${window.location.origin}${window.location.pathname}#portfolio-${uid}`;
-            shareModal.classList.add('active');
-        };
-
-        window.closeShareModal = function() {
-            document.getElementById('shareModal').classList.remove('active');
-        };
-
-        window.copyShareLink = function() {
-            const link = document.getElementById('shareLink');
-            link.select();
-            navigator.clipboard.writeText(link.value);
-            showNotification('Link copied to clipboard!', 'success');
-            closeShareModal();
-        };
-
         // ============ HELPER FUNCTIONS ============
+        function adjustColor(hex, percent) {
+            // Simple color adjustment
+            if (!hex) return '#8b5cf6';
+            
+            let R = parseInt(hex.substring(1,3), 16);
+            let G = parseInt(hex.substring(3,5), 16);
+            let B = parseInt(hex.substring(5,7), 16);
+            
+            R = Math.min(255, Math.max(0, R + percent));
+            G = Math.min(255, Math.max(0, G + percent));
+            B = Math.min(255, Math.max(0, B + percent));
+            
+            return `#${((1 << 24) + (R << 16) + (G << 8) + B).toString(16).slice(1)}`;
+        }
+
         function getLinkIcon(type) {
             const icons = {
                 website: 'fas fa-globe',
@@ -2017,12 +2620,66 @@
             }, 3000);
         }
 
+        // ============ SET FILTER ============
+        window.setFilter = function(filter) {
+            currentFilter = filter;
+            showDashboard();
+        };
+
+        // ============ SHARE FUNCTIONALITY ============
+        window.sharePortfolio = function(uid) {
+            const shareModal = document.getElementById('shareModal');
+            const shareLink = document.getElementById('shareLink');
+            shareLink.value = `${window.location.origin}${window.location.pathname}#portfolio-${uid}`;
+            shareModal.classList.add('active');
+        };
+
+        window.closeShareModal = function() {
+            document.getElementById('shareModal').classList.remove('active');
+        };
+
+        window.copyShareLink = function() {
+            const link = document.getElementById('shareLink');
+            link.select();
+            navigator.clipboard.writeText(link.value);
+            showNotification('Link copied to clipboard!', 'success');
+            closeShareModal();
+        };
+
         // ============ CLOSE MODAL ON OUTSIDE CLICK ============
         window.onclick = function(event) {
             const shareModal = document.getElementById('shareModal');
+            const subscribeModal = document.getElementById('subscribeModal');
             if (event.target === shareModal) {
                 closeShareModal();
             }
+            if (event.target === subscribeModal) {
+                closeSubscribeModal();
+            }
+        };
+
+        // ============ SUBSCRIBE MODAL ============
+        window.showSubscribeModal = function(portfolioUid) {
+            if (!currentUser) {
+                showNotification('Please login to subscribe', 'error');
+                showAuth();
+                return;
+            }
+            
+            const modal = document.getElementById('subscribeModal');
+            modal.setAttribute('data-portfolio', portfolioUid);
+            modal.classList.add('active');
+        };
+
+        window.closeSubscribeModal = function() {
+            document.getElementById('subscribeModal').classList.remove('active');
+        };
+
+        window.confirmSubscribe = function() {
+            const modal = document.getElementById('subscribeModal');
+            const portfolioUid = modal.getAttribute('data-portfolio');
+            closeSubscribeModal();
+            toggleSubscribe(portfolioUid);
         };
 
         // ============ EXPOSE FUNCTIONS TO WINDOW ============
@@ -2031,6 +2688,10 @@
         window.sharePortfolio = sharePortfolio;
         window.closeShareModal = closeShareModal;
         window.copyShareLink = copyShareLink;
+        window.showSubscribeModal = showSubscribeModal;
+        window.closeSubscribeModal = closeSubscribeModal;
+        window.confirmSubscribe = confirmSubscribe;
+        window.toggleSubscribe = toggleSubscribe;
 
         // ============ INITIALIZE ============
         init();
