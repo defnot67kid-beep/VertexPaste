@@ -49,6 +49,8 @@
             --glass-effect: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --blur: blur(10px);
+            --badge-owner: linear-gradient(135deg, #ffd700, #ffa500);
+            --badge-subscriber: linear-gradient(135deg, #4facfe, #00f2fe);
         }
 
         body {
@@ -58,32 +60,244 @@
             color: var(--text);
             line-height: 1.6;
             transition: background 0.5s ease;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        body.theme-primary {
-            background: radial-gradient(circle at top right, #1e1e3f, #0a0a14);
+        /* Cookie Animation Container */
+        .cookie-rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999999;
+            overflow: hidden;
         }
-        body.theme-success {
-            background: radial-gradient(circle at top right, #1a2e1a, #0a140a);
+
+        .cookie {
+            position: absolute;
+            font-size: 24px;
+            color: #8B4513;
+            animation: fall linear forwards;
+            z-index: 999999;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+            pointer-events: none;
         }
-        body.theme-danger {
-            background: radial-gradient(circle at top right, #3f1e1e, #140a0a);
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
         }
-        body.theme-warning {
-            background: radial-gradient(circle at top right, #3f2e1e, #14100a);
+
+        /* High z-index for notifications */
+        .live-notification {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: var(--dark-card);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 999999 !important;
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 4.7s forwards;
+            cursor: pointer;
+            max-width: 350px;
+            border: 1px solid var(--border);
         }
-        body.theme-purple {
-            background: radial-gradient(circle at top right, #2e1e3f, #0a0a14);
+
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--dark-card);
+            border-left: 4px solid var(--primary);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 999999 !important;
+            animation: slideInRight 0.3s ease;
+            border: 1px solid var(--border);
         }
-        body.theme-pink {
-            background: radial-gradient(circle at top right, #3f1e2e, #140a0a);
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: var(--blur);
+            z-index: 999999 !important;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
-        body.theme-indigo {
-            background: radial-gradient(circle at top right, #1e1e4f, #0a0a1a);
+
+        .notifications-panel {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            width: 400px;
+            background: var(--dark-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            z-index: 999999 !important;
+            display: none;
+            animation: slideInRight 0.3s ease;
+            max-height: 500px;
+            overflow-y: auto;
         }
-        body.theme-teal {
-            background: radial-gradient(circle at top right, #1e3f3f, #0a1414);
+
+        /* Badge Styles */
+        .badge-container {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            justify-content: center;
         }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: var(--blur);
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .badge i {
+            font-size: 0.7rem;
+        }
+
+        .badge.owner-badge {
+            background: var(--badge-owner);
+            color: #000;
+            border-color: #ffd700;
+        }
+
+        .badge.subscriber-badge {
+            background: var(--badge-subscriber);
+            color: #000;
+            border-color: #00f2fe;
+        }
+
+        .badge-count {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .badges-section {
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .badge-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .badge-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .badge-card .badge-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--badge-subscriber);
+            color: #000;
+        }
+
+        .badge-card .badge-icon.owner {
+            background: var(--badge-owner);
+        }
+
+        .badge-card h4 {
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .badge-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .badge-card .badge-date {
+            color: var(--text-dimmer);
+            font-size: 0.8rem;
+        }
+
+        .owner-badge-inline {
+            background: var(--badge-owner);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        /* Rest of your existing styles remain exactly the same */
+        body.theme-primary { background: radial-gradient(circle at top right, #1e1e3f, #0a0a14); }
+        body.theme-success { background: radial-gradient(circle at top right, #1a2e1a, #0a140a); }
+        body.theme-danger { background: radial-gradient(circle at top right, #3f1e1e, #140a0a); }
+        body.theme-warning { background: radial-gradient(circle at top right, #3f2e1e, #14100a); }
+        body.theme-purple { background: radial-gradient(circle at top right, #2e1e3f, #0a0a14); }
+        body.theme-pink { background: radial-gradient(circle at top right, #3f1e2e, #140a0a); }
+        body.theme-indigo { background: radial-gradient(circle at top right, #1e1e4f, #0a0a1a); }
+        body.theme-teal { background: radial-gradient(circle at top right, #1e3f3f, #0a1414); }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -296,27 +510,6 @@
             border: 2px solid var(--dark-card);
         }
 
-        /* Notifications Panel */
-        .notifications-panel {
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            width: 400px;
-            background: var(--dark-card);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-lg);
-            z-index: 1000;
-            display: none;
-            animation: slideInRight 0.3s ease;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .notifications-panel.active {
-            display: block;
-        }
-
         .notifications-header {
             padding: 20px;
             border-bottom: 1px solid var(--border);
@@ -416,29 +609,6 @@
             font-size: 48px;
             margin-bottom: 15px;
             opacity: 0.5;
-        }
-
-        /* Live Notification Toast */
-        .live-notification {
-            position: fixed;
-            top: 100px;
-            right: 30px;
-            background: var(--dark-card);
-            border-left: 4px solid var(--primary);
-            border-radius: 12px;
-            padding: 15px 20px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 2000;
-            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 4.7s forwards;
-            cursor: pointer;
-            max-width: 350px;
-        }
-
-        .live-notification:hover {
-            transform: translateX(-5px);
         }
 
         .live-notification-avatar {
@@ -1189,6 +1359,11 @@
             font-weight: 700;
             color: white;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
         .portfolio-username {
@@ -1304,6 +1479,10 @@
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .portfolio-detail-username {
@@ -1531,26 +1710,7 @@
             margin-bottom: 20px;
         }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: var(--blur);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
+        /* Modal Content */
         .modal-content {
             background: var(--dark-card);
             padding: 40px;
@@ -1559,31 +1719,6 @@
             width: 90%;
             border: 1px solid var(--border);
             animation: slideInUp 0.4s ease;
-        }
-
-        /* Notifications */
-        .notification {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--dark-card);
-            border-left: 4px solid var(--primary);
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 1000;
-            animation: slideInRight 0.3s ease;
-        }
-
-        .notification.success {
-            border-left-color: var(--success);
-        }
-
-        .notification.error {
-            border-left-color: var(--danger);
         }
 
         /* Filters */
@@ -1732,6 +1867,9 @@
 <body>
     <div class="animated-bg"></div>
     
+    <!-- Cookie Rain Container -->
+    <div id="cookieRainContainer" class="cookie-rain-container"></div>
+    
     <div class="container">
         <!-- Navbar -->
         <nav class="navbar animate__animated animate__fadeInDown">
@@ -1805,6 +1943,19 @@
         </div>
     </div>
 
+    <!-- Badges Modal -->
+    <div id="badgesModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-medal"></i> Badges Gallery</h2>
+            <div id="badgesList" style="max-height: 500px; overflow-y: auto; padding: 10px;">
+                <!-- Badges will be loaded here -->
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn btn-danger" onclick="closeBadgesModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Import Firebase -->
     <script type="module">
         // Import Firebase modules
@@ -1829,7 +1980,7 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
         
-        // Configure Google Provider with your client ID
+        // Configure Google Provider
         const googleProvider = new GoogleAuthProvider();
         googleProvider.setCustomParameters({
             client_id: "572074212370-k56l9us4reqog2m61b9ni53lcg60ktne.apps.googleusercontent.com"
@@ -1845,11 +1996,16 @@
         // Support link requirement
         const SUPPORT_LINK = 'https://earnpaste.com/?ref=dgSmzLFiRlbidd4iWrmRRxn4SYv2';
         
+        // Owner UID for special badge
+        const OWNER_UID = 'tonrPcwsTEeLN9e810OZrZK54lL2';
+        const OWNER_USERNAME = 'defnot67kid-beep';
+        const OWNER_BADGES_URL = 'https://defnot67kid-beep.github.io/VertexPaste/portfolio.html#portfolio-tonrPcwsTEeLN9e810OZrZK54lL2-Badges';
+        
         // Admin UIDs and emails
         const ADMIN_UIDS = ['tonrPcwsTEeLN9e810OZrZK54lL2'];
         const ADMIN_EMAILS = ['realgyjs@gmail.com'];
         
-        // Expanded link types with more platforms
+        // Expanded link types
         const LINK_TYPES = {
             website: { icon: 'fas fa-globe', name: 'Website', color: '#6366f1' },
             github: { icon: 'fab fa-github', name: 'GitHub', color: '#333' },
@@ -1905,6 +2061,126 @@
         let isAdmin = false;
         let codeMirrorEditor = null;
 
+        // ============ COOKIE RAIN FUNCTION ============
+        function startCookieRain() {
+            const container = document.getElementById('cookieRainContainer');
+            container.innerHTML = '';
+            
+            const cookieCount = 100;
+            const cookies = ['🍪', '🍪', '🍪', '🍪', '🍪']; // All cookies, no emojis
+            
+            for (let i = 0; i < cookieCount; i++) {
+                const cookie = document.createElement('div');
+                cookie.className = 'cookie';
+                cookie.textContent = cookies[Math.floor(Math.random() * cookies.length)];
+                
+                // Random starting position
+                const startX = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = 3 + Math.random() * 4;
+                const size = 16 + Math.random() * 20;
+                
+                cookie.style.left = startX + '%';
+                cookie.style.top = '-50px';
+                cookie.style.fontSize = size + 'px';
+                cookie.style.animation = `fall ${duration}s linear ${delay}s forwards`;
+                cookie.style.opacity = 0.7 + Math.random() * 0.3;
+                
+                container.appendChild(cookie);
+            }
+            
+            // Clear after animation
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 10000);
+        }
+
+        // ============ GET USER BADGES ============
+        function getUserBadges(userData, userId) {
+            const badges = [];
+            
+            // Owner badge
+            if (userId === OWNER_UID) {
+                badges.push({
+                    type: 'owner',
+                    name: 'Portfolio Owner',
+                    icon: '👑',
+                    description: 'Original creator of PortfolioHub Pro',
+                    color: 'var(--badge-owner)',
+                    date: '2024-01-01'
+                });
+            }
+            
+            // Subscriber to owner badge
+            if (userData.subscribedTo && userData.subscribedTo.includes(OWNER_UID)) {
+                badges.push({
+                    type: 'subscriber',
+                    name: 'Owner Subscriber',
+                    icon: '⭐',
+                    description: 'Subscribed to the Portfolio Owner',
+                    color: 'var(--badge-subscriber)',
+                    date: userData.subscribedToOwnerDate || new Date().toISOString().split('T')[0]
+                });
+            }
+            
+            // Early supporter badge (if hasSupported)
+            if (userData.hasSupported) {
+                badges.push({
+                    type: 'supporter',
+                    name: 'Early Supporter',
+                    icon: '💎',
+                    description: 'Supported the platform early',
+                    color: 'linear-gradient(135deg, #ffd700, #ff8c00)',
+                    date: userData.supporterDate || '2024'
+                });
+            }
+            
+            return badges;
+        }
+
+        // ============ SHOW BADGES MODAL ============
+        window.showBadgesModal = function(userId) {
+            const modal = document.getElementById('badgesModal');
+            const badgesList = document.getElementById('badgesList');
+            
+            const user = allPortfolios.find(p => p.uid === userId) || currentUser;
+            if (!user) return;
+            
+            const badges = getUserBadges(user, userId);
+            
+            badgesList.innerHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h3 style="color: white;">${escapeHtml(user.displayName)}'s Badges</h3>
+                    <p style="color: var(--text-dim);">${badges.length} badge${badges.length !== 1 ? 's' : ''} earned</p>
+                </div>
+                
+                <div class="badges-grid">
+                    ${badges.map(badge => `
+                        <div class="badge-card">
+                            <div class="badge-icon ${badge.type}" style="background: ${badge.color};">
+                                ${badge.icon}
+                            </div>
+                            <h4>${badge.name}</h4>
+                            <p>${badge.description}</p>
+                            <div class="badge-date">Earned: ${badge.date}</div>
+                        </div>
+                    `).join('')}
+                    
+                    ${badges.length === 0 ? `
+                        <p style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 40px;">
+                            No badges earned yet.
+                        </p>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        };
+
+        window.closeBadgesModal = function() {
+            document.getElementById('badgesModal').classList.remove('active');
+        };
+
         // ============ INITIALIZATION ============
         function init() {
             // Check local storage for support status
@@ -1939,6 +2215,11 @@
                                 currentUser.notifications = [];
                             }
                             
+                            // Initialize badges array if not exists
+                            if (!currentUser.badges) {
+                                currentUser.badges = [];
+                            }
+                            
                             // Set up real-time notifications listener
                             setupNotificationsListener(user.uid);
                             
@@ -1955,7 +2236,8 @@
                                 viewedDevices: [],
                                 hasSupported: false,
                                 themeColor: '#6366f1',
-                                notifications: []
+                                notifications: [],
+                                badges: []
                             };
                             
                             await setDoc(doc(db, 'users', user.uid), newUser);
@@ -2732,6 +3014,7 @@
             if (currentUser) {
                 const initial = (currentUser.displayName || 'U').charAt(0).toUpperCase();
                 const unreadCount = (currentUser.notifications || []).filter(n => !n.read).length;
+                const badges = getUserBadges(currentUser, currentUser.uid);
                 
                 let adminButton = '';
                 if (isAdmin) {
@@ -2754,6 +3037,7 @@
                             `<div class="user-avatar">${initial}</div>`
                         }
                         <span>${currentUser.displayName}</span>
+                        ${badges.length > 0 ? `<span class="badge-count" style="background: var(--primary);">${badges.length}</span>` : ''}
                         ${isAdmin ? '<i class="fas fa-shield-alt" style="color: #f59e0b;"></i>' : ''}
                     </div>
                     ${hasSupported ? `
@@ -2799,14 +3083,14 @@
             const supportInput = document.getElementById('supportVerificationInput')?.value;
             
             // For demo purposes, we'll accept any input that contains the support link
-            // In production, you'd want to verify this properly
             if (supportInput && supportInput.includes('earnpaste.com')) {
                 hasSupported = true;
                 localStorage.setItem('portfoliohub_supported', 'true');
                 
                 if (currentUser) {
                     await updateDoc(doc(db, 'users', currentUser.uid), {
-                        hasSupported: true
+                        hasSupported: true,
+                        supporterDate: new Date().toISOString().split('T')[0]
                     });
                 }
                 
@@ -2823,8 +3107,13 @@
             const hash = window.location.hash;
             
             if (hash.startsWith('#portfolio-')) {
-                const uid = hash.replace('#portfolio-', '');
-                viewPortfolio(uid);
+                const uid = hash.replace('#portfolio-', '').replace('-Badges', '');
+                if (hash.includes('-Badges')) {
+                    // Show badges for this user
+                    viewPortfolioBadges(uid);
+                } else {
+                    viewPortfolio(uid);
+                }
             } else if (hash === '#admin') {
                 if (currentUser && isAdmin) {
                     showAdminPanel();
@@ -2851,6 +3140,92 @@
             
             updateSupportBanner();
         }
+
+        // ============ VIEW PORTFOLIO BADGES ============
+        async function viewPortfolioBadges(uid) {
+            const container = document.getElementById('mainContent');
+            
+            try {
+                const userDoc = await getDoc(doc(db, 'users', uid));
+                
+                if (!userDoc.exists()) {
+                    container.innerHTML = '<div class="loading"></div>';
+                    window.location.hash = '#dashboard';
+                    return;
+                }
+                
+                const user = {
+                    uid: userDoc.id,
+                    ...userDoc.data()
+                };
+                
+                const badges = getUserBadges(user, uid);
+                
+                container.innerHTML = `
+                    <div class="portfolio-detail">
+                        <div class="portfolio-cover" style="background: linear-gradient(135deg, ${user.themeColor || '#6366f1'}, ${adjustColor(user.themeColor || '#6366f1', 20)});">
+                            <div class="portfolio-cover-overlay">
+                                <img src="${user.avatar || 'https://via.placeholder.com/180'}" class="portfolio-detail-avatar" onclick="window.location.hash='#portfolio-${uid}'" alt="Avatar">
+                                <h1 class="portfolio-detail-name">
+                                    ${escapeHtml(user.displayName)}'s Badges
+                                </h1>
+                                <div class="portfolio-detail-username">Click any badge for more info</div>
+                            </div>
+                        </div>
+                        
+                        <div class="badges-section">
+                            <h2 style="margin-bottom: 30px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-medal" style="color: var(--accent);"></i>
+                                Badge Collection (${badges.length})
+                            </h2>
+                            
+                            <div class="badges-grid">
+                                ${badges.map(badge => `
+                                    <div class="badge-card" onclick="showBadgeDetails('${badge.type}')">
+                                        <div class="badge-icon ${badge.type}" style="background: ${badge.color};">
+                                            ${badge.icon}
+                                        </div>
+                                        <h4>${badge.name}</h4>
+                                        <p>${badge.description}</p>
+                                        <div class="badge-date">Earned: ${badge.date}</div>
+                                    </div>
+                                `).join('')}
+                                
+                                ${badges.length === 0 ? `
+                                    <p style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 40px;">
+                                        No badges earned yet.
+                                    </p>
+                                ` : ''}
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button class="btn btn-primary" onclick="window.location.hash='#portfolio-${uid}'">
+                                    <i class="fas fa-arrow-left"></i> Back to Portfolio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading badges:', error);
+                container.innerHTML = '<div class="loading"></div>';
+                window.location.hash = '#dashboard';
+            }
+        }
+
+        // ============ SHOW BADGE DETAILS ============
+        window.showBadgeDetails = function(badgeType) {
+            let message = '';
+            if (badgeType === 'owner') {
+                message = '👑 Owner Badge: This user is the original creator of PortfolioHub Pro!';
+            } else if (badgeType === 'subscriber') {
+                message = '⭐ Subscriber Badge: This user has subscribed to the Portfolio Owner!';
+            } else if (badgeType === 'supporter') {
+                message = '💎 Supporter Badge: This user supported the platform early!';
+            }
+            showNotification(message, 'info');
+        };
 
         // ============ SHOW SUPPORT VERIFICATION ============
         function showSupportVerification() {
@@ -2995,13 +3370,11 @@
 
         window.loginWithGoogle = async function() {
             try {
-                // Use the configured provider with your client ID
                 const result = await signInWithPopup(auth, googleProvider);
                 showNotification('Login successful!', 'success');
             } catch (error) {
                 console.error('Google Sign-In Error:', error);
                 
-                // Handle specific errors
                 if (error.code === 'auth/unauthorized-domain') {
                     showNotification('This domain is not authorized. Please add it to Firebase console.', 'error');
                 } else if (error.code === 'auth/popup-blocked') {
@@ -3527,6 +3900,9 @@
                     unlisted: { icon: 'fa-link', text: 'Unlisted Portfolio' }
                 }[portfolio.privacy || 'public'];
                 
+                // Get badges
+                const badges = getUserBadges(portfolio, uid);
+                
                 // Device stats
                 const deviceStats = (portfolio.viewedDevices || []).reduce((acc, d) => {
                     acc[d.deviceType] = (acc[d.deviceType] || 0) + 1;
@@ -3538,8 +3914,26 @@
                         <div class="portfolio-cover" style="${coverStyle}">
                             <div class="portfolio-cover-overlay">
                                 <img src="${portfolio.avatar || 'https://via.placeholder.com/180'}" class="portfolio-detail-avatar" onclick="window.location.hash='#portfolio-${portfolio.uid}'" alt="Avatar">
-                                <h1 class="portfolio-detail-name">${escapeHtml(portfolio.displayName)}</h1>
+                                <h1 class="portfolio-detail-name">
+                                    ${escapeHtml(portfolio.displayName)}
+                                    ${uid === OWNER_UID ? '<span class="owner-badge-inline"><i class="fas fa-crown"></i> Owner</span>' : ''}
+                                </h1>
                                 <div class="portfolio-detail-username">${escapeHtml(portfolio.title || 'Professional Portfolio')}</div>
+                                
+                                <!-- Badges Container -->
+                                ${badges.length > 0 ? `
+                                    <div class="badge-container">
+                                        ${badges.map(badge => `
+                                            <span class="badge ${badge.type}-badge" onclick="event.stopPropagation(); showBadgeDetails('${badge.type}')" style="background: ${badge.color}; color: #000;">
+                                                ${badge.icon} ${badge.name}
+                                            </span>
+                                        `).join('')}
+                                        <span class="badge" onclick="event.stopPropagation(); window.location.hash='#portfolio-${uid}-Badges'">
+                                            <i class="fas fa-external-link-alt"></i> View All Badges
+                                        </span>
+                                    </div>
+                                ` : ''}
+                                
                                 <div class="privacy-info ${portfolio.privacy || 'public'}">
                                     <i class="fas ${privacyInfo.icon}"></i> ${privacyInfo.text}
                                 </div>
@@ -3562,6 +3956,12 @@
                                 <i class="fas fa-users"></i>
                                 <div class="stat-value">${portfolio.subscribers ? portfolio.subscribers.length : 0}</div>
                                 <div class="stat-label">Subscribers</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <i class="fas fa-medal"></i>
+                                <div class="stat-value">${badges.length}</div>
+                                <div class="stat-label">Badges Earned</div>
                             </div>
                             
                             <div class="stat-card">
@@ -3631,6 +4031,10 @@
                             
                             <button class="btn btn-primary" onclick="window.sharePortfolio('${portfolio.uid}')">
                                 <i class="fas fa-share-alt"></i> Share Portfolio
+                            </button>
+                            
+                            <button class="btn btn-success" onclick="window.location.hash='#portfolio-${uid}-Badges'">
+                                <i class="fas fa-medal"></i> View Badges (${badges.length})
                             </button>
                             
                             ${currentUser && currentUser.uid === uid ? `
@@ -3727,7 +4131,20 @@
                         subscribedTo: arrayUnion(portfolioUid)
                     });
                     
-                    showNotification('Subscribed successfully!', 'success');
+                    // Check if subscribing to owner
+                    if (portfolioUid === OWNER_UID) {
+                        // Award subscriber badge
+                        await updateDoc(userRef, {
+                            subscribedToOwnerDate: new Date().toISOString().split('T')[0]
+                        });
+                        
+                        // Start cookie rain!
+                        startCookieRain();
+                        
+                        showNotification('🎉 Congratulations! You earned the Owner Subscriber badge! Cookies are raining!', 'success');
+                    } else {
+                        showNotification('Subscribed successfully!', 'success');
+                    }
                     
                     // Show live notification immediately if we're the owner viewing
                     if (currentViewingPortfolio && currentViewingPortfolio.uid === portfolioUid) {
@@ -3833,7 +4250,9 @@
                     </h2>
                     
                     <div class="portfolio-grid">
-                        ${filteredPortfolios.sort((a, b) => (b.portfolioViews || 0) - (a.portfolioViews || 0)).map(portfolio => `
+                        ${filteredPortfolios.sort((a, b) => (b.portfolioViews || 0) - (a.portfolioViews || 0)).map(portfolio => {
+                            const badges = getUserBadges(portfolio, portfolio.uid);
+                            return `
                             <div class="portfolio-card" onclick="window.location.hash='#portfolio-${portfolio.uid}'">
                                 <div class="privacy-badge ${portfolio.privacy || 'public'}">
                                     <i class="fas ${portfolio.privacy === 'private' ? 'fa-lock' : portfolio.privacy === 'unlisted' ? 'fa-link' : 'fa-globe'}"></i>
@@ -3841,8 +4260,22 @@
                                 </div>
                                 <div class="portfolio-header" style="background: linear-gradient(135deg, ${portfolio.themeColor || '#6366f1'}, ${adjustColor(portfolio.themeColor || '#6366f1', 20)});">
                                     <img src="${portfolio.avatar || 'https://via.placeholder.com/120'}" class="portfolio-avatar" alt="Avatar">
-                                    <div class="portfolio-name">${escapeHtml(portfolio.displayName)}</div>
+                                    <div class="portfolio-name">
+                                        ${escapeHtml(portfolio.displayName)}
+                                        ${portfolio.uid === OWNER_UID ? '<span class="owner-badge-inline" style="font-size: 0.8rem;"><i class="fas fa-crown"></i></span>' : ''}
+                                    </div>
                                     <div class="portfolio-username">${escapeHtml(portfolio.title || 'Professional Portfolio')}</div>
+                                    
+                                    ${badges.length > 0 ? `
+                                        <div class="badge-container" style="justify-content: center; margin-top: 10px;">
+                                            ${badges.slice(0, 2).map(badge => `
+                                                <span class="badge ${badge.type}-badge" onclick="event.stopPropagation(); showBadgeDetails('${badge.type}')" style="background: ${badge.color}; color: #000; font-size: 0.7rem; padding: 2px 8px;">
+                                                    ${badge.icon}
+                                                </span>
+                                            `).join('')}
+                                            ${badges.length > 2 ? `<span class="badge" style="font-size: 0.7rem; padding: 2px 8px;">+${badges.length - 2}</span>` : ''}
+                                        </div>
+                                    ` : ''}
                                 </div>
                                 <div class="portfolio-body">
                                     <div class="portfolio-bio">
@@ -3868,9 +4301,12 @@
                                     <div class="portfolio-views">
                                         <i class="fas fa-bell"></i> ${portfolio.subscribers?.length || 0}
                                     </div>
+                                    <div class="portfolio-views">
+                                        <i class="fas fa-medal"></i> ${badges.length}
+                                    </div>
                                 </div>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                         
                         ${filteredPortfolios.length === 0 ? `
                             <p style="color: var(--text-dim); grid-column: 1/-1; text-align: center; padding: 40px;">
@@ -3952,11 +4388,15 @@
         window.onclick = function(event) {
             const shareModal = document.getElementById('shareModal');
             const subscribeModal = document.getElementById('subscribeModal');
+            const badgesModal = document.getElementById('badgesModal');
             if (event.target === shareModal) {
                 closeShareModal();
             }
             if (event.target === subscribeModal) {
                 closeSubscribeModal();
+            }
+            if (event.target === badgesModal) {
+                closeBadgesModal();
             }
         };
 
@@ -4003,6 +4443,10 @@
         window.copyPortfolioCode = copyPortfolioCode;
         window.clearCodeEditor = clearCodeEditor;
         window.refreshAdminStats = refreshAdminStats;
+        window.showBadgesModal = showBadgesModal;
+        window.closeBadgesModal = closeBadgesModal;
+        window.showBadgeDetails = showBadgeDetails;
+        window.startCookieRain = startCookieRain;
 
         // ============ INITIALIZE ============
         init();
