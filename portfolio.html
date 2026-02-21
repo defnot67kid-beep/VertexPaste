@@ -64,6 +64,16 @@
             position: relative;
         }
 
+        /* Theme backgrounds that match the primary color */
+        body.theme-primary { background: radial-gradient(circle at top right, #1e1e3f, #0a0a14); }
+        body.theme-success { background: radial-gradient(circle at top right, #1a2e1a, #0a140a); }
+        body.theme-danger { background: radial-gradient(circle at top right, #3f1e1e, #140a0a); }
+        body.theme-warning { background: radial-gradient(circle at top right, #3f2e1e, #14100a); }
+        body.theme-purple { background: radial-gradient(circle at top right, #2e1e3f, #0a0a14); }
+        body.theme-pink { background: radial-gradient(circle at top right, #3f1e2e, #140a0a); }
+        body.theme-indigo { background: radial-gradient(circle at top right, #1e1e4f, #0a0a1a); }
+        body.theme-teal { background: radial-gradient(circle at top right, #1e3f3f, #0a1414); }
+
         /* Cookie Animation Container */
         .cookie-rain-container {
             position: fixed;
@@ -106,7 +116,7 @@
             align-items: center;
             gap: 15px;
             z-index: 999999 !important;
-            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 4.7s forwards;
+            animation: slideInRight 0.3s ease;
             cursor: pointer;
             max-width: 350px;
             border: 1px solid var(--border);
@@ -158,6 +168,10 @@
             animation: slideInRight 0.3s ease;
             max-height: 500px;
             overflow-y: auto;
+        }
+
+        .notifications-panel.active {
+            display: block;
         }
 
         /* Badge Styles */
@@ -290,14 +304,11 @@
         }
 
         /* Rest of your existing styles remain exactly the same */
-        body.theme-primary { background: radial-gradient(circle at top right, #1e1e3f, #0a0a14); }
-        body.theme-success { background: radial-gradient(circle at top right, #1a2e1a, #0a140a); }
-        body.theme-danger { background: radial-gradient(circle at top right, #3f1e1e, #140a0a); }
-        body.theme-warning { background: radial-gradient(circle at top right, #3f2e1e, #14100a); }
-        body.theme-purple { background: radial-gradient(circle at top right, #2e1e3f, #0a0a14); }
-        body.theme-pink { background: radial-gradient(circle at top right, #3f1e2e, #140a0a); }
-        body.theme-indigo { background: radial-gradient(circle at top right, #1e1e4f, #0a0a1a); }
-        body.theme-teal { background: radial-gradient(circle at top right, #1e3f3f, #0a1414); }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -316,12 +327,6 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
         }
 
         /* Admin Badge */
@@ -1875,18 +1880,18 @@
         <nav class="navbar animate__animated animate__fadeInDown">
             <div class="logo" onclick="window.location.hash='#dashboard'">PortfolioHub Pro</div>
             <div class="nav-buttons" id="navButtons"></div>
-            
-            <!-- Notifications Panel -->
-            <div class="notifications-panel" id="notificationsPanel">
-                <div class="notifications-header">
-                    <h3><i class="fas fa-bell"></i> Notifications</h3>
-                    <span class="mark-read" onclick="markAllNotificationsRead()">Mark all as read</span>
-                </div>
-                <div class="notifications-list" id="notificationsList">
-                    <!-- Notifications will be loaded here -->
-                </div>
-            </div>
         </nav>
+
+        <!-- Notifications Panel (moved outside navbar but inside container) -->
+        <div class="notifications-panel" id="notificationsPanel">
+            <div class="notifications-header">
+                <h3><i class="fas fa-bell"></i> Notifications</h3>
+                <span class="mark-read" onclick="markAllNotificationsRead()">Mark all as read</span>
+            </div>
+            <div class="notifications-list" id="notificationsList">
+                <!-- Notifications will be loaded here -->
+            </div>
+        </div>
 
         <!-- Support Banner (shown to users who haven't supported) -->
         <div id="supportBanner" style="display: none;" class="support-banner">
@@ -2067,7 +2072,7 @@
             container.innerHTML = '';
             
             const cookieCount = 100;
-            const cookies = ['🍪', '🍪', '🍪', '🍪', '🍪']; // All cookies, no emojis
+            const cookies = ['🍪', '🍪', '🍪', '🍪', '🍪']; // All cookies
             
             for (let i = 0; i < cookieCount; i++) {
                 const cookie = document.createElement('div');
@@ -2095,9 +2100,10 @@
             }, 10000);
         }
 
-        // ============ GET USER BADGES ============
+        // ============ GET USER BADGES WITH ACTUAL DATES ============
         function getUserBadges(userData, userId) {
             const badges = [];
+            const today = new Date();
             
             // Owner badge
             if (userId === OWNER_UID) {
@@ -2107,35 +2113,48 @@
                     icon: '👑',
                     description: 'Original creator of PortfolioHub Pro',
                     color: 'var(--badge-owner)',
-                    date: '2024-01-01'
+                    date: '2024-01-01' // Owner since day one
                 });
             }
             
-            // Subscriber to owner badge
+            // Subscriber to owner badge - use actual subscription date
             if (userData.subscribedTo && userData.subscribedTo.includes(OWNER_UID)) {
+                const subDate = userData.subscribedToOwnerDate || today.toISOString().split('T')[0];
                 badges.push({
                     type: 'subscriber',
                     name: 'Owner Subscriber',
                     icon: '⭐',
                     description: 'Subscribed to the Portfolio Owner',
                     color: 'var(--badge-subscriber)',
-                    date: userData.subscribedToOwnerDate || new Date().toISOString().split('T')[0]
+                    date: formatDate(subDate)
                 });
             }
             
-            // Early supporter badge (if hasSupported)
+            // Early supporter badge - use actual support date
             if (userData.hasSupported) {
+                const supportDate = userData.supporterDate || userData.createdAt?.split('T')[0] || today.toISOString().split('T')[0];
                 badges.push({
                     type: 'supporter',
                     name: 'Early Supporter',
                     icon: '💎',
                     description: 'Supported the platform early',
                     color: 'linear-gradient(135deg, #ffd700, #ff8c00)',
-                    date: userData.supporterDate || '2024'
+                    date: formatDate(supportDate)
                 });
             }
             
-            return badges;
+            // Sort badges by date (newest first)
+            return badges.sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+
+        // Helper function to format dates nicely
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
         }
 
         // ============ SHOW BADGES MODAL ============
@@ -2156,7 +2175,7 @@
                 
                 <div class="badges-grid">
                     ${badges.map(badge => `
-                        <div class="badge-card">
+                        <div class="badge-card" onclick="showNotification('${badge.name}: ${badge.description}', 'info')">
                             <div class="badge-icon ${badge.type}" style="background: ${badge.color};">
                                 ${badge.icon}
                             </div>
@@ -2215,11 +2234,6 @@
                                 currentUser.notifications = [];
                             }
                             
-                            // Initialize badges array if not exists
-                            if (!currentUser.badges) {
-                                currentUser.badges = [];
-                            }
-                            
                             // Set up real-time notifications listener
                             setupNotificationsListener(user.uid);
                             
@@ -2236,8 +2250,7 @@
                                 viewedDevices: [],
                                 hasSupported: false,
                                 themeColor: '#6366f1',
-                                notifications: [],
-                                badges: []
+                                notifications: []
                             };
                             
                             await setDoc(doc(db, 'users', user.uid), newUser);
@@ -2711,20 +2724,24 @@
                     const oldNotifications = currentUser.notifications || [];
                     const newNotifications = doc.data().notifications || [];
                     
-                    // Check if there are new notifications
-                    if (newNotifications.length > oldNotifications.length) {
-                        // Find the newest notification
-                        const newestNotification = newNotifications[0];
-                        
-                        // Show live notification toast
-                        showLiveNotification(newestNotification);
-                    }
-                    
                     // Update current user's notifications
                     currentUser.notifications = newNotifications;
                     
                     // Update notification badge
                     updateNotificationBadge();
+                    
+                    // Check if there are new notifications (length increased)
+                    if (newNotifications.length > oldNotifications.length && newNotifications.length > 0) {
+                        // Find the newest notification (first one that's not in old list)
+                        const newestNotification = newNotifications.find(n => 
+                            !oldNotifications.some(old => old.id === n.id)
+                        );
+                        
+                        if (newestNotification) {
+                            // Show live notification toast
+                            showLiveNotification(newestNotification);
+                        }
+                    }
                     
                     // Update notifications panel if it's open
                     if (document.getElementById('notificationsPanel').classList.contains('active')) {
@@ -2903,22 +2920,23 @@
         function applyThemeToBody(color) {
             document.body.className = '';
             
+            // Map hex colors to theme classes
             const colorMap = {
                 '#6366f1': 'theme-primary',
-                '#10b981': 'theme-success',
-                '#ef4444': 'theme-danger',
-                '#f59e0b': 'theme-warning',
+                '#4f46e5': 'theme-indigo',
                 '#8b5cf6': 'theme-purple',
                 '#ec4899': 'theme-pink',
-                '#4f46e5': 'theme-indigo',
+                '#ef4444': 'theme-danger',
+                '#f59e0b': 'theme-warning',
+                '#10b981': 'theme-success',
                 '#14b8a6': 'theme-teal'
             };
             
-            // Also update CSS variable
+            // Update CSS variable
             document.documentElement.style.setProperty('--primary', color);
             document.documentElement.style.setProperty('--shadow-glow', `0 0 20px ${color}`);
             
-            // Find closest preset
+            // Find closest matching theme class
             let closestClass = 'theme-primary';
             let minDiff = Infinity;
             
@@ -3090,7 +3108,7 @@
                 if (currentUser) {
                     await updateDoc(doc(db, 'users', currentUser.uid), {
                         hasSupported: true,
-                        supporterDate: new Date().toISOString().split('T')[0]
+                        supporterDate: new Date().toISOString()
                     });
                 }
                 
@@ -3181,7 +3199,7 @@
                             
                             <div class="badges-grid">
                                 ${badges.map(badge => `
-                                    <div class="badge-card" onclick="showBadgeDetails('${badge.type}')">
+                                    <div class="badge-card" onclick="showNotification('${badge.name}: ${badge.description}', 'info')">
                                         <div class="badge-icon ${badge.type}" style="background: ${badge.color};">
                                             ${badge.icon}
                                         </div>
@@ -3834,6 +3852,11 @@
                     return;
                 }
                 
+                // Apply theme color to body when viewing portfolio
+                if (portfolio.themeColor) {
+                    applyThemeToBody(portfolio.themeColor);
+                }
+                
                 // Advanced view tracking - per device, prevent stacking
                 const deviceId = getDeviceId();
                 const deviceType = getDeviceType();
@@ -4105,8 +4128,9 @@
                     showNotification('Unsubscribed successfully', 'success');
                 } else {
                     // Create notification for portfolio owner
+                    const notificationId = Math.random().toString(36).substr(2, 9);
                     const notification = {
-                        id: Math.random().toString(36).substr(2, 9),
+                        id: notificationId,
                         type: 'subscribe',
                         subscriberId: currentUser.uid,
                         subscriberName: currentUser.displayName,
@@ -4127,15 +4151,16 @@
                         notifications: updatedNotifications
                     });
                     
+                    // Update user's subscribedTo
                     await updateDoc(userRef, {
                         subscribedTo: arrayUnion(portfolioUid)
                     });
                     
                     // Check if subscribing to owner
                     if (portfolioUid === OWNER_UID) {
-                        // Award subscriber badge
+                        // Award subscriber badge with current date
                         await updateDoc(userRef, {
-                            subscribedToOwnerDate: new Date().toISOString().split('T')[0]
+                            subscribedToOwnerDate: new Date().toISOString()
                         });
                         
                         // Start cookie rain!
@@ -4146,10 +4171,8 @@
                         showNotification('Subscribed successfully!', 'success');
                     }
                     
-                    // Show live notification immediately if we're the owner viewing
-                    if (currentViewingPortfolio && currentViewingPortfolio.uid === portfolioUid) {
-                        showLiveNotification(notification);
-                    }
+                    // Show live notification immediately
+                    showLiveNotification(notification);
                 }
                 
                 // Refresh portfolio view
