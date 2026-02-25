@@ -64,6 +64,31 @@
       width: 24px;
       height: 24px;
     }
+    .youtube-btn {
+      background: #ff0000;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin: 10px 0;
+      transition: all 0.3s;
+    }
+    .youtube-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,0,0,0.5);
+    }
+    .youtube-btn img {
+      width: 24px;
+      height: 24px;
+    }
     /* Main Stream Screen */
     #mainScreen {
       display: none;
@@ -193,7 +218,8 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
+  <!-- Google Identity Services for YouTube Sign In -->
+  <script src="https://accounts.google.com/gsi/client"></script>
 </head>
 <body>
   <div class="container">
@@ -203,11 +229,21 @@
         <h1>🎮 Roblox Streamer</h1>
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png" 
              style="width: 100px; margin: 20px 0;">
-        <p style="margin-bottom: 30px; color: #ccc;">Sign in with Google to stream to YouTube</p>
+        <p style="margin-bottom: 30px; color: #ccc;">Sign in to stream to YouTube</p>
+        
+        <!-- Google Sign-In Button -->
         <button class="google-btn" onclick="signInWithGoogle()">
           <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google">
           Sign in with Google
         </button>
+
+        <!-- YouTube Sign-In Button -->
+        <button class="youtube-btn" onclick="signInWithYouTube()">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png" 
+               alt="YouTube" style="filter: brightness(0) invert(1);">
+          Sign in with YouTube
+        </button>
+
         <p style="font-size: 12px; color: #666; margin-top: 20px;">
           By signing in, you agree to stream to your YouTube channel
         </p>
@@ -292,7 +328,7 @@
       appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
     };
 
-    // YouTube API Config
+    // YouTube OAuth Config
     const YT_CLIENT_ID = "824821646122-5redb77hteq1qjaiekin4hmj3mb70nje.apps.googleusercontent.com";
     const YT_API_KEY = "AIzaSyA-lF7reFlMRnCQ2QHz0rsWP5Rr8xCV8w4";
     
@@ -309,7 +345,7 @@
     let isStreaming = false;
     let channelId = null;
 
-    // ==================== FIREBASE AUTH ====================
+    // ==================== FIREBASE AUTH (GOOGLE SIGN-IN) ====================
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('https://www.googleapis.com/auth/youtube');
@@ -350,8 +386,78 @@
         });
     }
 
+    // ==================== YOUTUBE DIRECT SIGN-IN ====================
+    function signInWithYouTube() {
+      // OAuth configuration for YouTube
+      const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+      
+      const form = document.createElement('form');
+      form.setAttribute('method', 'GET');
+      form.setAttribute('action', oauth2Endpoint);
+      
+      const params = {
+        'client_id': YT_CLIENT_ID,
+        'redirect_uri': 'http://localhost', // Change this to your actual redirect URI
+        'response_type': 'token',
+        'scope': 'https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtube.readonly',
+        'include_granted_scopes': 'true',
+        'state': 'youtube_auth'
+      };
+      
+      for (let p in params) {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'hidden');
+        input.setAttribute('name', p);
+        input.setAttribute('value', params[p]);
+        form.appendChild(input);
+      }
+      
+      document.body.appendChild(form);
+      form.submit();
+      
+      // Handle OAuth response (this would normally be handled on redirect)
+      // For demo purposes, we'll parse the URL fragment
+      if (window.location.hash.includes('access_token')) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        ytAccessToken = hashParams.get('access_token');
+        
+        if (ytAccessToken) {
+          // Create a Firebase credential with the token
+          const credential = firebase.auth.GoogleAuthProvider.credential(null, ytAccessToken);
+          
+          auth.signInWithCredential(credential)
+            .then(async (result) => {
+              currentUser = result.user;
+              
+              await getYouTubeChannelInfo();
+              
+              document.getElementById('loginScreen').style.display = 'none';
+              document.getElementById('mainScreen').style.display = 'block';
+              document.getElementById('userAvatar').src = currentUser.photoURL;
+              document.getElementById('channelName').textContent = currentUser.displayName;
+              
+              const savedKey = localStorage.getItem(`yt_stream_key_${currentUser.uid}`);
+              if(savedKey) {
+                document.getElementById('streamKeyInput').value = savedKey;
+              }
+              
+              fetchYouTubeStats();
+            })
+            .catch((error) => {
+              console.error('YouTube sign-in error:', error);
+              alert('YouTube sign-in failed: ' + error.message);
+            });
+        }
+      }
+    }
+
     // ==================== YOUTUBE API ====================
     async function getYouTubeChannelInfo() {
+      if (!ytAccessToken) {
+        console.log('No YouTube access token');
+        return;
+      }
+      
       try {
         const response = await fetch(
           `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true`,
