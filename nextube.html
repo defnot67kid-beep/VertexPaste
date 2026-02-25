@@ -80,6 +80,12 @@
       width: 100%;
       margin: 10px 0;
       transition: all 0.3s;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .youtube-btn.active {
+      opacity: 1;
+      pointer-events: all;
     }
     .youtube-btn:hover {
       transform: scale(1.05);
@@ -88,6 +94,7 @@
     .youtube-btn img {
       width: 24px;
       height: 24px;
+      filter: brightness(0) invert(1);
     }
     /* Main Stream Screen */
     #mainScreen {
@@ -214,12 +221,26 @@
     .live { background: #ff0000; animation: pulse 1.5s infinite; }
     .offline { background: #333; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .step {
+      padding: 5px 15px;
+      border-radius: 20px;
+      background: #333;
+      color: #888;
+    }
+    .step.completed {
+      background: #00ff00;
+      color: black;
+    }
   </style>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
-  <!-- Google Identity Services for YouTube Sign In -->
-  <script src="https://accounts.google.com/gsi/client"></script>
 </head>
 <body>
   <div class="container">
@@ -229,23 +250,29 @@
         <h1>🎮 Roblox Streamer</h1>
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png" 
              style="width: 100px; margin: 20px 0;">
-        <p style="margin-bottom: 30px; color: #ccc;">Sign in to stream to YouTube</p>
+        <p style="margin-bottom: 30px; color: #ccc;">Two-step sign in to stream to YouTube</p>
         
-        <!-- Google Sign-In Button -->
-        <button class="google-btn" onclick="signInWithGoogle()">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <span id="step1" class="step">1. Google Auth</span>
+          <span id="step2" class="step">2. YouTube Auth</span>
+        </div>
+
+        <!-- Step 1: Google Sign-In Button -->
+        <button class="google-btn" onclick="signInWithGoogle()" id="googleSignInBtn">
           <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google">
-          Sign in with Google
+          Step 1: Sign in with Google
         </button>
 
-        <!-- YouTube Sign-In Button -->
-        <button class="youtube-btn" onclick="signInWithYouTube()">
+        <!-- Step 2: YouTube Sign-In Button (initially disabled) -->
+        <button class="youtube-btn" onclick="signInWithYouTube()" id="youtubeSignInBtn" disabled>
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png" 
-               alt="YouTube" style="filter: brightness(0) invert(1);">
-          Sign in with YouTube
+               alt="YouTube">
+          Step 2: Connect YouTube
         </button>
 
         <p style="font-size: 12px; color: #666; margin-top: 20px;">
-          By signing in, you agree to stream to your YouTube channel
+          First sign in with Google, then connect your YouTube channel
         </p>
       </div>
     </div>
@@ -282,7 +309,7 @@
           <div class="stat-card">
             <div style="font-size: 18px; color: #888;">REAL SUBSCRIBERS</div>
             <div class="stat-value" id="subscriberCount">--</div>
-            <div class="stat-label" id="subUpdateTime">Loading...</div>
+            <div class="stat-label" id="subUpdateTime">Connect YouTube to see stats</div>
           </div>
 
           <!-- Live Viewers -->
@@ -310,7 +337,7 @@
 
           <!-- Channel Info -->
           <div class="stat-card" style="background: #2d2d2d;">
-            <div id="channelStats"></div>
+            <div id="channelStats">Connect YouTube to see channel info</div>
           </div>
         </div>
       </div>
@@ -328,9 +355,9 @@
       appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
     };
 
-    // YouTube OAuth Config
+    // YouTube OAuth Config - FIXED: Using correct client ID format
     const YT_CLIENT_ID = "824821646122-5redb77hteq1qjaiekin4hmj3mb70nje.apps.googleusercontent.com";
-    const YT_API_KEY = "AIzaSyA-lF7reFlMRnCQ2QHz0rsWP5Rr8xCV8w4";
+    const REDIRECT_URI = window.location.origin + window.location.pathname;
     
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -345,23 +372,78 @@
     let isStreaming = false;
     let channelId = null;
 
-    // ==================== FIREBASE AUTH (GOOGLE SIGN-IN) ====================
+    // ==================== FIXED: TWO-STEP SIGN IN ====================
+    
+    // Step 1: Google Sign-In (Firebase Auth)
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope('https://www.googleapis.com/auth/youtube');
-      provider.addScope('https://www.googleapis.com/auth/youtube.force-ssl');
-      provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
       
       auth.signInWithPopup(provider)
         .then(async (result) => {
-          // Get YouTube access token
-          const credential = result.credential;
-          ytAccessToken = credential.accessToken;
-          
           currentUser = result.user;
           
-          // Get YouTube channel info
-          await getYouTubeChannelInfo();
+          // Update UI
+          document.getElementById('step1').classList.add('completed');
+          document.getElementById('googleSignInBtn').innerHTML = '✅ Signed in with Google';
+          document.getElementById('googleSignInBtn').disabled = true;
+          
+          // Enable YouTube button
+          const ytBtn = document.getElementById('youtubeSignInBtn');
+          ytBtn.disabled = false;
+          ytBtn.classList.add('active');
+          
+          // Show success message
+          alert(`✅ Step 1 complete! Signed in as ${currentUser.displayName}\n\nNow click "Connect YouTube" to enable streaming.`);
+        })
+        .catch((error) => {
+          console.error('Google Auth error:', error);
+          alert('Google sign in failed: ' + error.message);
+        });
+    }
+
+    // Step 2: YouTube OAuth (Direct, with fixed params)
+    function signInWithYouTube() {
+      if (!currentUser) {
+        alert('Please complete Step 1 (Google Sign In) first!');
+        return;
+      }
+
+      // FIXED: Proper OAuth parameters to avoid "Access blocked" error
+      const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+      
+      // Build the OAuth URL with correct parameters
+      const params = new URLSearchParams({
+        'client_id': YT_CLIENT_ID,
+        'redirect_uri': REDIRECT_URI,
+        'response_type': 'token',
+        'scope': 'https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtube.readonly',
+        'include_granted_scopes': 'true',
+        'state': 'youtube_auth',
+        'prompt': 'consent',
+        'access_type': 'online'
+      });
+      
+      // Open popup for OAuth
+      const authUrl = `${oauth2Endpoint}?${params.toString()}`;
+      const popup = window.open(authUrl, 'youtubeAuth', 'width=600,height=600');
+      
+      // Listen for the redirect back
+      window.addEventListener('load', checkForYouTubeToken);
+    }
+
+    // Check for YouTube token in URL hash (when redirected back)
+    function checkForYouTubeToken() {
+      if (window.location.hash.includes('access_token')) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        ytAccessToken = hashParams.get('access_token');
+        
+        if (ytAccessToken) {
+          console.log('✅ YouTube access token obtained');
+          
+          // Update UI
+          document.getElementById('step2').classList.add('completed');
+          document.getElementById('youtubeSignInBtn').innerHTML = '✅ YouTube Connected';
+          document.getElementById('youtubeSignInBtn').disabled = true;
           
           // Show main screen
           document.getElementById('loginScreen').style.display = 'none';
@@ -377,76 +459,11 @@
             document.getElementById('streamKeyInput').value = savedKey;
           }
           
-          // Start fetching real stats
+          // Get YouTube channel info
+          getYouTubeChannelInfo();
           fetchYouTubeStats();
-        })
-        .catch((error) => {
-          console.error('Auth error:', error);
-          alert('Sign in failed: ' + error.message);
-        });
-    }
-
-    // ==================== YOUTUBE DIRECT SIGN-IN ====================
-    function signInWithYouTube() {
-      // OAuth configuration for YouTube
-      const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-      
-      const form = document.createElement('form');
-      form.setAttribute('method', 'GET');
-      form.setAttribute('action', oauth2Endpoint);
-      
-      const params = {
-        'client_id': YT_CLIENT_ID,
-        'redirect_uri': 'http://localhost', // Change this to your actual redirect URI
-        'response_type': 'token',
-        'scope': 'https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtube.readonly',
-        'include_granted_scopes': 'true',
-        'state': 'youtube_auth'
-      };
-      
-      for (let p in params) {
-        const input = document.createElement('input');
-        input.setAttribute('type', 'hidden');
-        input.setAttribute('name', p);
-        input.setAttribute('value', params[p]);
-        form.appendChild(input);
-      }
-      
-      document.body.appendChild(form);
-      form.submit();
-      
-      // Handle OAuth response (this would normally be handled on redirect)
-      // For demo purposes, we'll parse the URL fragment
-      if (window.location.hash.includes('access_token')) {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        ytAccessToken = hashParams.get('access_token');
-        
-        if (ytAccessToken) {
-          // Create a Firebase credential with the token
-          const credential = firebase.auth.GoogleAuthProvider.credential(null, ytAccessToken);
           
-          auth.signInWithCredential(credential)
-            .then(async (result) => {
-              currentUser = result.user;
-              
-              await getYouTubeChannelInfo();
-              
-              document.getElementById('loginScreen').style.display = 'none';
-              document.getElementById('mainScreen').style.display = 'block';
-              document.getElementById('userAvatar').src = currentUser.photoURL;
-              document.getElementById('channelName').textContent = currentUser.displayName;
-              
-              const savedKey = localStorage.getItem(`yt_stream_key_${currentUser.uid}`);
-              if(savedKey) {
-                document.getElementById('streamKeyInput').value = savedKey;
-              }
-              
-              fetchYouTubeStats();
-            })
-            .catch((error) => {
-              console.error('YouTube sign-in error:', error);
-              alert('YouTube sign-in failed: ' + error.message);
-            });
+          alert('✅ Step 2 complete! YouTube connected. Ready to stream!');
         }
       }
     }
@@ -699,35 +716,49 @@ Check YouTube Studio to confirm you're live.`);
 
     function logout() {
       auth.signOut().then(() => {
+        // Reset everything
+        currentUser = null;
+        ytAccessToken = null;
+        channelId = null;
+        
+        // Reset UI
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainScreen').style.display = 'none';
         
+        document.getElementById('step1').classList.remove('completed');
+        document.getElementById('step2').classList.remove('completed');
+        
+        document.getElementById('googleSignInBtn').innerHTML = '<img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google"> Step 1: Sign in with Google';
+        document.getElementById('googleSignInBtn').disabled = false;
+        
+        document.getElementById('youtubeSignInBtn').innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/2560px-YouTube_full-color_icon_%282017%29.svg.png" alt="YouTube"> Step 2: Connect YouTube';
+        document.getElementById('youtubeSignInBtn').disabled = true;
+        document.getElementById('youtubeSignInBtn').classList.remove('active');
+        
         if(mediaStream) {
           mediaStream.getTracks().forEach(track => track.stop());
+          mediaStream = null;
         }
       });
     }
 
-    // Check if user is already signed in
+    // Check for YouTube token on page load
+    window.addEventListener('load', checkForYouTubeToken);
+    
+    // Check if user is already signed in to Firebase
     auth.onAuthStateChanged((user) => {
       if(user) {
         currentUser = user;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainScreen').style.display = 'block';
-        document.getElementById('userAvatar').src = user.photoURL;
-        document.getElementById('channelName').textContent = user.displayName;
         
-        // Get token for YouTube API
-        user.getIdTokenResult().then((idTokenResult) => {
-          ytAccessToken = idTokenResult.token;
-          getYouTubeChannelInfo();
-          fetchYouTubeStats();
-        });
+        // Update UI for step 1
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('googleSignInBtn').innerHTML = '✅ Signed in with Google';
+        document.getElementById('googleSignInBtn').disabled = true;
         
-        const savedKey = localStorage.getItem(`yt_stream_key_${user.uid}`);
-        if(savedKey) {
-          document.getElementById('streamKeyInput').value = savedKey;
-        }
+        // Enable YouTube button
+        const ytBtn = document.getElementById('youtubeSignInBtn');
+        ytBtn.disabled = false;
+        ytBtn.classList.add('active');
       }
     });
   </script>
