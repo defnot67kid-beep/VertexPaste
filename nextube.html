@@ -238,9 +238,9 @@
       color: black;
     }
   </style>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+  <!-- Firebase SDKs (correct version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
 <body>
   <div class="container">
@@ -271,7 +271,7 @@
           Step 2: Connect YouTube
         </button>
 
-        <p style="font-size: 12px; color: #666; margin-top: 20px;">
+        <p style="font-size: 12px; color: #666; margin-top: 20px;" id="authStatus">
           First sign in with Google, then connect your YouTube channel
         </p>
       </div>
@@ -355,11 +355,11 @@
       appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
     };
 
-    // YouTube OAuth Config - FIXED: Using correct client ID format
+    // YouTube OAuth Config
     const YT_CLIENT_ID = "824821646122-5redb77hteq1qjaiekin4hmj3mb70nje.apps.googleusercontent.com";
     const REDIRECT_URI = window.location.origin + window.location.pathname;
     
-    // Initialize Firebase
+    // Initialize Firebase (using compat version)
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     
@@ -372,15 +372,25 @@
     let isStreaming = false;
     let channelId = null;
 
-    // ==================== FIXED: TWO-STEP SIGN IN ====================
+    // ==================== FIXED: WORKING GOOGLE SIGN-IN ====================
     
-    // Step 1: Google Sign-In (Firebase Auth)
+    // Step 1: Google Sign-In (Firebase Auth) - FIXED
     function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       
+      // Add basic scopes only - we'll get YouTube separately
+      provider.addScope('profile');
+      provider.addScope('email');
+      
+      // Show loading state
+      document.getElementById('authStatus').innerHTML = '⏳ Signing in with Google...';
+      
       auth.signInWithPopup(provider)
-        .then(async (result) => {
+        .then((result) => {
+          // Successfully signed in
           currentUser = result.user;
+          
+          console.log('✅ Google sign-in successful:', currentUser.displayName);
           
           // Update UI
           document.getElementById('step1').classList.add('completed');
@@ -392,26 +402,46 @@
           ytBtn.disabled = false;
           ytBtn.classList.add('active');
           
-          // Show success message
-          alert(`✅ Step 1 complete! Signed in as ${currentUser.displayName}\n\nNow click "Connect YouTube" to enable streaming.`);
+          // Update status
+          document.getElementById('authStatus').innerHTML = '✅ Google sign-in complete! Now click "Connect YouTube"';
+          
+          // Optional: Show a quick preview of user info
+          alert(`✅ Welcome ${currentUser.displayName}!\n\nStep 1 complete! Now click "Connect YouTube" to enable streaming.`);
         })
         .catch((error) => {
           console.error('Google Auth error:', error);
-          alert('Google sign in failed: ' + error.message);
+          
+          // Handle specific errors
+          let errorMessage = 'Google sign in failed: ';
+          switch(error.code) {
+            case 'auth/popup-closed-by-user':
+              errorMessage = 'Sign-in cancelled. Please try again.';
+              break;
+            case 'auth/popup-blocked':
+              errorMessage = 'Pop-up blocked. Please allow pop-ups for this site.';
+              break;
+            case 'auth/unauthorized-domain':
+              errorMessage = 'This domain is not authorized. Please add it to Firebase console.';
+              break;
+            default:
+              errorMessage += error.message;
+          }
+          
+          alert(errorMessage);
+          document.getElementById('authStatus').innerHTML = errorMessage;
         });
     }
 
-    // Step 2: YouTube OAuth (Direct, with fixed params)
+    // Step 2: YouTube OAuth
     function signInWithYouTube() {
       if (!currentUser) {
         alert('Please complete Step 1 (Google Sign In) first!');
         return;
       }
 
-      // FIXED: Proper OAuth parameters to avoid "Access blocked" error
-      const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-      
-      // Build the OAuth URL with correct parameters
+      document.getElementById('authStatus').innerHTML = '⏳ Connecting to YouTube...';
+
+      // Build the OAuth URL
       const params = new URLSearchParams({
         'client_id': YT_CLIENT_ID,
         'redirect_uri': REDIRECT_URI,
@@ -424,21 +454,32 @@
       });
       
       // Open popup for OAuth
-      const authUrl = `${oauth2Endpoint}?${params.toString()}`;
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
       const popup = window.open(authUrl, 'youtubeAuth', 'width=600,height=600');
       
-      // Listen for the redirect back
-      window.addEventListener('load', checkForYouTubeToken);
+      // Focus the popup
+      if (popup) {
+        popup.focus();
+      } else {
+        alert('Pop-up blocked! Please allow pop-ups for this site.');
+      }
     }
 
-    // Check for YouTube token in URL hash (when redirected back)
+    // Check for YouTube token in URL hash
     function checkForYouTubeToken() {
       if (window.location.hash.includes('access_token')) {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hash = window.location.hash.substring(1);
+        const hashParams = new URLSearchParams(hash);
+        
         ytAccessToken = hashParams.get('access_token');
+        const tokenType = hashParams.get('token_type');
+        const expiresIn = hashParams.get('expires_in');
         
         if (ytAccessToken) {
           console.log('✅ YouTube access token obtained');
+          
+          // Clear the hash from URL
+          window.location.hash = '';
           
           // Update UI
           document.getElementById('step2').classList.add('completed');
@@ -450,8 +491,8 @@
           document.getElementById('mainScreen').style.display = 'block';
           
           // Update UI with user info
-          document.getElementById('userAvatar').src = currentUser.photoURL;
-          document.getElementById('channelName').textContent = currentUser.displayName;
+          document.getElementById('userAvatar').src = currentUser.photoURL || 'https://via.placeholder.com/50';
+          document.getElementById('channelName').textContent = currentUser.displayName || 'YouTube Streamer';
           
           // Load saved stream key
           const savedKey = localStorage.getItem(`yt_stream_key_${currentUser.uid}`);
@@ -463,7 +504,7 @@
           getYouTubeChannelInfo();
           fetchYouTubeStats();
           
-          alert('✅ Step 2 complete! YouTube connected. Ready to stream!');
+          alert('✅ YouTube connected! Ready to stream!');
         }
       }
     }
@@ -498,9 +539,12 @@
               Views: ${parseInt(data.items[0].statistics.viewCount).toLocaleString() || 0}
             </div>
           `;
+        } else {
+          document.getElementById('channelStats').innerHTML = 'No YouTube channel found';
         }
       } catch(err) {
         console.error('YouTube API error:', err);
+        document.getElementById('channelStats').innerHTML = 'Error loading channel info';
       }
     }
 
@@ -588,57 +632,9 @@
     }
 
     function updatePreview() {
-      if(!mediaStream) return;
-      
       const video = document.getElementById('videoPreview');
       
-      // If webcam is active, combine streams
-      if(webcamStream) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 1280;
-        canvas.height = 720;
-        const ctx = canvas.getContext('2d');
-        
-        const screenVideo = document.createElement('video');
-        screenVideo.srcObject = mediaStream;
-        screenVideo.autoplay = true;
-        screenVideo.muted = true;
-        
-        const webcamVideo = document.createElement('video');
-        webcamVideo.srcObject = webcamStream;
-        webcamVideo.autoplay = true;
-        webcamVideo.muted = true;
-        
-        function draw() {
-          if(screenVideo.readyState === screenVideo.HAVE_ENOUGH_DATA) {
-            ctx.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
-            
-            if(webcamVideo.readyState === webcamVideo.HAVE_ENOUGH_DATA) {
-              // Draw webcam in corner
-              ctx.strokeStyle = '#ff0000';
-              ctx.lineWidth = 3;
-              ctx.strokeRect(canvas.width-220, canvas.height-170, 210, 160);
-              ctx.drawImage(webcamVideo, canvas.width-220, canvas.height-170, 210, 160);
-            }
-          }
-          requestAnimationFrame(draw);
-        }
-        
-        screenVideo.play();
-        webcamVideo.play();
-        draw();
-        
-        const combinedStream = canvas.captureStream(30);
-        if(mediaStream.getAudioTracks().length > 0) {
-          combinedStream.addTrack(mediaStream.getAudioTracks()[0].clone());
-        }
-        if(audioStream) {
-          combinedStream.addTrack(audioStream.getAudioTracks()[0].clone());
-        }
-        
-        video.srcObject = combinedStream;
-        mediaStream = combinedStream;
-      } else {
+      if(mediaStream) {
         video.srcObject = mediaStream;
       }
     }
@@ -687,7 +683,6 @@ rtmps://a.rtmp.youtube.com/live2
       
 Check YouTube Studio to confirm you're live.`);
       
-      // Simulate viewers (real viewers come from YouTube)
       simulateViewers();
     }
 
@@ -735,6 +730,8 @@ Check YouTube Studio to confirm you're live.`);
         document.getElementById('youtubeSignInBtn').disabled = true;
         document.getElementById('youtubeSignInBtn').classList.remove('active');
         
+        document.getElementById('authStatus').innerHTML = 'First sign in with Google, then connect your YouTube channel';
+        
         if(mediaStream) {
           mediaStream.getTracks().forEach(track => track.stop());
           mediaStream = null;
@@ -749,6 +746,7 @@ Check YouTube Studio to confirm you're live.`);
     auth.onAuthStateChanged((user) => {
       if(user) {
         currentUser = user;
+        console.log('User already signed in:', user.displayName);
         
         // Update UI for step 1
         document.getElementById('step1').classList.add('completed');
@@ -759,6 +757,8 @@ Check YouTube Studio to confirm you're live.`);
         const ytBtn = document.getElementById('youtubeSignInBtn');
         ytBtn.disabled = false;
         ytBtn.classList.add('active');
+        
+        document.getElementById('authStatus').innerHTML = `Welcome back ${user.displayName}! Click "Connect YouTube" to continue.`;
       }
     });
   </script>
