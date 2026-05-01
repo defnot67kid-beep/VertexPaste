@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ConnectSphere — Custom Social Universe</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        :root {
+            --bg-dark: #0e0e1a;
+            --bg-card: #1a1a2c;
+            --bg-elevated: #22223b;
+            --accent: #7c3aed;
+            --accent-hover: #8b5cf6;
+            --accent-glow: rgba(124, 58, 237, 0.4);
+            --text-primary: #f1f5f9;
+            --text-secondary: #a0a0c0;
+            --border: #2d2d44;
+            --danger: #f43f5e;
+            --success: #10b981;
+        }
+
+        body {
+            background: radial-gradient(circle at 10% 20%, #0f0f1c, #05050a);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* custom scroll */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 8px;
+        }
+
+        /* Layout */
+        .app-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(26, 26, 44, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            padding: 12px 28px;
+            margin-bottom: 28px;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 18px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: var(--accent);
+            box-shadow: 0 2px 8px rgba(124,58,237,0.3);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            border: 1px solid var(--accent);
+            background: transparent;
+        }
+        .btn-danger {
+            background: var(--danger);
+        }
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* feed grid */
+        .feed-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 28px;
+        }
+        @media (max-width: 800px) {
+            .feed-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* post card */
+        .post-card {
+            background: var(--bg-card);
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .post-header {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .post-user-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #2d2d44;
+        }
+        .post-user-info {
+            flex: 1;
+        }
+        .post-username {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .post-time {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .post-content {
+            margin: 12px 0 16px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .post-actions {
+            display: flex;
+            gap: 24px;
+            margin-top: 10px;
+            border-top: 1px solid var(--border);
+            padding-top: 14px;
+        }
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .action-btn:hover { color: var(--accent); }
+        .comments-section {
+            margin-top: 16px;
+            padding-left: 16px;
+            border-left: 2px solid var(--accent);
+        }
+        .comment-item {
+            background: var(--bg-elevated);
+            border-radius: 20px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+        }
+        .comment-text {
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+        .add-comment {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .add-comment input {
+            flex: 1;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            padding: 8px 16px;
+            color: white;
+        }
+        .small-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        /* sidebar */
+        .sidebar-card {
+            background: var(--bg-card);
+            border-radius: 28px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .online-users {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .online-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-elevated);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+        }
+        .dm-list {
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .dm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        /* modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 32px;
+            max-width: 500px;
+            width: 90%;
+            padding: 28px;
+            border: 1px solid var(--border);
+            animation: fadeUp 0.2s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 12px 16px;
+            color: white;
+        }
+        textarea { resize: vertical; }
+        .toast {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1e2f;
+            padding: 12px 24px;
+            border-radius: 60px;
+            border-left: 4px solid var(--accent);
+            z-index: 1100;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <nav class="navbar">
+        <div class="logo"><i class="fas fa-globe-americas"></i> ConnectSphere</div>
+        <div class="nav-buttons" id="navBarButtons"></div>
+    </nav>
+    <div id="mainAppArea"></div>
+</div>
+
+<!-- Modals -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 18px;"><i class="fas fa-user-astronaut"></i> Join ConnectSphere</h3>
+        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+            <button id="authLoginTab" class="btn btn-primary" style="flex:1">Login</button>
+            <button id="authSignupTab" class="btn" style="flex:1; background:#2d2d44">Sign Up</button>
+        </div>
+        <div id="loginPanel">
+            <div class="input-group"><input type="email" id="loginEmail" placeholder="Email"></div>
+            <div class="input-group"><input type="password" id="loginPass" placeholder="Password"></div>
+            <button class="btn btn-primary" style="width:100%" id="doLoginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:#fff; color:#000;" id="googleLoginBtn"><i class="fab fa-google"></i> Continue with Google</button>
+        </div>
+        <div id="signupPanel" style="display:none">
+            <div class="input-group"><input type="text" id="signupName" placeholder="Full Name"></div>
+            <div class="input-group"><input type="email" id="signupEmail" placeholder="Email"></div>
+            <div class="input-group"><input type="password" id="signupPass" placeholder="Password (min 6)"></div>
+            <button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create Post Modal -->
+<div id="createPostModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-pen-fancy"></i> What's on your mind?</h3>
+        <div class="input-group"><textarea id="postContent" rows="3" placeholder="Share your thoughts..."></textarea></div>
+        <div style="display:flex; gap:12px; justify-content:flex-end">
+            <button class="btn" onclick="closePostModal()">Cancel</button>
+            <button class="btn btn-primary" id="publishPostBtn">Publish</button>
+        </div>
+    </div>
+</div>
+
+<!-- DM Conversation Modal -->
+<div id="dmModal" class="modal">
+    <div class="modal-content" style="max-width: 550px;">
+        <h3 id="dmTargetName"><i class="fas fa-comment-dots"></i> Direct Message</h3>
+        <div id="dmMessagesList" style="max-height: 280px; overflow-y: auto; margin: 16px 0; padding-right: 6px;"></div>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="dmInput" placeholder="Type a message..." style="flex:1; padding: 10px; border-radius: 40px;">
+            <button class="btn btn-primary" id="sendDmBtn">Send</button>
+        </div>
+        <button class="btn" style="margin-top: 12px;" onclick="closeDmModal()">Close</button>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+</script>
+
+<script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, query, orderBy, onSnapshot, Timestamp, addDoc, deleteDoc, where } from "firebase/firestore";
+
+    // Firebase config from provided credentials (same project)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
+        authDomain: "vertexpaste.firebaseapp.com",
+        projectId: "vertexpaste",
+        storageBucket: "vertexpaste.firebasestorage.app",
+        messagingSenderId: "255275350380",
+        appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // ---- Global state ----
+    let currentUser = null;
+    let allPosts = [];        // store posts for rendering
+    let onlineUsers = new Set(); // user ids that are "active" (just a set for showcase)
+    let dmListenerUnsub = null;
+    let activeDmUserId = null;
+
+    // Helper
+    function showToast(msg, type = "info") {
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2800);
+    }
+
+    // Render main feed
+    async function renderFeed() {
+        const appArea = document.getElementById("mainAppArea");
+        if (!currentUser) {
+            appArea.innerHTML = `<div style="text-align:center; margin-top:80px;"><i class="fas fa-users" style="font-size:64px; color:var(--accent);"></i><h2>Welcome to ConnectSphere</h2><p style="color:var(--text-secondary)">Login to share, comment & connect.</p><button class="btn btn-primary" id="guestLoginBtn">Get Started</button></div>`;
+            document.getElementById("guestLoginBtn")?.addEventListener("click", () => document.getElementById("authModal").style.display = "flex");
+            return;
+        }
+        // fetch posts realtime
+        const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        onSnapshot(postsQuery, (snapshot) => {
+            allPosts = [];
+            snapshot.forEach(docSnap => {
+                allPosts.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            renderFeedHtml();
+        });
+    }
+
+    async function renderFeedHtml() {
+        if (!currentUser) return;
+        // get all users map for display names
+        const usersSnap = await getDocs(collection(db, "users"));
+        const usersMap = {};
+        usersSnap.forEach(d => { usersMap[d.id] = d.data(); });
+
+        const postsHtml = allPosts.map(post => {
+            const author = usersMap[post.userId] || { displayName: "Unknown", photoURL: null };
+            const isLiked = post.likes?.includes(currentUser.uid) || false;
+            const likeCount = post.likes?.length || 0;
+            const commentCount = post.comments?.length || 0;
+            const comments = post.comments || [];
+            return `
+            <div class="post-card" data-post-id="${post.id}">
+                <div class="post-header">
+                    <img class="post-user-img" src="${author.photoURL || `https://ui-avatars.com/api/?background=7c3aed&color=fff&name=${author.displayName?.charAt(0)||'U'}`}" />
+                    <div class="post-user-info">
+                        <div class="post-username">${escapeHtml(author.displayName || "User")}</div>
+                        <div class="post-time">${formatDate(post.createdAt)}</div>
+                    </div>
+                </div>
+                <div class="post-content">${escapeHtml(post.text)}</div>
+                <div class="post-actions">
+                    <button class="action-btn like-btn" data-id="${post.id}"><i class="fas ${isLiked ? 'fa-heart' : 'fa-heart'} ${isLiked ? 'text-red' : ''}" style="color:${isLiked ? '#f43f5e' : ''}"></i> ${likeCount}</button>
+                    <button class="action-btn comment-toggle" data-id="${post.id}"><i class="far fa-comment"></i> ${commentCount}</button>
+                </div>
+                <div class="comments-section" id="comments-${post.id}" style="display: none;">
+                    ${comments.map(c => `
+                        <div class="comment-item">
+                            <strong>${escapeHtml(c.displayName)}</strong>
+                            <div class="comment-text">${escapeHtml(c.text)}</div>
+                            <div style="font-size:10px; color:gray">${new Date(c.timestamp).toLocaleString()}</div>
+                        </div>
+                    `).join('')}
+                    <div class="add-comment">
+                        <input type="text" placeholder="Write a comment..." id="commentInput-${post.id}">
+                        <button class="btn btn-primary comment-submit" data-id="${post.id}" style="padding:6px 14px;">Post</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Sidebar: users list + dms
+        const allUsersList = [];
+        usersSnap.forEach(d => { if(d.id !== currentUser.uid) allUsersList.push({uid:d.id, ...d.data()}); });
+        
+        const dmSection = allUsersList.map(u => `
+            <div class="dm-item" data-uid="${u.uid}">
+                <div><i class="fas fa-user-circle"></i> ${escapeHtml(u.displayName || "user")}</div>
+                <button class="btn btn-outline dm-open-btn" data-uid="${u.uid}" data-name="${escapeHtml(u.displayName)}" style="padding:4px 12px;">DM</button>
+            </div>
+        `).join('');
+
+        const html = `
+            <div class="feed-grid">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h2><i class="fas fa-newspaper"></i> Community Feed</h2>
+                        <button class="btn btn-primary" id="createPostBtn"><i class="fas fa-plus"></i> Create Post</button>
+                    </div>
+                    ${postsHtml || '<p style="color:var(--text-secondary)">No posts yet. Be the first!</p>'}
+                </div>
+                <div>
+                    <div class="sidebar-card">
+                        <h4><i class="fas fa-user-friends"></i> Connect</h4>
+                        <div class="dm-list" id="dmUserList">
+                            ${dmSection || '<p>No other users yet</p>'}
+                        </div>
+                    </div>
+                    <div class="sidebar-card">
+                        <h4><i class="fas fa-globe"></i> About</h4>
+                        <p style="font-size:0.85rem">✨ A unique social universe with posts, comments, and direct messages. Real-time Firebase.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById("mainAppArea").innerHTML = html;
+
+        // attach like / comment events
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const postId = btn.dataset.id;
+                const postRef = doc(db, "posts", postId);
+                const postSnap = await getDoc(postRef);
+                if(postSnap.exists()){
+                    const likes = postSnap.data().likes || [];
+                    if(likes.includes(currentUser.uid)){
+                        await updateDoc(postRef, { likes: arrayRemove(currentUser.uid) });
+                    } else {
+                        await updateDoc(postRef, { likes: arrayUnion(currentUser.uid) });
+                    }
+                }
+            });
+        });
+        document.querySelectorAll('.comment-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const pid = btn.dataset.id;
+                const div = document.getElementById(`comments-${pid}`);
+                if(div) div.style.display = div.style.display === 'none' ? 'block' : 'none';
+            });
+        });
+        document.querySelectorAll('.comment-submit').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const postId = btn.dataset.id;
+                const input = document.getElementById(`commentInput-${postId}`);
+                const text = input.value.trim();
+                if(!text) return;
+                const postRef = doc(db, "posts", postId);
+                const newComment = {
+                    uid: currentUser.uid,
+                    displayName: currentUser.displayName,
+                    text: text,
+                    timestamp: new Date().toISOString()
+                };
+                await updateDoc(postRef, {
+                    comments: arrayUnion(newComment)
+                });
+                input.value = '';
+                showToast("Comment added", "success");
+            });
+        });
+        // dm buttons
+        document.querySelectorAll('.dm-open-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const uid = btn.dataset.uid;
+                const name = btn.dataset.name;
+                openDirectMessage(uid, name);
+            });
+        });
+        document.getElementById("createPostBtn")?.addEventListener("click", () => {
+            document.getElementById("createPostModal").style.display = "flex";
+        });
+    }
+
+    async function publishPost(text) {
+        if(!text.trim()) return;
+        await addDoc(collection(db, "posts"), {
+            userId: currentUser.uid,
+            text: text,
+            createdAt: Timestamp.now(),
+            likes: [],
+            comments: []
+        });
+        showToast("Post published!", "success");
+    }
+
+    // Direct message logic
+    async function openDirectMessage(targetUid, targetName) {
+        if(!currentUser) return;
+        activeDmUserId = targetUid;
+        document.getElementById("dmTargetName").innerHTML = `<i class="fas fa-comment-dots"></i> Chat with ${escapeHtml(targetName)}`;
+        document.getElementById("dmModal").style.display = "flex";
+        // load messages between currentUser.uid and targetUid
+        const chatId = [currentUser.uid, targetUid].sort().join('_');
+        const msgsRef = collection(db, "directMessages", chatId, "messages");
+        const q = query(msgsRef, orderBy("timestamp", "asc"));
+        if(dmListenerUnsub) dmListenerUnsub();
+        dmListenerUnsub = onSnapshot(q, (snap) => {
+            const messages = [];
+            snap.forEach(d => messages.push({ id: d.id, ...d.data() }));
+            const container = document.getElementById("dmMessagesList");
+            if(container) {
+                container.innerHTML = messages.map(msg => `
+                    <div style="display:flex; justify-content:${msg.senderId === currentUser.uid ? 'flex-end' : 'flex-start'}; margin-bottom:12px;">
+                        <div style="background:${msg.senderId === currentUser.uid ? 'var(--accent)' : 'var(--bg-dark)'}; padding:8px 14px; border-radius:20px; max-width:80%;">
+                            <small><strong>${msg.senderId === currentUser.uid ? 'You' : escapeHtml(msg.senderName)}</strong></small>
+                            <div>${escapeHtml(msg.text)}</div>
+                            <small style="font-size:10px;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>
+                        </div>
+                    </div>
+                `).join('');
+                container.scrollTop = container.scrollHeight;
+            }
+        });
+    }
+
+    async function sendDirectMessage(text){
+        if(!text.trim() || !activeDmUserId) return;
+        const chatId = [currentUser.uid, activeDmUserId].sort().join('_');
+        const msgsRef = collection(db, "directMessages", chatId, "messages");
+        await addDoc(msgsRef, {
+            senderId: currentUser.uid,
+            senderName: currentUser.displayName,
+            text: text,
+            timestamp: Timestamp.now()
+        });
+        document.getElementById("dmInput").value = "";
+    }
+
+    // Helper: format date
+    function formatDate(timestamp) {
+        if(!timestamp) return "just now";
+        let date;
+        if(timestamp.toDate) date = timestamp.toDate();
+        else date = new Date(timestamp);
+        return date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // Authentication UI
+    function updateNavbar() {
+        const navDiv = document.getElementById("navBarButtons");
+        if(currentUser){
+            navDiv.innerHTML = `
+                <span style="display:flex; align-items:center; gap:8px;"><img class="user-avatar" src="${currentUser.photoURL || `https://ui-avatars.com/api/?background=7c3aed&color=fff&name=${currentUser.displayName?.charAt(0)}`}" width="32" height="32" style="border-radius:50%;"> ${currentUser.displayName}</span>
+                <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            `;
+            document.getElementById("logoutBtn")?.addEventListener("click", () => signOut(auth));
+        } else {
+            navDiv.innerHTML = `<button class="btn btn-primary" id="showAuthBtn"><i class="fas fa-user-plus"></i> Login / Sign Up</button>`;
+            document.getElementById("showAuthBtn")?.addEventListener("click", () => document.getElementById("authModal").style.display = "flex");
+        }
+    }
+
+    // Firebase auth listeners
+    onAuthStateChanged(auth, async (user) => {
+        if(user){
+            // ensure user doc exists in "users" collection
+            const userRef = doc(db, "users", user.uid);
+            const snap = await getDoc(userRef);
+            if(!snap.exists()){
+                await setDoc(userRef, {
+                    displayName: user.displayName || user.email.split('@')[0],
+                    email: user.email,
+                    photoURL: user.photoURL || null,
+                    createdAt: Timestamp.now()
+                });
+            } else {
+                // update display name if needed
+                if(snap.data().displayName !== user.displayName && user.displayName){
+                    await updateDoc(userRef, { displayName: user.displayName });
+                }
+            }
+            currentUser = { uid: user.uid, displayName: user.displayName || user.email.split('@')[0], email: user.email, photoURL: user.photoURL };
+            // update local state
+            updateNavbar();
+            renderFeed();
+        } else {
+            currentUser = null;
+            updateNavbar();
+            renderFeed();
+        }
+    });
+
+    // modal auth handlers
+    document.getElementById("authLoginTab")?.addEventListener("click", () => {
+        document.getElementById("loginPanel").style.display = "block";
+        document.getElementById("signupPanel").style.display = "none";
+        document.getElementById("authLoginTab").classList.add("btn-primary");
+        document.getElementById("authSignupTab").classList.remove("btn-primary");
+        document.getElementById("authSignupTab").classList.add("btn");
+    });
+    document.getElementById("authSignupTab")?.addEventListener("click", () => {
+        document.getElementById("loginPanel").style.display = "none";
+        document.getElementById("signupPanel").style.display = "block";
+        document.getElementById("authSignupTab").classList.add("btn-primary");
+        document.getElementById("authLoginTab").classList.remove("btn-primary");
+        document.getElementById("authLoginTab").classList.add("btn");
+    });
+    document.getElementById("doLoginBtn")?.addEventListener("click", async() => {
+        const email = document.getElementById("loginEmail").value;
+        const pass = document.getElementById("loginPass").value;
+        try{
+            await signInWithEmailAndPassword(auth, email, pass);
+            document.getElementById("authModal").style.display = "none";
+            showToast("Logged in!", "success");
+        } catch(e){ showToast(e.message, "error"); }
+    });
+    document.getElementById("doSignupBtn")?.addEventListener("click", async() => {
+        const name = document.getElementById("signupName").value;
+        const email = document.getElementById("signupEmail").value;
+        const pass = document.getElementById("signupPass").value;
+        if(pass.length < 6) return showToast("Password min 6 chars", "error");
+        try{
+            const cred = await createUserWithEmailAndPassword(auth, email, pass);
+            await updateProfile(cred.user, { displayName: name });
+            // force user doc creation inside onAuthStateChanged will handle
+            document.getElementById("authModal").style.display = "none";
+            showToast("Account created! Welcome.");
+        } catch(e){ showToast(e.message, "error"); }
+    });
+    document.getElementById("googleLoginBtn")?.addEventListener("click", async () => {
+        try{
+            await signInWithPopup(auth, googleProvider);
+            document.getElementById("authModal").style.display = "none";
+            showToast("Google sign-in success");
+        } catch(e){ showToast(e.message, "error"); }
+    });
+
+    window.closePostModal = () => document.getElementById("createPostModal").style.display = "none";
+    document.getElementById("publishPostBtn")?.addEventListener("click", async () => {
+        const content = document.getElementById("postContent").value;
+        if(content) await publishPost(content);
+        document.getElementById("postContent").value = "";
+        document.getElementById("createPostModal").style.display = "none";
+    });
+    window.closeDmModal = () => {
+        if(dmListenerUnsub) dmListenerUnsub();
+        activeDmUserId = null;
+        document.getElementById("dmModal").style.display = "none";
+    };
+    document.getElementById("sendDmBtn")?.addEventListener("click", () => {
+        const msg = document.getElementById("dmInput").value;
+        if(msg) sendDirectMessage(msg);
+    });
+
+    // initial render
+    renderFeed();
+    // style text-red
+    const style = document.createElement('style');
+    style.textContent = `.text-red { color: #f43f5e; } .btn-outline { background:transparent; border:1px solid var(--accent); }`;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
