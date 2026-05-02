@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>VertiFlow — Custom Channel</title>
+    <title>VertiFlow — Complete Channel Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
@@ -69,27 +69,35 @@
         .modal-content { background: var(--bg-elevated); border-radius: 24px; max-width: 600px; width: 90%; padding: 28px; border: 1px solid var(--border); max-height: 85vh; overflow-y: auto; }
         input, textarea { width: 100%; background: #2a2a2a; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: white; margin-bottom: 16px; }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2a2a2a; padding: 10px 20px; border-radius: 40px; z-index: 400; font-size: 0.85rem; border-left: 3px solid var(--accent); }
+        
+        /* Channel Page Styles */
         .channel-page { min-height: 100vh; background: var(--bg-dark); padding: 80px 20px 40px; }
         .channel-banner { height: 180px; border-radius: 20px; margin-bottom: -60px; background-size: cover; background-position: center; background-color: #1a1a3a; }
-        .channel-avatar-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-dark); margin-left: 40px; position: relative; }
-        .channel-info-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; padding: 20px 40px; }
+        .channel-header-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap; margin-bottom: 20px; }
+        .channel-avatar-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-dark); }
+        .channel-info-row { padding: 0 40px; margin-bottom: 24px; }
         .channel-title h1 { font-size: 1.8rem; margin-bottom: 4px; }
-        .channel-handle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px; }
-        .channel-stats { display: flex; gap: 24px; margin: 16px 0; flex-wrap: wrap; }
-        .stat-badge { background: var(--bg-elevated); padding: 6px 16px; border-radius: 40px; font-size: 0.85rem; }
+        .channel-handle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px; }
+        .channel-stats-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+        .stat-badge { background: var(--bg-elevated); padding: 6px 16px; border-radius: 40px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .stat-dot { color: var(--text-secondary); }
         
-        /* Description Card - Click to Expand */
-        .description-card { background: var(--bg-elevated); border-radius: 20px; margin: 20px 40px; overflow: hidden; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); }
-        .description-preview { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .description-preview span { color: var(--text-secondary); font-size: 0.9rem; }
-        .description-preview i { color: var(--accent); transition: transform 0.3s; }
-        .description-full { padding: 0 20px 20px 20px; display: none; line-height: 1.6; white-space: pre-wrap; border-top: 1px solid var(--border); margin-top: 8px; }
-        .description-full.show { display: block; animation: slideExpand 0.3s ease; }
-        @keyframes slideExpand { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Description Bar - Clickable button to popup */
+        .description-bar { background: var(--bg-elevated); border-radius: 16px; margin: 20px 40px; padding: 14px 20px; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .description-bar:hover { background: #252525; border-color: var(--accent); }
+        .description-bar span { color: var(--text-secondary); font-size: 0.9rem; }
+        .description-bar i { color: var(--accent); font-size: 0.9rem; }
+        
+        /* Description Popup Modal */
+        .description-popup .modal-content { max-width: 500px; }
+        .full-description-text { white-space: pre-wrap; line-height: 1.6; margin-bottom: 20px; max-height: 400px; overflow-y: auto; }
+        .description-links { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .description-link { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+        .description-link a { color: var(--accent); text-decoration: none; }
         
         .goal-card { background: var(--bg-elevated); border-radius: 20px; margin: 20px 40px; overflow: hidden; border: 1px solid var(--border); }
         .goal-header { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(254,44,85,0.1); border-bottom: 1px solid var(--border); }
-        .goal-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .goal-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 10px; }
         .goal-title i { color: var(--accent); }
         .chevron { transition: transform 0.3s; }
         .goal-content { padding: 20px; display: none; animation: slideDown 0.3s ease; }
@@ -99,13 +107,9 @@
         .milestone-left { display: flex; align-items: center; gap: 12px; }
         .milestone-check.completed { color: var(--success); }
         .milestone-check.pending { color: var(--warning); }
-        .milestone-date { font-size: 0.75rem; color: var(--text-secondary); }
         .progress-bar-container { background: #2a2a2a; border-radius: 20px; height: 8px; margin: 16px 0; overflow: hidden; }
         .progress-fill { background: linear-gradient(90deg, var(--accent), #ff6b35); width: 0%; height: 100%; border-radius: 20px; transition: width 0.5s; }
         
-        .bio-links { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-        .bio-link { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
-        .bio-link a { color: var(--accent); text-decoration: none; }
         .action-buttons-channel { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
         .videos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 40px; }
         .video-card-mini { background: var(--bg-elevated); border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
@@ -132,15 +136,24 @@
 <div id="loginPanel"><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button><button class="btn" style="width:100%;margin-top:12px;" id="demoLoginBtn">✨ Demo Account</button></div>
 <div id="signupPanel" style="display:none"><input type="text" id="signupName" placeholder="Channel name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button></div></div></div>
 
+<!-- Description Popup Modal -->
+<div id="descriptionModal" class="modal description-popup">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 16px;"><i class="fas fa-info-circle"></i> Channel Description</h3>
+        <div class="full-description-text" id="fullDescriptionText"></div>
+        <div class="description-links" id="descriptionLinksModal"></div>
+        <button class="btn btn-primary" onclick="closeDescriptionModal()" style="width:100%; margin-top:16px;">Close</button>
+    </div>
+</div>
+
 <!-- Customize Channel Modal -->
 <div id="customizeModal" class="modal"><div class="modal-content"><h3><i class="fas fa-palette"></i> Customize Channel</h3>
 <input type="text" id="editChannelName" placeholder="Channel name">
-<textarea id="editChannelBio" rows="4" placeholder="Channel description - write anything you want! This will appear on your channel page. Click to expand if it's long."></textarea>
+<textarea id="editChannelBio" rows="4" placeholder="Channel description - write anything you want!"></textarea>
 <input type="text" id="editChannelLinks" placeholder="External links (comma separated)">
 <div><label>Channel Banner</label><input type="file" id="editBannerFile" accept="image/*"></div>
 <div><label>Profile Picture</label><input type="file" id="editAvatarFile" accept="image/*"></div>
 <h4 style="margin: 16px 0 12px;"><i class="fas fa-trophy"></i> Milestones Tracker</h4>
-<p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:12px;">Set your goals! Example: 1000 subscribers, 10000 views, etc.</p>
 <div id="milestonesList"></div>
 <button class="btn btn-outline" id="addMilestoneBtn" style="margin-bottom:16px;width:100%;"><i class="fas fa-plus"></i> Add Milestone</button>
 <div style="display:flex;gap:12px;margin-top:16px;"><button class="btn btn-outline" onclick="closeCustomizeModal()">Cancel</button><button class="btn btn-primary" id="saveChannelBtn">Save Changes</button></div></div></div>
@@ -183,7 +196,7 @@
             { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
             { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
         ];
-        const newUser = { uid: 'user_' + Date.now(), displayName: name, email: email, username: username, bio: "Welcome to my channel! 🎉\n\nI create amazing content about my journey. Subscribe and follow along!", links: "", photoURL: null, bannerURL: null, createdAt: Date.now(), hasChannel: false, subscribers: 0, totalViews: 0, milestones: defaultMilestones, milestoneGoalText: "My Channel Goals 🎯" };
+        const newUser = { uid: 'user_' + Date.now(), displayName: name, email: email, username: username, bio: "Welcome to my channel! 🎉\n\nI create amazing content. Subscribe and follow along!", links: "", photoURL: null, bannerURL: null, createdAt: Date.now(), hasChannel: false, subscribers: 0, totalViews: 0, milestones: defaultMilestones, milestoneGoalText: "My Channel Goals 🎯" };
         allUsers.push(newUser); saveUsers(); currentUser = newUser; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); return true;
     }
     function logout() { currentUser = null; localStorage.removeItem('vf_currentUser'); closeDropdown(); goToHome(); updateNavbar(); showToast("Logged out"); }
@@ -263,15 +276,17 @@
     window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
     window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
 
-    // Toggle description full view (click on the description card)
-    function toggleDescription() {
-        const fullDiv = document.getElementById('descriptionFull');
-        const chevron = document.getElementById('descChevron');
-        if(fullDiv) {
-            fullDiv.classList.toggle('show');
-            if(chevron) chevron.style.transform = fullDiv.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
-        }
+    // Open description popup modal
+    function openDescriptionModal(bioText, links, channelUrl) {
+        document.getElementById('fullDescriptionText').innerHTML = escapeHtml(bioText).replace(/\n/g, '<br>');
+        const linksContainer = document.getElementById('descriptionLinksModal');
+        linksContainer.innerHTML = `
+            <div class="description-link"><i class="fas fa-link"></i> <a href="${channelUrl}" target="_blank">${channelUrl}</a></div>
+            ${links ? links.split(',').map(l => `<div class="description-link"><i class="fas fa-external-link-alt"></i> <a href="${l.trim()}" target="_blank">${l.trim()}</a></div>`).join('') : ''}
+        `;
+        document.getElementById('descriptionModal').style.display = 'flex';
     }
+    function closeDescriptionModal() { document.getElementById('descriptionModal').style.display = 'none'; }
 
     function renderChannelPage(uid) {
         const user = allUsers.find(u => u.uid === uid);
@@ -289,53 +304,41 @@
         const bannerStyle = user.bannerURL ? `background-image: url('${user.bannerURL}'); background-size: cover; background-position: center;` : 'background: linear-gradient(135deg, #1a1a3a, #0a0a1a);';
         
         let milestonesHtml = '';
-        milestones.forEach((m, idx) => {
+        milestones.forEach((m) => {
             milestonesHtml += `<div class="goal-milestone" style="border-left: 3px solid ${m.color || '#fe2c55'}; padding-left: 12px;">
                 <div class="milestone-left"><span class="milestone-check ${m.achieved ? 'completed' : 'pending'}">${m.achieved ? '✅' : '🎯'}</span><strong>${escapeHtml(m.target)}</strong></div>
                 <div class="milestone-right">${m.achieved ? `<span class="milestone-date">Completed: ${m.date || 'Unknown'}</span>` : '<span class="milestone-date pending">In progress</span>'}</div>
             </div>`;
         });
         
-        // Truncate bio for preview - if longer than 100 chars, show "..."
-        const bioText = user.bio || "No description yet.";
-        const isLongBio = bioText.length > 100;
-        const previewBio = isLongBio ? bioText.substring(0, 100) + "..." : bioText;
+        const bioPreview = user.bio ? (user.bio.length > 80 ? user.bio.substring(0, 80) + "..." : user.bio) : "No description yet.";
         
         const html = `<div class="channel-page">
             <div class="channel-banner" style="${bannerStyle}"></div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
+            <div class="channel-header-row">
                 <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${user.displayName?.charAt(0)}`}">
-                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize Channel</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Manage Videos</button></div>` : '<button class="btn btn-primary" onclick="subscribeToChannel()"><i class="fas fa-bell"></i> Subscribe</button>'}
+                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Manage Videos</button></div>` : '<button class="btn btn-primary" onclick="subscribeToChannel()"><i class="fas fa-bell"></i> Subscribe</button>'}
             </div>
-            <div class="channel-info-section">
+            <div class="channel-info-row">
                 <div class="channel-title">
                     <h1>${escapeHtml(user.displayName)}</h1>
                     <div class="channel-handle">@${user.username || user.uid}</div>
-                    <div class="channel-stats">
+                    <div class="channel-stats-row">
                         <span class="stat-badge"><i class="fas fa-users"></i> ${subscriberCount} subscribers</span>
+                        <span class="stat-dot">•</span>
                         <span class="stat-badge"><i class="fas fa-video"></i> ${userVideos.length} videos</span>
+                        <span class="stat-dot">•</span>
                         <span class="stat-badge"><i class="fas fa-eye"></i> ${totalViews} views</span>
                     </div>
                 </div>
             </div>
             
-            <!-- Description Card - Click to Expand/Collapse -->
-            <div class="description-card" onclick="toggleDescription()">
-                <div class="description-preview">
-                    <span>${escapeHtml(previewBio)}</span>
-                    <i class="fas fa-chevron-down" id="descChevron"></i>
-                </div>
-                <div class="description-full" id="descriptionFull">
-                    <p style="white-space: pre-wrap;">${escapeHtml(bioText)}</p>
-                    <div class="bio-links">
-                        <div class="bio-link"><i class="fas fa-link"></i> <a href="${channelUrl}" target="_blank">${channelUrl}</a></div>
-                        ${user.links ? user.links.split(',').map(l => `<div class="bio-link"><i class="fas fa-external-link-alt"></i> <a href="${l.trim()}" target="_blank">${l.trim()}</a></div>`).join('') : ''}
-                        <div class="bio-link"><i class="fas fa-calendar-alt"></i> Joined ${joinDate}</div>
-                    </div>
-                </div>
+            <!-- Clickable Description Bar - Opens Popup Modal -->
+            <div class="description-bar" onclick="openDescriptionModal(`${JSON.stringify(escapeHtml(user.bio || 'No description yet.'))}`, `${JSON.stringify(user.links || '')}`, `${channelUrl}`)">
+                <span><i class="fas fa-align-left"></i> ${escapeHtml(bioPreview)}</span>
+                <i class="fas fa-expand-alt"></i>
             </div>
             
-            <!-- Milestones Tracker -->
             ${milestones.length > 0 ? `<div class="goal-card">
                 <div class="goal-header" onclick="toggleGoal()">
                     <div class="goal-title"><i class="fas fa-trophy"></i> ${escapeHtml(goalText)}</div>
@@ -363,7 +366,6 @@
     function subscribeToChannel() { showToast("Subscribed! (Demo feature)"); }
     function toggleGoal() { const c = document.getElementById('goalContent'); const ch = document.getElementById('goalChevron'); if(c) { c.classList.toggle('show'); if(ch) ch.style.transform = c.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)'; } }
 
-    let milestoneInputs = [];
     function renderMilestoneEditor() {
         const container = document.getElementById('milestonesList');
         if(!container) return;
@@ -373,9 +375,8 @@
             const div = document.createElement('div');
             div.className = 'milestone-item';
             div.innerHTML = `
-                <input type="text" value="${escapeHtml(m.target)}" placeholder="Goal (e.g., 1000 subscribers)" id="milestoneTarget_${idx}" style="flex:2">
+                <input type="text" value="${escapeHtml(m.target)}" placeholder="Goal" id="milestoneTarget_${idx}" style="flex:2">
                 <input type="color" value="${m.color || '#fe2c55'}" id="milestoneColor_${idx}" style="width:50px;height:40px;">
-                <div class="color-preview" style="background:${m.color || '#fe2c55'}" onclick="document.getElementById('milestoneColor_${idx}').click()"></div>
                 <button class="btn" style="padding:8px 12px;" onclick="removeMilestone(${idx})"><i class="fas fa-trash"></i></button>
             `;
             container.appendChild(div);
@@ -461,12 +462,12 @@
     document.getElementById('doLoginBtn')?.addEventListener('click', () => { if(login(document.getElementById('loginEmail').value, document.getElementById('loginPass').value)) { document.getElementById('authModal').style.display='none'; goToHome(); updateNavbar(); } else showToast('Invalid'); });
     document.getElementById('demoLoginBtn')?.addEventListener('click', () => {
         let demo = allUsers.find(u => u.email === 'demo@vertiflow.com');
-        if(!demo) { demo = { uid: 'demo_user', displayName: 'VertiCreator', email: 'demo@vertiflow.com', username: 'verticreator', bio: 'Welcome to my channel! I create awesome content about tech, lifestyle, and gaming. 🎮\n\nSubscribe and join the journey! This is a longer description that will be truncated on the preview. Click to expand and read the full story!\n\nThanks for supporting my channel! 🚀', links: 'https://youtube.com,https://twitter.com', photoURL: null, bannerURL: null, createdAt: Date.now() - 90*24*60*60*1000, hasChannel: true, subscribers: 1250, totalViews: 50000, milestones: [{ target: "100 subscribers", achieved: true, date: "1 Jan 2026", color: "#10b981" }, { target: "1000 subscribers", achieved: true, date: "22 Jan 2026", color: "#f59e0b" }, { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }], milestoneGoalText: "🎯 10k Subscriber Journey!" }; allUsers.push(demo); saveUsers(); }
+        if(!demo) { demo = { uid: 'demo_user', displayName: 'VertiCreator', email: 'demo@vertiflow.com', username: 'verticreator', bio: 'Welcome to my channel! I create awesome content about tech and gaming. 🎮\n\nSubscribe and join the journey! This is a longer description that shows how the popup works.\n\nThanks for supporting!', links: 'https://youtube.com,https://twitter.com', photoURL: null, bannerURL: null, createdAt: Date.now() - 90*24*60*60*1000, hasChannel: true, subscribers: 1250, totalViews: 50000, milestones: [{ target: "100 subscribers", achieved: true, date: "1 Jan 2026", color: "#10b981" }, { target: "1000 subscribers", achieved: true, date: "22 Jan 2026", color: "#f59e0b" }, { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }], milestoneGoalText: "🎯 10k Subscriber Journey!" }; allUsers.push(demo); saveUsers(); }
         currentUser = { ...demo }; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); document.getElementById('authModal').style.display='none'; goToHome(); updateNavbar(); showToast('Welcome to VertiFlow!'); });
     document.getElementById('doSignupBtn')?.addEventListener('click', () => { if(signup(document.getElementById('signupName').value, document.getElementById('signupEmail').value, document.getElementById('signupPass').value)) { document.getElementById('authModal').style.display='none'; document.getElementById('channelWizardModal').style.display='flex'; updateNavbar(); } });
     document.getElementById('confirmUploadBtn')?.addEventListener('click', async () => { const f = document.getElementById('videoFile').files[0]; const t = document.getElementById('videoTitle').value; const d = document.getElementById('videoDesc').value; if(await publishVideo(t,d,f)) { document.getElementById('uploadModal').style.display='none'; renderFeed(); showToast('Published!'); } });
     window.closeUploadModal = () => document.getElementById('uploadModal').style.display = 'none';
-    window.goToHome = goToHome; window.navigateToChannel = navigateToChannel; window.toggleDropdown = toggleDropdown; window.toggleGoal = toggleGoal; window.toggleDescription = toggleDescription; window.openCustomizeModal = openCustomizeModal; window.closeCustomizeModal = closeCustomizeModal;
+    window.goToHome = goToHome; window.navigateToChannel = navigateToChannel; window.toggleDropdown = toggleDropdown; window.toggleGoal = toggleGoal; window.openDescriptionModal = openDescriptionModal; window.closeDescriptionModal = closeDescriptionModal; window.openCustomizeModal = openCustomizeModal; window.closeCustomizeModal = closeCustomizeModal;
 
     loadData();
     const saved = localStorage.getItem('vf_currentUser');
