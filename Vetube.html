@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>VertiFlow — Customizable Channel</title>
+    <title>VertiFlow — Custom Channel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
@@ -77,6 +77,16 @@
         .channel-handle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px; }
         .channel-stats { display: flex; gap: 24px; margin: 16px 0; flex-wrap: wrap; }
         .stat-badge { background: var(--bg-elevated); padding: 6px 16px; border-radius: 40px; font-size: 0.85rem; }
+        
+        /* Description Card - Click to Expand */
+        .description-card { background: var(--bg-elevated); border-radius: 20px; margin: 20px 40px; overflow: hidden; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); }
+        .description-preview { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .description-preview span { color: var(--text-secondary); font-size: 0.9rem; }
+        .description-preview i { color: var(--accent); transition: transform 0.3s; }
+        .description-full { padding: 0 20px 20px 20px; display: none; line-height: 1.6; white-space: pre-wrap; border-top: 1px solid var(--border); margin-top: 8px; }
+        .description-full.show { display: block; animation: slideExpand 0.3s ease; }
+        @keyframes slideExpand { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .goal-card { background: var(--bg-elevated); border-radius: 20px; margin: 20px 40px; overflow: hidden; border: 1px solid var(--border); }
         .goal-header { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(254,44,85,0.1); border-bottom: 1px solid var(--border); }
         .goal-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -92,10 +102,7 @@
         .milestone-date { font-size: 0.75rem; color: var(--text-secondary); }
         .progress-bar-container { background: #2a2a2a; border-radius: 20px; height: 8px; margin: 16px 0; overflow: hidden; }
         .progress-fill { background: linear-gradient(90deg, var(--accent), #ff6b35); width: 0%; height: 100%; border-radius: 20px; transition: width 0.5s; }
-        .bio-card { background: var(--bg-elevated); border-radius: 20px; margin: 20px 40px; overflow: hidden; }
-        .bio-header { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .bio-content { padding: 20px; display: none; line-height: 1.6; white-space: pre-wrap; }
-        .bio-content.show { display: block; animation: slideDown 0.3s ease; }
+        
         .bio-links { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
         .bio-link { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
         .bio-link a { color: var(--accent); text-decoration: none; }
@@ -125,10 +132,10 @@
 <div id="loginPanel"><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button><button class="btn" style="width:100%;margin-top:12px;" id="demoLoginBtn">✨ Demo Account</button></div>
 <div id="signupPanel" style="display:none"><input type="text" id="signupName" placeholder="Channel name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button></div></div></div>
 
-<!-- Customize Channel Modal with Milestones -->
+<!-- Customize Channel Modal -->
 <div id="customizeModal" class="modal"><div class="modal-content"><h3><i class="fas fa-palette"></i> Customize Channel</h3>
 <input type="text" id="editChannelName" placeholder="Channel name">
-<textarea id="editChannelBio" rows="3" placeholder="Channel description - write anything you want!"></textarea>
+<textarea id="editChannelBio" rows="4" placeholder="Channel description - write anything you want! This will appear on your channel page. Click to expand if it's long."></textarea>
 <input type="text" id="editChannelLinks" placeholder="External links (comma separated)">
 <div><label>Channel Banner</label><input type="file" id="editBannerFile" accept="image/*"></div>
 <div><label>Profile Picture</label><input type="file" id="editAvatarFile" accept="image/*"></div>
@@ -176,7 +183,7 @@
             { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
             { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
         ];
-        const newUser = { uid: 'user_' + Date.now(), displayName: name, email: email, username: username, bio: "Welcome to my channel! 🎉", links: "", photoURL: null, bannerURL: null, createdAt: Date.now(), hasChannel: false, subscribers: 0, totalViews: 0, milestones: defaultMilestones, milestoneGoalText: "My Channel Goals 🎯" };
+        const newUser = { uid: 'user_' + Date.now(), displayName: name, email: email, username: username, bio: "Welcome to my channel! 🎉\n\nI create amazing content about my journey. Subscribe and follow along!", links: "", photoURL: null, bannerURL: null, createdAt: Date.now(), hasChannel: false, subscribers: 0, totalViews: 0, milestones: defaultMilestones, milestoneGoalText: "My Channel Goals 🎯" };
         allUsers.push(newUser); saveUsers(); currentUser = newUser; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); return true;
     }
     function logout() { currentUser = null; localStorage.removeItem('vf_currentUser'); closeDropdown(); goToHome(); updateNavbar(); showToast("Logged out"); }
@@ -256,6 +263,16 @@
     window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
     window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
 
+    // Toggle description full view (click on the description card)
+    function toggleDescription() {
+        const fullDiv = document.getElementById('descriptionFull');
+        const chevron = document.getElementById('descChevron');
+        if(fullDiv) {
+            fullDiv.classList.toggle('show');
+            if(chevron) chevron.style.transform = fullDiv.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+    }
+
     function renderChannelPage(uid) {
         const user = allUsers.find(u => u.uid === uid);
         if (!user) { goToHome(); return; }
@@ -279,6 +296,11 @@
             </div>`;
         });
         
+        // Truncate bio for preview - if longer than 100 chars, show "..."
+        const bioText = user.bio || "No description yet.";
+        const isLongBio = bioText.length > 100;
+        const previewBio = isLongBio ? bioText.substring(0, 100) + "..." : bioText;
+        
         const html = `<div class="channel-page">
             <div class="channel-banner" style="${bannerStyle}"></div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
@@ -297,7 +319,23 @@
                 </div>
             </div>
             
-            <!-- Custom Milestones Tracker -->
+            <!-- Description Card - Click to Expand/Collapse -->
+            <div class="description-card" onclick="toggleDescription()">
+                <div class="description-preview">
+                    <span>${escapeHtml(previewBio)}</span>
+                    <i class="fas fa-chevron-down" id="descChevron"></i>
+                </div>
+                <div class="description-full" id="descriptionFull">
+                    <p style="white-space: pre-wrap;">${escapeHtml(bioText)}</p>
+                    <div class="bio-links">
+                        <div class="bio-link"><i class="fas fa-link"></i> <a href="${channelUrl}" target="_blank">${channelUrl}</a></div>
+                        ${user.links ? user.links.split(',').map(l => `<div class="bio-link"><i class="fas fa-external-link-alt"></i> <a href="${l.trim()}" target="_blank">${l.trim()}</a></div>`).join('') : ''}
+                        <div class="bio-link"><i class="fas fa-calendar-alt"></i> Joined ${joinDate}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Milestones Tracker -->
             ${milestones.length > 0 ? `<div class="goal-card">
                 <div class="goal-header" onclick="toggleGoal()">
                     <div class="goal-title"><i class="fas fa-trophy"></i> ${escapeHtml(goalText)}</div>
@@ -309,22 +347,6 @@
                     ${milestonesHtml}
                 </div>
             </div>` : ''}
-            
-            <!-- Custom Description Card -->
-            <div class="bio-card">
-                <div class="bio-header" onclick="toggleBio()">
-                    <span><i class="fas fa-info-circle"></i> Description</span>
-                    <i class="fas fa-chevron-down chevron" id="bioChevron"></i>
-                </div>
-                <div class="bio-content" id="bioContent">
-                    <p style="white-space: pre-wrap;">${escapeHtml(user.bio || 'No description yet.')}</p>
-                    <div class="bio-links">
-                        <div class="bio-link"><i class="fas fa-link"></i> <a href="${channelUrl}" target="_blank">${channelUrl}</a></div>
-                        ${user.links ? user.links.split(',').map(l => `<div class="bio-link"><i class="fas fa-external-link-alt"></i> <a href="${l.trim()}" target="_blank">${l.trim()}</a></div>`).join('') : ''}
-                        <div class="bio-link"><i class="fas fa-calendar-alt"></i> Joined ${joinDate}</div>
-                    </div>
-                </div>
-            </div>
             
             <div class="videos-grid">
                 ${userVideos.map(v => `<div class="video-card-mini" onclick="goToHome(); setTimeout(()=>{ const el = document.querySelector('.video-card[data-video-id="${v.id}"]'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100)">
@@ -340,7 +362,6 @@
 
     function subscribeToChannel() { showToast("Subscribed! (Demo feature)"); }
     function toggleGoal() { const c = document.getElementById('goalContent'); const ch = document.getElementById('goalChevron'); if(c) { c.classList.toggle('show'); if(ch) ch.style.transform = c.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)'; } }
-    function toggleBio() { const c = document.getElementById('bioContent'); const ch = document.getElementById('bioChevron'); if(c) { c.classList.toggle('show'); if(ch) ch.style.transform = c.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)'; } }
 
     let milestoneInputs = [];
     function renderMilestoneEditor() {
@@ -386,7 +407,6 @@
         const newLinks = document.getElementById('editChannelLinks').value;
         const avatarFile = document.getElementById('editAvatarFile').files[0];
         const bannerFile = document.getElementById('editBannerFile').files[0];
-        // Save milestones
         const updatedMilestones = [];
         for(let i = 0; i < currentUser.milestones.length; i++) {
             const targetInput = document.getElementById(`milestoneTarget_${i}`);
@@ -441,12 +461,12 @@
     document.getElementById('doLoginBtn')?.addEventListener('click', () => { if(login(document.getElementById('loginEmail').value, document.getElementById('loginPass').value)) { document.getElementById('authModal').style.display='none'; goToHome(); updateNavbar(); } else showToast('Invalid'); });
     document.getElementById('demoLoginBtn')?.addEventListener('click', () => {
         let demo = allUsers.find(u => u.email === 'demo@vertiflow.com');
-        if(!demo) { demo = { uid: 'demo_user', displayName: 'VertiCreator', email: 'demo@vertiflow.com', username: 'verticreator', bio: 'Welcome to my channel! I create awesome content about tech and lifestyle. Subscribe and join the journey! 🚀', links: 'https://youtube.com,https://twitter.com', photoURL: null, bannerURL: null, createdAt: Date.now() - 90*24*60*60*1000, hasChannel: true, subscribers: 1250, totalViews: 50000, milestones: [{ target: "100 subscribers", achieved: true, date: "1 Jan 2026", color: "#10b981" }, { target: "1000 subscribers", achieved: true, date: "22 Jan 2026", color: "#f59e0b" }, { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }], milestoneGoalText: "🎯 10k Subscriber Journey!" }; allUsers.push(demo); saveUsers(); }
+        if(!demo) { demo = { uid: 'demo_user', displayName: 'VertiCreator', email: 'demo@vertiflow.com', username: 'verticreator', bio: 'Welcome to my channel! I create awesome content about tech, lifestyle, and gaming. 🎮\n\nSubscribe and join the journey! This is a longer description that will be truncated on the preview. Click to expand and read the full story!\n\nThanks for supporting my channel! 🚀', links: 'https://youtube.com,https://twitter.com', photoURL: null, bannerURL: null, createdAt: Date.now() - 90*24*60*60*1000, hasChannel: true, subscribers: 1250, totalViews: 50000, milestones: [{ target: "100 subscribers", achieved: true, date: "1 Jan 2026", color: "#10b981" }, { target: "1000 subscribers", achieved: true, date: "22 Jan 2026", color: "#f59e0b" }, { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }], milestoneGoalText: "🎯 10k Subscriber Journey!" }; allUsers.push(demo); saveUsers(); }
         currentUser = { ...demo }; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); document.getElementById('authModal').style.display='none'; goToHome(); updateNavbar(); showToast('Welcome to VertiFlow!'); });
     document.getElementById('doSignupBtn')?.addEventListener('click', () => { if(signup(document.getElementById('signupName').value, document.getElementById('signupEmail').value, document.getElementById('signupPass').value)) { document.getElementById('authModal').style.display='none'; document.getElementById('channelWizardModal').style.display='flex'; updateNavbar(); } });
     document.getElementById('confirmUploadBtn')?.addEventListener('click', async () => { const f = document.getElementById('videoFile').files[0]; const t = document.getElementById('videoTitle').value; const d = document.getElementById('videoDesc').value; if(await publishVideo(t,d,f)) { document.getElementById('uploadModal').style.display='none'; renderFeed(); showToast('Published!'); } });
     window.closeUploadModal = () => document.getElementById('uploadModal').style.display = 'none';
-    window.goToHome = goToHome; window.navigateToChannel = navigateToChannel; window.toggleDropdown = toggleDropdown; window.toggleGoal = toggleGoal; window.toggleBio = toggleBio; window.openCustomizeModal = openCustomizeModal; window.closeCustomizeModal = closeCustomizeModal;
+    window.goToHome = goToHome; window.navigateToChannel = navigateToChannel; window.toggleDropdown = toggleDropdown; window.toggleGoal = toggleGoal; window.toggleDescription = toggleDescription; window.openCustomizeModal = openCustomizeModal; window.closeCustomizeModal = closeCustomizeModal;
 
     loadData();
     const saved = localStorage.getItem('vf_currentUser');
