@@ -34,7 +34,6 @@
             overscroll-behavior: none;
         }
 
-        /* Navbar - YouTube/TikTok style */
         .navbar {
             position: fixed;
             top: 0;
@@ -161,7 +160,7 @@
             color: var(--text-secondary);
         }
 
-        /* Main Layout - TikTok style vertical feed */
+        /* Main Layout */
         .main-container {
             margin-top: 65px;
             height: calc(100vh - 65px);
@@ -214,7 +213,6 @@
             margin: 0 auto;
         }
 
-        /* Overlay content - TikTok style side buttons */
         .video-overlay {
             position: absolute;
             bottom: 100px;
@@ -251,7 +249,6 @@
             color: var(--accent);
         }
 
-        /* Video info overlay */
         .video-info-overlay {
             position: absolute;
             bottom: 100px;
@@ -288,7 +285,6 @@
             overflow: hidden;
         }
 
-        /* Comments panel */
         .comments-panel {
             position: fixed;
             bottom: 0;
@@ -325,11 +321,6 @@
             gap: 12px;
             margin-bottom: 16px;
         }
-        .comment-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-        }
         .comment-content {
             flex: 1;
         }
@@ -364,7 +355,6 @@
             cursor: pointer;
         }
 
-        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -434,7 +424,6 @@
             border-left: 3px solid var(--accent);
         }
 
-        /* Channel page */
         .channel-page {
             min-height: 100vh;
             background: var(--bg-dark);
@@ -496,6 +485,16 @@
             color: white;
             font-size: 1.5rem;
         }
+        .channel-url-input {
+            background: #2a2a2a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 12px;
+            width: 280px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -556,7 +555,8 @@
         </div>
         <div id="wizardStep3" class="wizard-step">
             <h3>Ready to launch!</h3>
-            <p>Your channel is almost ready. Click launch to start!</p>
+            <p>Your channel URL will be:</p>
+            <div class="channel-url-input" id="channelUrlPreview">loading...</div>
             <button class="btn btn-outline" id="wizardBack3">Back</button>
             <button class="btn btn-primary" id="finishChannelBtn">Launch Channel 🚀</button>
         </div>
@@ -603,14 +603,11 @@
         const storedVideos = localStorage.getItem('vf_videos');
         allUsers = storedUsers ? JSON.parse(storedUsers) : [];
         allVideos = storedVideos ? JSON.parse(storedVideos) : [];
-        
-        // No preset videos - empty feed by default
         if (!storedVideos) {
             allVideos = [];
             localStorage.setItem('vf_videos', JSON.stringify(allVideos));
         }
         if (allUsers.length === 0) {
-            // Demo user created on signup only
             allUsers = [];
             localStorage.setItem('vf_users', JSON.stringify(allUsers));
         }
@@ -618,6 +615,20 @@
     function saveUsers() { localStorage.setItem('vf_users', JSON.stringify(allUsers)); }
     function saveVideos() { localStorage.setItem('vf_videos', JSON.stringify(allVideos)); }
     function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2500); }
+
+    // Helper: generate channel URL
+    function getChannelUrl(user) {
+        const baseUrl = window.location.origin + window.location.pathname;
+        // Priority: use username if exists, otherwise use UID
+        const identifier = user.username || user.uid;
+        return `${baseUrl}#@${identifier}`;
+    }
+
+    function getChannelUrlById(uid) {
+        const user = allUsers.find(u => u.uid === uid);
+        if (!user) return '#';
+        return getChannelUrl(user);
+    }
 
     // Auth
     function login(email, pass) {
@@ -631,11 +642,12 @@
     }
     function signup(name, email, pass) {
         if (allUsers.find(u => u.email === email)) { showToast("Email exists"); return false; }
+        const username = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 100);
         const newUser = { 
             uid: 'user_' + Date.now(), 
             displayName: name, 
             email: email, 
-            username: name.toLowerCase().replace(/\s/g, '') + Math.floor(Math.random() * 100), 
+            username: username,
             bio: '', 
             photoURL: null, 
             createdAt: Date.now(), 
@@ -652,6 +664,7 @@
         localStorage.removeItem('vf_currentUser'); 
         showToast("Logged out"); 
         closeDropdown();
+        updateUrlHash('');
         renderFeed(); 
         updateNavbar(); 
     }
@@ -663,6 +676,10 @@
         }
         const idx = allUsers.findIndex(u => u.uid === currentUser.uid);
         if (idx !== -1) { 
+            // Ensure username is set
+            if (!data.username && !allUsers[idx].username) {
+                data.username = data.displayName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 100);
+            }
             allUsers[idx] = { ...allUsers[idx], ...data, hasChannel: true }; 
             saveUsers(); 
             currentUser = allUsers[idx]; 
@@ -696,7 +713,6 @@
         }
     }
 
-    // Video aspect detection
     function getVideoAspect(file) {
         return new Promise((resolve) => {
             const vid = document.createElement('video');
@@ -734,12 +750,77 @@
         return true;
     }
 
-    // Home / FYP - shows all videos
-    function goToHome() {
+    // URL Hash Routing: supports #@username or #user_uid
+    function handleRouting() {
+        const hash = window.location.hash.slice(1); // remove #
+        if (!hash) {
+            renderFeed();
+            return;
+        }
+        if (hash.startsWith('@')) {
+            const identifier = hash.slice(1);
+            // Find user by username
+            const user = allUsers.find(u => u.username === identifier);
+            if (user) {
+                renderChannelPage(user.uid);
+                return;
+            }
+        }
+        // Try as UID
+        const userByUid = allUsers.find(u => u.uid === hash);
+        if (userByUid) {
+            renderChannelPage(hash);
+            return;
+        }
+        // Not found, go home
         renderFeed();
     }
 
-    // Render main feed (TikTok style vertical scroll)
+    function updateUrlHash(identifier) {
+        const newHash = identifier ? `#${identifier}` : '';
+        if (window.location.hash !== newHash) {
+            history.pushState(null, '', newHash);
+        }
+    }
+
+    function goToHome() {
+        updateUrlHash('');
+        renderFeed();
+    }
+
+    function renderChannelPage(uid) {
+        const user = allUsers.find(u => u.uid === uid);
+        if (!user) {
+            renderFeed();
+            return;
+        }
+        const userVideos = allVideos.filter(v => v.userId === uid);
+        const channelUrl = getChannelUrl(user);
+        
+        const html = `<div class="channel-page">
+            <div class="channel-header">
+                <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${user.displayName?.charAt(0)}`}">
+                <div>
+                    <h1>${escapeHtml(user.displayName)}</h1>
+                    <p>${user.bio || 'Creator on VertiFlow'}</p>
+                    <div style="margin-top: 12px;">
+                        <span style="color:var(--text-secondary);">🔗 ${channelUrl}</span>
+                        <button class="btn" style="margin-left: 12px; padding: 4px 12px;" onclick="copyChannelUrl('${channelUrl}')">Copy URL</button>
+                    </div>
+                    <div style="margin-top: 8px;"><span style="color:var(--text-secondary);">📹 ${userVideos.length} videos</span></div>
+                </div>
+            </div>
+            <div class="videos-grid">
+                ${userVideos.map(v => `<div class="video-thumb" onclick="goToHome(); setTimeout(()=>{ const el = document.querySelector('.video-card[data-video-id="${v.id}"]'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 200)"><video src="${v.videoUrl}"></video><div style="padding:12px;"><strong>${escapeHtml(v.title)}</strong><div>❤️ ${v.likes?.length||0}</div></div></div>`).join('')}
+            </div>
+            ${userVideos.length === 0 ? '<div class="empty-state"><i class="fas fa-video" style="font-size: 48px; opacity: 0.5;"></i><p>No videos yet</p></div>' : ''}
+            <button class="btn btn-primary" onclick="goToHome()" style="margin-top: 32px; display: block; margin-left: auto; margin-right: auto;"><i class="fas fa-home"></i> Back to FYP</button>
+        </div>`;
+        document.getElementById('feedContent').innerHTML = html;
+        closeDropdown();
+    }
+
+    // Render main feed
     function renderFeed() {
         if (!currentUser) { 
             document.getElementById('feedContent').innerHTML = `<div style="height:80vh; display:flex; align-items:center; justify-content:center; flex-direction:column;"><i class="fab fa-tiktok" style="font-size:80px; color:var(--accent); margin-bottom:20px;"></i><h2>VertiFlow</h2><p style="color:var(--text-secondary); margin:16px 0;">Login to start watching and uploading videos</p><button class="btn btn-primary" id="landingBtn">Get Started</button></div>`; 
@@ -791,7 +872,7 @@
             }
         });
         
-        // Attach scroll snap + autoplay
+        // Scroll snap + autoplay
         const container = document.getElementById('mainContainer');
         let scrollTimeout;
         container.onscroll = () => {
@@ -813,7 +894,6 @@
             }, 100);
         };
         
-        // Like & comment buttons
         document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(btn.dataset.id); renderFeed(); }));
         document.querySelectorAll('.comment-btn').forEach(btn => {
             btn.addEventListener('click', (e) => { e.stopPropagation(); activeVideoId = btn.dataset.id; openComments(activeVideoId); });
@@ -833,52 +913,53 @@
     
     window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
     window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href + '#video=' + id); showToast('Link copied!'); };
+    window.copyChannelUrl = (url) => { navigator.clipboard.writeText(url); showToast('Channel URL copied!'); };
     
     function navigateToChannel(uid) {
         const user = allUsers.find(u => u.uid === uid);
-        if(!user) return;
-        const userVideos = allVideos.filter(v => v.userId === uid);
-        const html = `<div class="channel-page">
-            <div class="channel-header">
-                <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${user.displayName?.charAt(0)}`}">
-                <div>
-                    <h1>${escapeHtml(user.displayName)}</h1>
-                    <p>${user.bio || 'Creator on VertiFlow'}</p>
-                    <div style="margin-top: 12px;"><span style="color:var(--text-secondary);">📹 ${userVideos.length} videos</span></div>
-                </div>
-            </div>
-            <div class="videos-grid">
-                ${userVideos.map(v => `<div class="video-thumb" onclick="goToHome(); setTimeout(()=>{ const el = document.querySelector('.video-card[data-video-id="${v.id}"]'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 200)"><video src="${v.videoUrl}"></video><div style="padding:12px;"><strong>${escapeHtml(v.title)}</strong><div>❤️ ${v.likes?.length||0}</div></div></div>`).join('')}
-            </div>
-            ${userVideos.length === 0 ? '<div class="empty-state"><i class="fas fa-video" style="font-size: 48px; opacity: 0.5;"></i><p>No videos yet</p></div>' : ''}
-            <button class="btn btn-primary" onclick="goToHome()" style="margin-top: 32px; display: block; margin-left: auto; margin-right: auto;"><i class="fas fa-home"></i> Back to FYP</button>
-        </div>`;
-        document.getElementById('feedContent').innerHTML = html;
-        closeDropdown();
+        if(user) {
+            const identifier = user.username || user.uid;
+            updateUrlHash('@' + identifier);
+            renderChannelPage(uid);
+        }
     }
     
     function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
     
-    // Dropdown menu
+    // Dropdown
     let dropdownOpen = false;
     function toggleDropdown() {
         const dropdown = document.getElementById('userDropdown');
-        if(dropdown) {
-            dropdown.classList.toggle('show');
-        }
+        if(dropdown) dropdown.classList.toggle('show');
     }
     function closeDropdown() {
         const dropdown = document.getElementById('userDropdown');
         if(dropdown) dropdown.classList.remove('show');
     }
     
-    // Channel Wizard
+    // Wizard
     window.wizardData = {};
     document.getElementById('wizardNext1')?.addEventListener('click', () => { const n = document.getElementById('channelName').value.trim(); if(!n) return showToast("Channel name required"); window.wizardData = { displayName: n, bio: document.getElementById('channelBio').value }; document.getElementById('wizardStep1').classList.remove('active-step'); document.getElementById('wizardStep2').classList.add('active-step'); document.getElementById('step1Dot').classList.add('completed'); document.getElementById('step2Dot').classList.add('active'); });
     document.getElementById('wizardBack2')?.addEventListener('click', () => { document.getElementById('wizardStep2').classList.remove('active-step'); document.getElementById('wizardStep1').classList.add('active-step'); });
-    document.getElementById('wizardNext2')?.addEventListener('click', () => { document.getElementById('wizardStep2').classList.remove('active-step'); document.getElementById('wizardStep3').classList.add('active-step'); document.getElementById('step2Dot').classList.add('completed'); document.getElementById('step3Dot').classList.add('active'); });
+    document.getElementById('wizardNext2')?.addEventListener('click', () => { 
+        const username = window.wizardData.displayName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 100);
+        window.wizardData.username = username;
+        const previewUrl = `${window.location.origin}${window.location.pathname}#@${username}`;
+        document.getElementById('channelUrlPreview').innerHTML = previewUrl;
+        document.getElementById('wizardStep2').classList.remove('active-step'); 
+        document.getElementById('wizardStep3').classList.add('active-step'); 
+        document.getElementById('step2Dot').classList.add('completed'); 
+        document.getElementById('step3Dot').classList.add('active'); 
+    });
     document.getElementById('wizardBack3')?.addEventListener('click', () => { document.getElementById('wizardStep3').classList.remove('active-step'); document.getElementById('wizardStep2').classList.add('active-step'); });
-    document.getElementById('finishChannelBtn')?.addEventListener('click', async () => { const file = document.getElementById('channelAvatarFile').files[0]; await updateChannel(window.wizardData, file); document.getElementById('channelWizardModal').style.display = 'none'; renderFeed(); updateNavbar(); showToast('Channel created!'); });
+    document.getElementById('finishChannelBtn')?.addEventListener('click', async () => { 
+        const file = document.getElementById('channelAvatarFile').files[0]; 
+        await updateChannel(window.wizardData, file); 
+        document.getElementById('channelWizardModal').style.display = 'none'; 
+        renderFeed(); 
+        updateNavbar(); 
+        showToast('Channel created! Your URL is ' + getChannelUrl(currentUser));
+    });
     document.getElementById('channelAvatarFile')?.addEventListener('change', (e) => { if(e.target.files[0]) { const r = new FileReader(); r.onload = ev => document.getElementById('avatarPreviewImg').src = ev.target.result; r.readAsDataURL(e.target.files[0]); } });
     
     function showChannelWizard() { document.getElementById('channelWizardModal').style.display = 'flex'; document.getElementById('wizardStep1').classList.add('active-step'); document.getElementById('wizardStep2').classList.remove('active-step'); document.getElementById('wizardStep3').classList.remove('active-step'); document.getElementById('step1Dot').classList.add('active'); document.getElementById('step2Dot').classList.remove('active','completed'); document.getElementById('step3Dot').classList.remove('active','completed'); }
@@ -913,7 +994,6 @@
                     </div>
                 </div>
             `;
-            // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
                 if(!nav.contains(e.target)) closeDropdown();
             });
@@ -923,11 +1003,11 @@
         }
     }
     
+    // Event Listeners
     document.getElementById('authLoginTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='block'; document.getElementById('signupPanel').style.display='none'; });
     document.getElementById('authSignupTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='none'; document.getElementById('signupPanel').style.display='block'; });
-    document.getElementById('doLoginBtn')?.addEventListener('click', () => { if(login(document.getElementById('loginEmail').value, document.getElementById('loginPass').value)) { document.getElementById('authModal').style.display='none'; renderFeed(); updateNavbar(); } else showToast('Invalid credentials'); });
-    document.getElementById('demoLoginBtn')?.addEventListener('click', () => { 
-        // Create demo user if doesn't exist
+    document.getElementById('doLoginBtn')?.addEventListener('click', () => { if(login(document.getElementById('loginEmail').value, document.getElementById('loginPass').value)) { document.getElementById('authModal').style.display='none'; handleRouting(); updateNavbar(); } else showToast('Invalid credentials'); });
+    document.getElementById('demoLoginBtn')?.addEventListener('click', () => {
         let demoUser = allUsers.find(u => u.email === 'demo@vertiflow.com');
         if(!demoUser) {
             demoUser = { uid: 'demo_user', displayName: 'DemoCreator', email: 'demo@vertiflow.com', username: 'democreator', bio: 'This is a demo account!', photoURL: null, createdAt: Date.now(), hasChannel: true };
@@ -937,7 +1017,7 @@
         currentUser = { ...demoUser };
         localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
         document.getElementById('authModal').style.display='none';
-        renderFeed();
+        handleRouting();
         updateNavbar();
         showToast('Welcome to VertiFlow!');
     });
@@ -949,10 +1029,12 @@
     window.toggleDropdown = toggleDropdown;
     window.closeDropdown = closeDropdown;
     
+    // Initialize
     loadData();
     const saved = localStorage.getItem('vf_currentUser');
     if(saved) { currentUser = JSON.parse(saved); const exists = allUsers.find(u => u.uid === currentUser.uid); if(exists) currentUser = exists; else currentUser = null; }
-    renderFeed();
+    window.addEventListener('hashchange', handleRouting);
+    handleRouting();
     updateNavbar();
 </script>
 </body>
