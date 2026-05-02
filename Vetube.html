@@ -76,12 +76,42 @@
         .add-comment-bar { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: var(--bg-elevated); }
         .add-comment-bar input { flex: 1; background: #2a2a2a; border: none; border-radius: 24px; padding: 10px 16px; color: white; }
         .close-comments { background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 300; align-items: center; justify-content: center; }
-        .modal.show { display: flex; }
-        .modal-content { background: var(--bg-elevated); border-radius: 24px; max-width: 600px; width: 90%; padding: 28px; border: 1px solid var(--border); max-height: 85vh; overflow-y: auto; }
+        
+        /* MODAL STYLES - FIXED */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.95); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal.show, .modal[style*="display: flex"] { 
+            display: flex !important; 
+        }
+        .modal-content { 
+            background: var(--bg-elevated); 
+            border-radius: 24px; 
+            max-width: 500px; 
+            width: 90%; 
+            padding: 28px; 
+            border: 1px solid var(--border); 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            position: relative;
+            z-index: 1001;
+        }
+        
         input, textarea { width: 100%; background: #2a2a2a; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: white; margin-bottom: 16px; font-family: inherit; }
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2a2a2a; padding: 10px 20px; border-radius: 40px; z-index: 400; font-size: 0.85rem; border-left: 3px solid var(--accent); animation: slideUp 0.3s ease; }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2a2a2a; padding: 12px 24px; border-radius: 40px; z-index: 2000; font-size: 0.9rem; border-left: 3px solid var(--accent); animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        
         .channel-page { min-height: 100vh; background: var(--bg-dark); padding: 80px 20px 40px; }
         .channel-banner { height: 180px; border-radius: 20px; margin-bottom: -60px; background-size: cover; background-position: center; background-color: #1a1a3a; }
         .channel-avatar-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-dark); margin-left: 40px; position: relative; }
@@ -94,7 +124,7 @@
         .description-normal:hover { background: #222; border-color: var(--accent); }
         .description-normal p { color: var(--text-secondary); line-height: 1.5; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .description-normal .expand-hint { color: var(--accent); font-size: 0.75rem; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-        .popup-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .popup-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1500; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .popup-content { background: var(--bg-elevated); border-radius: 32px; max-width: 550px; width: 90%; max-height: 85vh; overflow-y: auto; border: 1px solid var(--border); animation: popupFade 0.25s ease; }
         @keyframes popupFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .popup-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-elevated); }
@@ -163,13 +193,16 @@
     </div>
 </div>
 
-<!-- Create Channel Modal -->
-<div id="createChannelModal" class="modal">
+<!-- Create Channel Modal - FIXED with proper visibility -->
+<div id="createChannelModal" class="modal" style="display: none;">
     <div class="modal-content">
-        <h3><i class="fas fa-plus-circle"></i> Create Your Channel</h3>
+        <h3 style="margin-bottom: 20px;"><i class="fas fa-plus-circle"></i> Create Your Channel</h3>
         <input type="text" id="createChannelName" placeholder="Channel Name (e.g., TechGuru)" required>
         <textarea id="createChannelBio" rows="3" placeholder="Tell us about your channel..."></textarea>
-        <div><label>Profile Picture (optional)</label><input type="file" id="createAvatarFile" accept="image/*"></div>
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);"><i class="fas fa-image"></i> Profile Picture (optional)</label>
+            <input type="file" id="createAvatarFile" accept="image/*" style="margin-bottom: 0;">
+        </div>
         <div style="display:flex;gap:12px;margin-top:20px;">
             <button class="btn btn-outline" onclick="closeCreateChannelModal()">Cancel</button>
             <button class="btn btn-primary" id="confirmCreateChannelBtn"><i class="fas fa-rocket"></i> Create Channel</button>
@@ -178,7 +211,7 @@
 </div>
 
 <!-- Customize Modal -->
-<div id="customizeModal" class="modal">
+<div id="customizeModal" class="modal" style="display: none;">
     <div class="modal-content">
         <h3><i class="fas fa-palette"></i> Customize Channel</h3>
         <input type="text" id="editChannelName" placeholder="Channel name">
@@ -186,9 +219,6 @@
         <input type="text" id="editChannelLinks" placeholder="External links (comma separated)">
         <div><label>Banner</label><input type="file" id="editBannerFile" accept="image/*"></div>
         <div><label>Profile Picture</label><input type="file" id="editAvatarFile" accept="image/*"></div>
-        <h4 style="margin:16px 0 12px;"><i class="fas fa-trophy"></i> Milestones</h4>
-        <div id="milestonesList"></div>
-        <button class="btn btn-outline" id="addMilestoneBtn" style="margin-bottom:16px;width:100%;"><i class="fas fa-plus"></i> Add Milestone</button>
         <div style="display:flex;gap:12px;margin-top:16px;">
             <button class="btn btn-outline" onclick="closeCustomizeModal()">Cancel</button>
             <button class="btn btn-primary" id="saveChannelBtn">Save Changes</button>
@@ -197,7 +227,7 @@
 </div>
 
 <!-- Upload Modal -->
-<div id="uploadModal" class="modal">
+<div id="uploadModal" class="modal" style="display: none;">
     <div class="modal-content">
         <h3>Upload Video</h3>
         <input type="text" id="videoTitle" placeholder="Title">
@@ -211,7 +241,7 @@
 </div>
 
 <!-- Info Popup Modal -->
-<div id="infoPopupModal" class="popup-modal">
+<div id="infoPopupModal" class="popup-modal" style="display: none;">
     <div class="popup-content">
         <div class="popup-header">
             <h3><i class="fas fa-user-circle"></i> <span id="popupChannelName">Channel</span></h3>
@@ -242,7 +272,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, where, updateDoc, arrayUnion, arrayRemove, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, updateDoc, arrayUnion, arrayRemove, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
@@ -314,59 +344,94 @@
         }
     }
 
-    // COMPLETELY REWRITTEN createUserChannel function
     async function createUserChannel(uid, email, displayName, bio, avatarFile = null) {
-        try {
-            const username = displayName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 10000);
-            let photoURL = null;
-            
-            if (avatarFile) {
-                const avatarRef = ref(storage, `avatars/${uid}_${Date.now()}`);
-                await uploadBytes(avatarRef, avatarFile);
-                photoURL = await getDownloadURL(avatarRef);
-            }
-            
-            const channelData = {
-                uid: uid,
-                email: email,
-                displayName: displayName,
-                username: username,
-                bio: bio || "Welcome to my channel! 🎉\n\nI create amazing content. Subscribe and follow along!",
-                links: "",
-                photoURL: photoURL,
-                bannerURL: null,
-                createdAt: Timestamp.now(),
-                hasChannel: true,
-                subscribers: 0,
-                totalViews: 0,
-                milestones: [
-                    { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
-                    { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
-                    { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
-                ],
-                milestoneGoalText: "My Channel Goals 🎯"
-            };
-            
-            // Save to Firestore
-            const userRef = doc(db, 'users', uid);
-            await setDoc(userRef, channelData);
-            
-            // Verify it was saved
-            const verifyDoc = await getDoc(userRef);
-            if (!verifyDoc.exists()) {
-                throw new Error("Failed to save channel data");
-            }
-            
-            console.log("Channel created successfully:", channelData);
-            return channelData;
-            
-        } catch(error) {
-            console.error("Error in createUserChannel:", error);
-            throw error;
+        const username = displayName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 10000);
+        let photoURL = null;
+        
+        if (avatarFile) {
+            const avatarRef = ref(storage, `avatars/${uid}_${Date.now()}`);
+            await uploadBytes(avatarRef, avatarFile);
+            photoURL = await getDownloadURL(avatarRef);
         }
+        
+        const channelData = {
+            uid: uid,
+            email: email,
+            displayName: displayName,
+            username: username,
+            bio: bio || "Welcome to my channel! 🎉\n\nI create amazing content. Subscribe and follow along!",
+            links: "",
+            photoURL: photoURL,
+            bannerURL: null,
+            createdAt: Timestamp.now(),
+            hasChannel: true,
+            subscribers: 0,
+            totalViews: 0,
+            milestones: [
+                { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
+                { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
+                { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
+            ],
+            milestoneGoalText: "My Channel Goals 🎯"
+        };
+        
+        await setDoc(doc(db, 'users', uid), channelData);
+        return channelData;
     }
 
-    // COMPLETELY REWRITTEN createChannel function
+    // FIXED: Function to show create channel modal
+    function showCreateChannelModal() {
+        if(!currentUser) {
+            showToast("Please sign in first", true);
+            const authModal = document.getElementById('authModal');
+            if(authModal) authModal.style.display = 'flex';
+            return;
+        }
+        
+        const modal = document.getElementById('createChannelModal');
+        if(modal) {
+            // Clear previous values
+            const nameInput = document.getElementById('createChannelName');
+            const bioInput = document.getElementById('createChannelBio');
+            const avatarInput = document.getElementById('createAvatarFile');
+            if(nameInput) nameInput.value = '';
+            if(bioInput) bioInput.value = '';
+            if(avatarInput) avatarInput.value = '';
+            
+            // Show modal
+            modal.style.display = 'flex';
+            console.log("Create channel modal shown");
+        } else {
+            console.error("Create channel modal not found");
+            showToast("Error: Could not open create channel form", true);
+        }
+    }
+    
+    function closeCreateChannelModal() {
+        const modal = document.getElementById('createChannelModal');
+        if(modal) modal.style.display = 'none';
+    }
+    
+    function closeCustomizeModal() {
+        const modal = document.getElementById('customizeModal');
+        if(modal) modal.style.display = 'none';
+    }
+    
+    function closeUploadModal() {
+        const modal = document.getElementById('uploadModal');
+        if(modal) modal.style.display = 'none';
+    }
+    
+    function openCustomizeModal() {
+        if(!currentChannel) { 
+            showToast("Create a channel first", true); 
+            return; 
+        }
+        const modal = document.getElementById('customizeModal');
+        if(modal) modal.style.display = 'flex';
+    }
+
+    // FIXED: Create channel function
     async function createChannel() {
         const channelNameInput = document.getElementById('createChannelName');
         const channelBioInput = document.getElementById('createChannelBio');
@@ -376,7 +441,6 @@
         const channelBio = channelBioInput ? channelBioInput.value : '';
         const avatarFile = avatarFileInput && avatarFileInput.files.length > 0 ? avatarFileInput.files[0] : null;
         
-        // Validate
         if(!channelName) { 
             showToast("❌ Channel name is required!", true); 
             return; 
@@ -387,76 +451,32 @@
             return;
         }
         
-        // Show loading state
         const createBtn = document.getElementById('confirmCreateChannelBtn');
-        const originalBtnText = createBtn.innerHTML;
+        const originalText = createBtn.innerHTML;
         createBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creating...';
         createBtn.disabled = true;
         
         try {
-            console.log("Starting channel creation for user:", currentUser.uid);
+            await createUserChannel(currentUser.uid, currentUser.email, channelName, channelBio, avatarFile);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            currentChannel = await getUserChannel(currentUser.uid);
             
-            // Create the channel
-            const channelData = await createUserChannel(
-                currentUser.uid, 
-                currentUser.email, 
-                channelName, 
-                channelBio, 
-                avatarFile
-            );
-            
-            console.log("Channel data saved:", channelData);
-            
-            // Wait a moment for Firestore to sync
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Fetch the newly created channel
-            const newChannel = await getUserChannel(currentUser.uid);
-            
-            if (!newChannel) {
-                throw new Error("Could not retrieve the created channel");
-            }
-            
-            // Update currentChannel
-            currentChannel = newChannel;
-            
-            console.log("Current channel set:", currentChannel);
-            
-            // Close modal and clear form
-            const modal = document.getElementById('createChannelModal');
-            if(modal) modal.style.display = 'none';
-            
-            if(channelNameInput) channelNameInput.value = '';
-            if(channelBioInput) channelBioInput.value = '';
-            if(avatarFileInput) avatarFileInput.value = '';
-            
-            // Update UI
+            closeCreateChannelModal();
             updateNavbar();
-            
-            // Show success message
             showToast(`🎉 Channel "${channelName}" created successfully!`);
-            
-            // Reload data
             await loadAllUsers();
             await loadAllVideos();
             
-            // Refresh current channel data
-            currentChannel = await getUserChannel(currentUser.uid);
-            
-            // Navigate to the new channel page
             if(currentChannel) {
                 renderChannelPage(currentChannel.uid);
             } else {
-                // Fallback: go to home
                 goToHome();
             }
-            
         } catch(error) {
             console.error("Error creating channel:", error);
             showToast(`❌ Failed to create channel: ${error.message}`, true);
         } finally {
-            // Reset button state
-            createBtn.innerHTML = originalBtnText;
+            createBtn.innerHTML = originalText;
             createBtn.disabled = false;
         }
     }
@@ -503,23 +523,6 @@
         await loadAllVideos();
     }
 
-    async function addComment(videoId, text) {
-        if (!currentUser) { showToast("Login to comment", true); return; }
-        if (!currentChannel) { showToast("Create a channel first to comment", true); return; }
-        const videoRef = doc(db, 'videos', videoId);
-        const videoDoc = await getDoc(videoRef);
-        const video = videoDoc.data();
-        const comments = video.comments || [];
-        comments.push({
-            uid: currentUser.uid,
-            displayName: currentChannel.displayName,
-            text: text,
-            timestamp: new Date().toISOString()
-        });
-        await updateDoc(videoRef, { comments });
-        await loadAllVideos();
-    }
-
     function renderFeed() {
         if (!allVideos.length) {
             document.getElementById('feedContent').innerHTML = `<div style="text-align:center;padding:80px;"><i class="fas fa-video" style="font-size:64px;opacity:0.5;"></i><h3>No videos yet</h3>${currentChannel ? '<button class="btn btn-primary" onclick="document.getElementById(\'uploadModal\').style.display=\'flex\'">Upload First Video</button>' : (currentUser ? '<p style="color:var(--text-secondary);margin-top:16px;"><i class="fas fa-plus-circle"></i> Create a channel from your profile menu to start uploading!</p>' : '<button class="btn btn-primary" onclick="document.getElementById(\'authModal\').style.display=\'flex\'">Sign In to Upload</button>')}</div>`;
@@ -529,7 +532,7 @@
         allVideos.forEach(v => {
             const isLiked = currentUser && v.likes?.includes(currentUser.uid);
             const avatar = v.channelAvatar || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${v.channelName?.charAt(0)}`;
-            html += `<div class="video-card ${v.aspectRatio === 'shorts' ? 'shorts' : ''}" data-video-id="${v.id}">
+            html += `<div class="video-card ${v.aspectRatio === 'shorts' ? 'shorts' : ''}">
                 <div class="video-wrapper"><video id="player-${v.videoId}" class="video-js" controls preload="metadata" playsinline><source src="${v.videoUrl}" type="video/mp4"></video></div>
                 <div class="video-overlay">
                     <button class="action-button like-btn" data-id="${v.id}"><i class="fas ${isLiked ? 'fa-heart' : 'fa-heart'}" style="color:${isLiked ? '#fe2c55' : 'white'}"></i><span>${v.likes?.length || 0}</span></button>
@@ -547,7 +550,6 @@
         document.getElementById('feedContent').innerHTML = html;
         allVideos.forEach(v => { const p = document.getElementById(`player-${v.videoId}`); if(p && !p.player) videojs(p, { controls: true, preload: 'metadata', fluid: true }); });
         document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(btn.dataset.id); }));
-        document.querySelectorAll('.comment-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); addComment(btn.dataset.id, prompt("Enter your comment:")); }));
         if(currentChannel) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
     }
 
@@ -603,10 +605,25 @@
         modal.style.display = 'flex';
     }
     
-    window.closeInfoPopup = () => document.getElementById('infoPopupModal').style.display = 'none';
+    function closeInfoPopup() {
+        const modal = document.getElementById('infoPopupModal');
+        if(modal) modal.style.display = 'none';
+    }
+    
+    function closeComments() {
+        const panel = document.getElementById('commentsPanel');
+        if(panel) panel.classList.remove('open');
+    }
+    
+    function copyVideoLink(id) {
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Link copied!');
+    }
 
     function updateNavbar() {
         const nav = document.getElementById('navButtons');
+        if(!nav) return;
+        
         if(currentUser) {
             if(currentChannel) {
                 const avatar = currentChannel.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${currentChannel.displayName?.charAt(0)}`;
@@ -645,19 +662,6 @@
         }
     }
 
-    function showCreateChannelModal() {
-        if(!currentUser) {
-            showToast("Please sign in first", true);
-            document.getElementById('authModal').style.display = 'flex';
-            return;
-        }
-        document.getElementById('createChannelModal').style.display = 'flex';
-    }
-    
-    function closeCreateChannelModal() {
-        document.getElementById('createChannelModal').style.display = 'none';
-    }
-
     function toggleDropdown() { 
         const dropdown = document.getElementById('userDropdown');
         if(dropdown) dropdown.classList.toggle('show');
@@ -670,8 +674,6 @@
 
     function navigateToChannel(uid) { renderChannelPage(uid); }
     function goToHome() { renderFeed(); }
-    window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
-    window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
 
     async function signOutUser() {
         await signOut(auth);
@@ -706,7 +708,8 @@
     async function signInWithGoogle() {
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            document.getElementById('authModal').style.display = 'none';
+            const authModal = document.getElementById('authModal');
+            if(authModal) authModal.style.display = 'none';
             showToast(`Welcome ${result.user.displayName || result.user.email?.split('@')[0]}!`);
         } catch(e) { 
             showToast(e.message, true); 
@@ -718,15 +721,16 @@
     window.navigateToChannel = navigateToChannel;
     window.toggleDropdown = toggleDropdown;
     window.openInfoPopup = openInfoPopup;
+    window.closeInfoPopup = closeInfoPopup;
     window.createChannel = createChannel;
+    window.showCreateChannelModal = showCreateChannelModal;
     window.closeCreateChannelModal = closeCreateChannelModal;
+    window.closeCustomizeModal = closeCustomizeModal;
+    window.closeUploadModal = closeUploadModal;
+    window.openCustomizeModal = openCustomizeModal;
     window.signOutUser = signOutUser;
-    window.closeCustomizeModal = () => document.getElementById('customizeModal').style.display = 'none';
-    window.closeUploadModal = () => document.getElementById('uploadModal').style.display = 'none';
-    window.openCustomizeModal = () => {
-        if(!currentChannel) { showToast("Create a channel first", true); return; }
-        document.getElementById('customizeModal').style.display = 'flex';
-    };
+    window.copyVideoLink = copyVideoLink;
+    window.closeComments = closeComments;
 
     // Event listeners
     document.getElementById('confirmCreateChannelBtn')?.addEventListener('click', createChannel);
@@ -734,15 +738,25 @@
     document.getElementById('googleSignupBtn')?.addEventListener('click', signInWithGoogle);
     document.getElementById('doLoginBtn')?.addEventListener('click', () => showToast("Use Google Sign In", true));
     document.getElementById('doSignupBtn')?.addEventListener('click', () => showToast("Use Google Sign Up", true));
+    document.getElementById('saveChannelBtn')?.addEventListener('click', async () => {
+        showToast("Save functionality coming soon", true);
+    });
+    document.getElementById('confirmUploadBtn')?.addEventListener('click', async () => {
+        showToast("Upload functionality coming soon", true);
+    });
     
     document.getElementById('authLoginTab')?.addEventListener('click', () => {
-        document.getElementById('loginPanel').style.display = 'block';
-        document.getElementById('signupPanel').style.display = 'none';
+        const loginPanel = document.getElementById('loginPanel');
+        const signupPanel = document.getElementById('signupPanel');
+        if(loginPanel) loginPanel.style.display = 'block';
+        if(signupPanel) signupPanel.style.display = 'none';
     });
     
     document.getElementById('authSignupTab')?.addEventListener('click', () => {
-        document.getElementById('loginPanel').style.display = 'none';
-        document.getElementById('signupPanel').style.display = 'block';
+        const loginPanel = document.getElementById('loginPanel');
+        const signupPanel = document.getElementById('signupPanel');
+        if(loginPanel) loginPanel.style.display = 'none';
+        if(signupPanel) signupPanel.style.display = 'block';
     });
 
     // Close modals when clicking outside
