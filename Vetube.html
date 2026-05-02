@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>VertiFlow — Watch & Discover</title>
+    <title>VertiFlow — Watch & Discover (Cross-Device)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
@@ -158,24 +158,8 @@
 <!-- Comments Panel -->
 <div id="commentsPanel" class="comments-panel"><div class="comments-header"><span>Comments</span><button class="close-comments" onclick="closeComments()">✕</button></div><div class="comments-list" id="commentsList"></div><div class="add-comment-bar"><input type="text" id="commentInput" placeholder="Add a comment..."><button class="btn btn-primary" id="postCommentBtn">Post</button></div></div>
 
-<script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
-            "firebase/storage": "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js"
-        }
-    }
-</script>
-
-<script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
-    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, updateDoc, arrayUnion, arrayRemove, increment, deleteDoc, where, addDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-    // Firebase configuration
+<script>
+    // ============ CLOUD DATABASE SETUP (Firebase) ============
     const firebaseConfig = {
         apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
         authDomain: "vertexpaste.firebaseapp.com",
@@ -186,70 +170,175 @@
     };
 
     // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
 
+    // ============ RECOVER LOCALSTORAGE DATA AND SYNC TO CLOUD ============
+    async function recoverLocalDataAndSyncToCloud() {
+        console.log("Checking for local data to recover...");
+        
+        // Recover users from localStorage
+        const storedUsers = localStorage.getItem('vf_users');
+        const storedVideos = localStorage.getItem('vf_videos');
+        const storedCurrentUser = localStorage.getItem('vf_currentUser');
+        
+        let recoveredUsers = [];
+        let recoveredVideos = [];
+        let hasData = false;
+        
+        if (storedUsers) {
+            try {
+                recoveredUsers = JSON.parse(storedUsers);
+                console.log(`Found ${recoveredUsers.length} users in localStorage`);
+                hasData = true;
+            } catch(e) { console.error("Error parsing users:", e); }
+        }
+        
+        if (storedVideos) {
+            try {
+                recoveredVideos = JSON.parse(storedVideos);
+                console.log(`Found ${recoveredVideos.length} videos in localStorage`);
+                hasData = true;
+            } catch(e) { console.error("Error parsing videos:", e); }
+        }
+        
+        // Check if Firebase already has data
+        const usersSnapshot = await db.collection('users').get();
+        const videosSnapshot = await db.collection('videos').get();
+        
+        if (usersSnapshot.empty && videosSnapshot.empty && hasData) {
+            console.log("Firebase is empty, recovering data from localStorage...");
+            showToast("🔄 Recovering your channels and videos from previous session...");
+            
+            // Recover users to Firebase
+            for (const user of recoveredUsers) {
+                try {
+                    await db.collection('users').doc(user.uid).set({
+                        displayName: user.displayName || "User",
+                        email: user.email || `${user.uid}@local.com`,
+                        username: user.username || user.uid,
+                        bio: user.bio || "Welcome to my channel!",
+                        links: user.links || "",
+                        photoURL: user.photoURL || null,
+                        bannerURL: user.bannerURL || null,
+                        createdAt: user.createdAt || new Date().toISOString(),
+                        hasChannel: user.hasChannel || true,
+                        subscribers: user.subscribers || [],
+                        milestones: user.milestones || [],
+                        milestoneGoalText: user.milestoneGoalText || "My Channel Goals 🎯"
+                    });
+                    console.log(`Recovered user: ${user.displayName}`);
+                } catch(e) { console.error("Error recovering user:", e); }
+            }
+            
+            // Recover videos to Firebase
+            for (const video of recoveredVideos) {
+                try {
+                    await db.collection('videos').doc(video.id).set({
+                        title: video.title || "Untitled",
+                        description: video.description || "",
+                        userId: video.userId,
+                        channelName: video.channelName,
+                        channelAvatar: video.channelAvatar || null,
+                        videoUrl: video.videoUrl,
+                        aspectRatio: video.aspectRatio || "landscape",
+                        createdAt: video.createdAt || new Date().toISOString(),
+                        likes: video.likes || [],
+                        comments: video.comments || [],
+                        views: video.views || 0
+                    });
+                    console.log(`Recovered video: ${video.title}`);
+                } catch(e) { console.error("Error recovering video:", e); }
+            }
+            
+            showToast(`✅ Recovered ${recoveredUsers.length} channels and ${recoveredVideos.length} videos!`);
+        } else {
+            console.log("Firebase already has data or no local data found");
+        }
+        
+        // Restore current user session if exists and not logged in
+        if (storedCurrentUser && !auth.currentUser) {
+            try {
+                const savedUser = JSON.parse(storedCurrentUser);
+                // Try to sign in with the saved user's email (if password is stored)
+                // For security, we don't store passwords, so we'll just show that they need to login
+                console.log("Found saved user session, but password required to login");
+                showToast("👋 Welcome back! Please login to access your channel.");
+            } catch(e) {}
+        }
+    }
+    
     // Global state
     let currentUser = null;
     let allVideos = [];
     let allUsers = [];
     let activeVideoId = null;
-
+    
     // Helper functions
-    function showToast(msg) { 
+    function showToast(msg, isError = false) { 
         const t = document.createElement('div'); 
         t.className = 'toast'; 
         t.innerHTML = msg; 
+        if (isError) t.style.borderLeftColor = '#ef4444';
         document.body.appendChild(t); 
-        setTimeout(() => t.remove(), 2500); 
+        setTimeout(() => t.remove(), 3000); 
     }
     function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-
-    // Load all videos from Firestore
-    async function loadAllVideos() {
-        try {
-            const videosQuery = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
-            const snapshot = await getDocs(videosQuery);
-            allVideos = [];
-            snapshot.forEach(doc => {
-                allVideos.push({ id: doc.id, ...doc.data() });
-            });
-            console.log('Loaded', allVideos.length, 'videos from cloud');
-            renderFeed();
-        } catch (error) {
-            console.error('Error loading videos:', error);
-            allVideos = [];
-        }
-    }
-
-    // Load all users from Firestore
-    async function loadAllUsers() {
-        try {
-            const snapshot = await getDocs(collection(db, 'users'));
+    
+    // Load data from Firestore with real-time listener
+    function setupRealtimeListeners() {
+        // Listen to users collection
+        db.collection('users').onSnapshot((snapshot) => {
             allUsers = [];
             snapshot.forEach(doc => {
                 allUsers.push({ uid: doc.id, ...doc.data() });
             });
-        } catch (error) {
-            console.error('Error loading users:', error);
-        }
+            console.log('Users updated:', allUsers.length);
+            if (allVideos.length) renderFeed();
+        }, (error) => console.error('Users listener error:', error));
+        
+        // Listen to videos collection
+        db.collection('videos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+            allVideos = [];
+            snapshot.forEach(doc => {
+                allVideos.push({ id: doc.id, ...doc.data() });
+            });
+            console.log('Videos updated:', allVideos.length);
+            renderFeed();
+        }, (error) => console.error('Videos listener error:', error));
     }
-
+    
     // Upload video to Firebase Storage
     async function uploadVideo(file, userId) {
         const fileName = `${userId}_${Date.now()}_${file.name}`;
-        const storageRef = ref(storage, `videos/${fileName}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
+        const storageRef = storage.ref(`videos/${fileName}`);
+        await storageRef.put(file);
+        const url = await storageRef.getDownloadURL();
         return url;
     }
-
+    
+    // Upload avatar
+    async function uploadAvatar(file, userId) {
+        const fileName = `avatars/${userId}_${Date.now()}`;
+        const storageRef = storage.ref(fileName);
+        await storageRef.put(file);
+        return await storageRef.getDownloadURL();
+    }
+    
+    // Upload banner
+    async function uploadBanner(file, userId) {
+        const fileName = `banners/${userId}_${Date.now()}`;
+        const storageRef = storage.ref(fileName);
+        await storageRef.put(file);
+        return await storageRef.getDownloadURL();
+    }
+    
     // Publish video
     async function publishVideo(title, desc, file) {
         if (!title || !file || !currentUser) {
-            showToast("Login & fill title");
+            showToast("Login & fill title", true);
             return false;
         }
         try {
@@ -270,9 +359,8 @@
                 views: 0
             };
             
-            const docRef = await addDoc(collection(db, 'videos'), newVideo);
-            showToast('Video published!');
-            await loadAllVideos();
+            await db.collection('videos').add(newVideo);
+            showToast('✅ Video published!');
             return true;
         } catch (error) {
             console.error('Error publishing:', error);
@@ -280,34 +368,33 @@
             return false;
         }
     }
-
+    
     // Like video
     async function likeVideo(videoId) {
-        if (!currentUser) { showToast("Login to like videos"); return; }
+        if (!currentUser) { showToast("Login to like videos", true); return; }
         try {
-            const videoRef = doc(db, 'videos', videoId);
-            const videoDoc = await getDoc(videoRef);
+            const videoRef = db.collection('videos').doc(videoId);
+            const videoDoc = await videoRef.get();
             const video = videoDoc.data();
             const likes = video.likes || [];
             
             if (likes.includes(currentUser.uid)) {
-                await updateDoc(videoRef, { likes: arrayRemove(currentUser.uid) });
+                await videoRef.update({ likes: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) });
             } else {
-                await updateDoc(videoRef, { likes: arrayUnion(currentUser.uid) });
+                await videoRef.update({ likes: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
             }
-            await loadAllVideos();
         } catch (error) {
             console.error('Error liking:', error);
         }
     }
-
+    
     // Add comment
     async function addComment(videoId, text) {
-        if (!currentUser) { showToast("Login to comment"); return; }
+        if (!currentUser) { showToast("Login to comment", true); return; }
         if (!text.trim()) return;
         try {
-            const videoRef = doc(db, 'videos', videoId);
-            const videoDoc = await getDoc(videoRef);
+            const videoRef = db.collection('videos').doc(videoId);
+            const videoDoc = await videoRef.get();
             const video = videoDoc.data();
             const comments = video.comments || [];
             comments.push({
@@ -316,32 +403,28 @@
                 text: text,
                 timestamp: new Date().toISOString()
             });
-            await updateDoc(videoRef, { comments: comments });
-            await loadAllVideos();
-            // Refresh comments panel if open
+            await videoRef.update({ comments: comments });
             if (activeVideoId === videoId) openComments(videoId);
         } catch (error) {
             console.error('Error adding comment:', error);
         }
     }
-
+    
     // Update channel
     async function updateChannel(data, avatarFile, bannerFile) {
         if (!currentUser) return;
         try {
             if (avatarFile) {
-                const avatarRef = ref(storage, `avatars/${currentUser.uid}_${Date.now()}`);
-                await uploadBytes(avatarRef, avatarFile);
-                data.photoURL = await getDownloadURL(avatarRef);
+                const avatarUrl = await uploadAvatar(avatarFile, currentUser.uid);
+                data.photoURL = avatarUrl;
             }
             if (bannerFile) {
-                const bannerRef = ref(storage, `banners/${currentUser.uid}_${Date.now()}`);
-                await uploadBytes(bannerRef, bannerFile);
-                data.bannerURL = await getDownloadURL(bannerRef);
+                const bannerUrl = await uploadBanner(bannerFile, currentUser.uid);
+                data.bannerURL = bannerUrl;
             }
             
-            const userRef = doc(db, 'users', currentUser.uid);
-            await updateDoc(userRef, { ...data, hasChannel: true });
+            const userRef = db.collection('users').doc(currentUser.uid);
+            await userRef.update({ ...data, hasChannel: true });
             
             // Update currentUser
             currentUser = { ...currentUser, ...data };
@@ -349,17 +432,18 @@
             if (data.bannerURL) currentUser.bannerURL = data.bannerURL;
             
             // Update auth profile
-            if (data.displayName) {
-                await updateProfile(auth.currentUser, { displayName: data.displayName });
+            if (data.displayName && auth.currentUser) {
+                await auth.currentUser.updateProfile({ displayName: data.displayName });
             }
             
-            showToast('Channel updated!');
+            showToast('✅ Channel updated!');
+            updateNavbar();
         } catch (error) {
             console.error('Error updating channel:', error);
             showToast('Error updating channel', true);
         }
     }
-
+    
     // Render feed
     function renderFeed() {
         if (!document.getElementById('feedContent')) return;
@@ -372,7 +456,7 @@
         let html = `<div class="video-feed">`;
         allVideos.forEach((v) => {
             const isLiked = currentUser && v.likes?.includes(currentUser.uid);
-            const avatar = v.channelAvatar || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${v.channelName?.charAt(0)}`;
+            const avatar = v.channelAvatar || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${(v.channelName || 'U').charAt(0)}`;
             html += `<div class="video-card" data-video-id="${v.id}">
                 <div class="video-wrapper"><video id="player-${v.id}" class="video-js" controls preload="metadata" playsinline><source src="${v.videoUrl}" type="video/mp4"></video></div>
                 <div class="video-overlay">
@@ -391,16 +475,18 @@
         document.getElementById('feedContent').innerHTML = html;
         
         // Initialize video players
-        allVideos.forEach(v => { 
-            const p = document.getElementById(`player-${v.id}`); 
-            if(p && !p.player) videojs(p, { controls: true, preload: 'metadata', fluid: true }); 
-        });
+        setTimeout(() => {
+            allVideos.forEach(v => { 
+                const p = document.getElementById(`player-${v.id}`); 
+                if(p && !p.player) videojs(p, { controls: true, preload: 'metadata', fluid: true }); 
+            });
+        }, 100);
         
         document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(btn.dataset.id); }));
         document.querySelectorAll('.comment-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); activeVideoId = btn.dataset.id; openComments(activeVideoId); }));
         if(currentUser) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
     }
-
+    
     // Open comments panel
     function openComments(videoId) {
         const video = allVideos.find(v => v.id === videoId);
@@ -411,7 +497,7 @@
     }
     window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
     window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
-
+    
     // Open info popup
     function openInfoPopup(user) {
         if(!user) return;
@@ -428,7 +514,7 @@
         document.getElementById('infoPopupModal').style.display = 'flex';
     }
     function closeInfoPopup() { document.getElementById('infoPopupModal').style.display = 'none'; }
-
+    
     // Render channel page
     async function renderChannelPage(uid) {
         const user = allUsers.find(u => u.uid === uid);
@@ -443,8 +529,8 @@
         const html = `<div class="channel-page">
             <div class="channel-banner" style="${bannerStyle}"></div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
-                <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${user.displayName?.charAt(0)}`}">
-                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : '<button class="btn btn-primary" onclick="subscribeToChannel()"><i class="fas fa-bell"></i> Subscribe</button>'}
+                <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${(user.displayName || 'U').charAt(0)}`}">
+                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : '<button class="btn btn-primary" onclick="showToast(\'Subscribed! (Demo)\')"><i class="fas fa-bell"></i> Subscribe</button>'}
             </div>
             <div class="channel-info-section">
                 <div class="channel-title">
@@ -473,8 +559,6 @@
         closeDropdown();
     }
     
-    function subscribeToChannel() { showToast("Subscribed! (Demo)"); }
-    
     // Navigation
     function navigateToChannel(uid) { 
         const user = allUsers.find(u => u.uid === uid); 
@@ -485,15 +569,14 @@
     }
     function goToHome() { 
         history.pushState(null, '', window.location.pathname); 
-        loadAllVideos(); 
-        loadAllUsers();
+        renderFeed();
     }
     
     // Auth functions
     async function signup(name, email, pass) {
         try {
-            const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-            await updateProfile(userCred.user, { displayName: name });
+            const userCred = await auth.createUserWithEmailAndPassword(email, pass);
+            await userCred.user.updateProfile({ displayName: name });
             
             const newUser = {
                 uid: userCred.user.uid,
@@ -514,8 +597,8 @@
                 ],
                 milestoneGoalText: "My Channel Goals 🎯"
             };
-            await setDoc(doc(db, 'users', userCred.user.uid), newUser);
-            showToast('Account created! Complete your channel setup.');
+            await db.collection('users').doc(userCred.user.uid).set(newUser);
+            showToast('✅ Account created! Complete your channel setup.');
             return true;
         } catch (error) {
             showToast(error.message, true);
@@ -525,7 +608,7 @@
     
     async function login(email, pass) {
         try {
-            await signInWithEmailAndPassword(auth, email, pass);
+            await auth.signInWithEmailAndPassword(email, pass);
             return true;
         } catch (error) {
             showToast(error.message, true);
@@ -537,7 +620,7 @@
     function updateNavbar() {
         const nav = document.getElementById('navButtons');
         if (currentUser) {
-            const avatar = currentUser.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${currentUser.displayName?.charAt(0)}`;
+            const avatar = currentUser.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${(currentUser.displayName || 'U').charAt(0)}`;
             nav.innerHTML = `<button class="user-avatar-btn" onclick="toggleDropdown()"><img class="user-avatar" src="${avatar}"></button>
                 <div class="dropdown-menu" id="userDropdown">
                     <div class="channel-info"><div class="channel-info-name">${escapeHtml(currentUser.displayName)}</div><div class="channel-info-email">${escapeHtml(currentUser.email)}</div></div>
@@ -555,7 +638,7 @@
     }
     
     async function logout() {
-        await signOut(auth);
+        await auth.signOut();
         currentUser = null;
         goToHome();
         updateNavbar();
@@ -580,7 +663,7 @@
     }
     window.addMilestone = function() { if(currentUser) { if(!currentUser.milestones) currentUser.milestones = []; currentUser.milestones.push({ target: "New Goal", achieved: false, date: null, color: "#fe2c55" }); renderMilestoneEditor(); } };
     window.removeMilestone = function(idx) { if(currentUser) { currentUser.milestones.splice(idx, 1); renderMilestoneEditor(); } };
-    function openCustomizeModal() { if(!currentUser) { showToast("Login first"); return; } document.getElementById('editChannelName').value = currentUser.displayName || ''; document.getElementById('editChannelBio').value = currentUser.bio || ''; document.getElementById('editChannelLinks').value = currentUser.links || ''; renderMilestoneEditor(); document.getElementById('customizeModal').style.display = 'flex'; }
+    function openCustomizeModal() { if(!currentUser) { showToast("Login first", true); return; } document.getElementById('editChannelName').value = currentUser.displayName || ''; document.getElementById('editChannelBio').value = currentUser.bio || ''; document.getElementById('editChannelLinks').value = currentUser.links || ''; renderMilestoneEditor(); document.getElementById('customizeModal').style.display = 'flex'; }
     function closeCustomizeModal() { document.getElementById('customizeModal').style.display = 'none'; }
     
     // Search functionality
@@ -676,8 +759,7 @@
         if(channelName && currentUser) {
             await updateChannel({ displayName: channelName, bio: channelBio }, avatarFile, null);
             document.getElementById('channelWizardModal').style.display = 'none';
-            showToast('Channel created successfully!');
-            await loadAllUsers();
+            showToast('✅ Channel created successfully!');
             updateNavbar();
             goToHome();
         } else {
@@ -705,29 +787,29 @@
     window.addComment = addComment;
     
     // Auth state listener
-    onAuthStateChanged(auth, async (user) => {
+    auth.onAuthStateChanged(async (user) => {
         if (user) {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (userDoc.exists()) {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists) {
                 currentUser = { uid: user.uid, ...userDoc.data() };
             } else {
                 currentUser = { uid: user.uid, displayName: user.displayName || user.email, email: user.email, photoURL: user.photoURL, hasChannel: false, subscribers: [], milestones: [] };
             }
-            await loadAllUsers();
-            await loadAllVideos();
             updateNavbar();
+            renderFeed();
         } else {
             currentUser = null;
-            await loadAllUsers();
-            await loadAllVideos();
             updateNavbar();
+            renderFeed();
         }
     });
     
-    // Initial load
-    loadAllUsers();
-    loadAllVideos();
-    updateNavbar();
+    // Initialize: recover local data first, then setup realtime listeners
+    (async function init() {
+        await recoverLocalDataAndSyncToCloud();
+        setupRealtimeListeners();
+        updateNavbar();
+    })();
     
     // Hash routing
     window.addEventListener('hashchange', () => {
@@ -742,5 +824,12 @@
         }
     });
 </script>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
 </body>
 </html>
