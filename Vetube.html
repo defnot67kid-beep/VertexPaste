@@ -77,6 +77,7 @@
         .add-comment-bar input { flex: 1; background: #2a2a2a; border: none; border-radius: 24px; padding: 10px 16px; color: white; }
         .close-comments { background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 300; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
         .modal-content { background: var(--bg-elevated); border-radius: 24px; max-width: 600px; width: 90%; padding: 28px; border: 1px solid var(--border); max-height: 85vh; overflow-y: auto; }
         input, textarea { width: 100%; background: #2a2a2a; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: white; margin-bottom: 16px; font-family: inherit; }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2a2a2a; padding: 10px 20px; border-radius: 40px; z-index: 400; font-size: 0.85rem; border-left: 3px solid var(--accent); }
@@ -117,6 +118,9 @@
         .milestone-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .milestone-item input { margin-bottom: 0; flex: 1; }
         @media (max-width: 768px) { .search-container { order: 3; width: 100%; max-width: none; margin-top: 8px; } .navbar-content { gap: 10px; } }
+        .loading-spinner { text-align: center; padding: 40px; }
+        .loading-spinner i { font-size: 48px; color: var(--accent); animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -140,7 +144,7 @@
         const googleProvider = new GoogleAuthProvider();
 
         let currentUser = null;
-        let currentChannel = null;  // Only exists if user created a channel
+        let currentChannel = null;
         let allVideos = [];
         let allUsers = [];
         let activeVideoId = null;
@@ -151,9 +155,13 @@
             t.innerHTML = msg; 
             if(isError) t.style.borderLeftColor = '#ef4444';
             document.body.appendChild(t); 
-            setTimeout(() => t.remove(), 2500); 
+            setTimeout(() => t.remove(), 3000); 
         }
-        function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+        
+        function escapeHtml(s) { 
+            if(!s) return ''; 
+            return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); 
+        }
 
         async function loadAllVideos() {
             try {
@@ -162,7 +170,10 @@
                 allVideos = [];
                 snapshot.forEach(doc => { allVideos.push({ id: doc.id, ...doc.data() }); });
                 renderFeed();
-            } catch(e) { console.error('Error loading videos:', e); }
+            } catch(e) { 
+                console.error('Error loading videos:', e);
+                document.getElementById('feedContent').innerHTML = '<div style="text-align:center;padding:80px;"><i class="fas fa-exclamation-triangle"></i><p>Error loading videos. Please refresh.</p></div>';
+            }
         }
 
         async function loadAllUsers() {
@@ -170,13 +181,22 @@
                 const snapshot = await getDocs(collection(db, 'users'));
                 allUsers = [];
                 snapshot.forEach(doc => { allUsers.push({ uid: doc.id, ...doc.data() }); });
-            } catch(e) { console.error('Error loading users:', e); }
+            } catch(e) { 
+                console.error('Error loading users:', e);
+            }
         }
 
         async function getUserChannel(uid) {
-            const userDoc = await getDoc(doc(db, 'users', uid));
-            if (userDoc.exists() && userDoc.data().hasChannel === true) return { uid, ...userDoc.data() };
-            return null;
+            try {
+                const userDoc = await getDoc(doc(db, 'users', uid));
+                if (userDoc.exists() && userDoc.data().hasChannel === true) {
+                    return { uid, ...userDoc.data() };
+                }
+                return null;
+            } catch(error) {
+                console.error("Error getting user channel:", error);
+                return null;
+            }
         }
 
         async function createUserChannel(uid, email, displayName, bio, avatarFile = null) {
@@ -184,9 +204,13 @@
             let photoURL = null;
             
             if (avatarFile) {
-                const avatarRef = ref(storage, `avatars/${uid}_${Date.now()}`);
-                await uploadBytes(avatarRef, avatarFile);
-                photoURL = await getDownloadURL(avatarRef);
+                try {
+                    const avatarRef = ref(storage, `avatars/${uid}_${Date.now()}`);
+                    await uploadBytes(avatarRef, avatarFile);
+                    photoURL = await getDownloadURL(avatarRef);
+                } catch(error) {
+                    console.error("Error uploading avatar:", error);
+                }
             }
             
             const channelData = {
@@ -211,6 +235,13 @@
             };
             
             await setDoc(doc(db, 'users', uid), channelData);
+            
+            // Verify the channel was created
+            const verifyDoc = await getDoc(doc(db, 'users', uid));
+            if (!verifyDoc.exists()) {
+                throw new Error("Channel creation failed - document not found");
+            }
+            
             return channelData;
         }
 
@@ -341,6 +372,7 @@
             document.getElementById('commentsPanel').classList.add('open');
             document.getElementById('postCommentBtn').onclick = () => { const inp = document.getElementById('commentInput'); if(inp.value.trim()) { addComment(videoId, inp.value); inp.value = ''; } };
         }
+        
         window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
         window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
 
@@ -376,7 +408,7 @@
                     <div class="expand-hint"><i class="fas fa-mouse-pointer"></i> Click to view full bio & milestones ✨</div>
                 </div>
                 <div class="videos-grid">
-                    ${channelVideos.map(v => `<div class="video-card-mini" onclick="goToHome(); setTimeout(()=>{ location.reload(); }, 100);">
+                    ${channelVideos.map(v => `<div class="video-card-mini" onclick="goToHome(); setTimeout(()=>{ const videoElement = document.querySelector('video[src=\"${v.videoUrl}\"]'); if(videoElement) videoElement.scrollIntoView({behavior: 'smooth'}); location.reload(); }, 100);">
                         <video src="${v.videoUrl}"></video><div style="padding:12px;"><strong>${escapeHtml(v.title)}</strong><div>❤️ ${v.likes?.length||0}</div></div>
                     </div>`).join('')}
                 </div>
@@ -403,6 +435,7 @@
             document.getElementById('popupMilestonesSection').innerHTML = `<h4><i class="fas fa-trophy"></i> ${escapeHtml(channel.milestoneGoalText || "Milestones")}</h4>${milestonesHtml}`;
             modal.style.display = 'flex';
         }
+        
         window.closeInfoPopup = () => document.getElementById('infoPopupModal').style.display = 'none';
 
         function renderMilestoneEditor() {
@@ -417,8 +450,20 @@
                 container.appendChild(div);
             });
         }
-        window.addMilestone = function() { if(!currentChannel) return; currentChannel.milestones = currentChannel.milestones || []; currentChannel.milestones.push({ target: "New Goal", achieved: false, date: null, color: "#fe2c55" }); renderMilestoneEditor(); };
-        window.removeMilestone = function(idx) { if(currentChannel) { currentChannel.milestones.splice(idx, 1); renderMilestoneEditor(); } };
+        
+        window.addMilestone = function() { 
+            if(!currentChannel) return; 
+            currentChannel.milestones = currentChannel.milestones || []; 
+            currentChannel.milestones.push({ target: "New Goal", achieved: false, date: null, color: "#fe2c55" }); 
+            renderMilestoneEditor(); 
+        };
+        
+        window.removeMilestone = function(idx) { 
+            if(currentChannel) { 
+                currentChannel.milestones.splice(idx, 1); 
+                renderMilestoneEditor(); 
+            } 
+        };
 
         async function openCustomizeModal() {
             if(!currentChannel) { showToast("Create a channel first", true); return; }
@@ -428,6 +473,7 @@
             renderMilestoneEditor();
             document.getElementById('customizeModal').style.display = 'flex';
         }
+        
         window.closeCustomizeModal = () => document.getElementById('customizeModal').style.display = 'none';
         window.openCustomizeModal = openCustomizeModal;
 
@@ -459,8 +505,6 @@
             if(currentChannel) renderChannelPage(currentChannel.uid);
             updateNavbar();
         }
-        document.getElementById('saveChannelBtn')?.addEventListener('click', saveChannelChanges);
-        document.getElementById('addMilestoneBtn')?.addEventListener('click', () => addMilestone());
 
         async function uploadVideo() {
             const file = document.getElementById('videoFile').files[0];
@@ -476,8 +520,8 @@
             showToast('Video published!');
             await loadAllVideos();
         }
+        
         window.closeUploadModal = () => document.getElementById('uploadModal').style.display = 'none';
-        document.getElementById('confirmUploadBtn')?.addEventListener('click', uploadVideo);
 
         function navigateToChannel(uid) { renderChannelPage(uid); }
         function goToHome() { renderFeed(); }
@@ -516,10 +560,10 @@
                             <div class="dropdown-item" onclick="signOutUser(); closeDropdown();"><i class="fas fa-sign-out-alt"></i> Logout</div>
                         </div>`;
                 }
-                document.addEventListener('click', function(e) { if(!nav.contains(e.target)) closeDropdown(); });
             } else {
                 nav.innerHTML = `<button class="btn btn-primary" id="showAuthBtn"><i class="fas fa-sign-in-alt"></i> Sign In</button>`;
-                document.getElementById('showAuthBtn')?.addEventListener('click', () => document.getElementById('authModal').style.display = 'flex');
+                const showAuthBtn = document.getElementById('showAuthBtn');
+                if(showAuthBtn) showAuthBtn.addEventListener('click', () => document.getElementById('authModal').style.display = 'flex');
             }
         }
 
@@ -527,23 +571,59 @@
             document.getElementById('createChannelModal').style.display = 'flex';
         }
         
+        // FIXED: Complete createChannel function
         async function createChannel() {
             const channelName = document.getElementById('createChannelName').value;
             const channelBio = document.getElementById('createChannelBio').value;
             const avatarFile = document.getElementById('createAvatarFile').files[0];
             
-            if(!channelName) { showToast("Channel name required", true); return; }
+            if(!channelName) { 
+                showToast("Channel name required", true); 
+                return; 
+            }
             
-            await createUserChannel(currentUser.uid, currentUser.email, channelName, channelBio, avatarFile);
-            currentChannel = await getUserChannel(currentUser.uid);
-            document.getElementById('createChannelModal').style.display = 'none';
-            document.getElementById('createChannelName').value = '';
-            document.getElementById('createChannelBio').value = '';
-            document.getElementById('createAvatarFile').value = '';
-            updateNavbar();
-            showToast(`Channel "${channelName}" created!`);
-            await loadAllUsers();
-            renderChannelPage(currentChannel.uid);
+            if(!currentUser) {
+                showToast("Please sign in first", true);
+                return;
+            }
+            
+            try {
+                showToast("Creating channel...");
+                
+                // Create the channel
+                await createUserChannel(currentUser.uid, currentUser.email, channelName, channelBio, avatarFile);
+                
+                // Wait a moment for Firestore to update
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Fetch the newly created channel
+                currentChannel = await getUserChannel(currentUser.uid);
+                
+                if (!currentChannel) {
+                    throw new Error("Failed to create channel");
+                }
+                
+                // Close modal and clear form
+                document.getElementById('createChannelModal').style.display = 'none';
+                document.getElementById('createChannelName').value = '';
+                document.getElementById('createChannelBio').value = '';
+                document.getElementById('createAvatarFile').value = '';
+                
+                // Update UI
+                updateNavbar();
+                showToast(`Channel "${channelName}" created successfully! 🎉`);
+                
+                // Reload data
+                await loadAllUsers();
+                await loadAllVideos();
+                
+                // Navigate to the new channel page
+                renderChannelPage(currentChannel.uid);
+                
+            } catch(error) {
+                console.error("Error creating channel:", error);
+                showToast("Error creating channel: " + error.message, true);
+            }
         }
 
         async function signOutUser() {
@@ -581,25 +661,28 @@
                 const result = await signInWithPopup(auth, googleProvider);
                 document.getElementById('authModal').style.display = 'none';
                 showToast(`Welcome ${result.user.displayName || result.user.email?.split('@')[0]}!`);
-            } catch(e) { showToast(e.message, true); }
+            } catch(e) { 
+                showToast(e.message, true); 
+            }
         }
 
-        async function signUpWithEmail() {
-            // Placeholder - Firebase email signup would go here
-            showToast("Email signup coming soon! Use Google for now.", true);
-        }
-
+        // Make functions available globally
         window.signInWithGoogle = signInWithGoogle;
-        window.signUpWithEmail = signUpWithEmail;
         window.goToHome = goToHome;
         window.navigateToChannel = navigateToChannel;
         window.toggleDropdown = toggleDropdown;
         window.openInfoPopup = openInfoPopup;
         window.createChannel = createChannel;
         window.closeCreateChannelModal = () => document.getElementById('createChannelModal').style.display = 'none';
+        window.signOutUser = signOutUser;
+        window.saveChannelChanges = saveChannelChanges;
+        window.addMilestone = addMilestone;
+        window.removeMilestone = removeMilestone;
         
+        // Search functionality
         const searchInput = document.getElementById('globalSearchInput');
         const searchDropdown = document.getElementById('searchDropdown');
+        
         function updateSearchResults() {
             const query = searchInput.value.trim().toLowerCase();
             if(query === "") { searchDropdown.classList.remove('show'); return; }
@@ -630,16 +713,60 @@
             }).join('');
             searchDropdown.classList.add('show');
         }
-        searchInput?.addEventListener('input', updateSearchResults);
-        document.addEventListener('click', (e) => { if(!searchInput?.contains(e.target) && !searchDropdown?.contains(e.target)) searchDropdown?.classList.remove('show'); });
+        
+        if(searchInput) searchInput.addEventListener('input', updateSearchResults);
+        document.addEventListener('click', (e) => { 
+            if(searchInput && !searchInput.contains(e.target) && searchDropdown && !searchDropdown.contains(e.target)) 
+                searchDropdown?.classList.remove('show'); 
+        });
 
-        document.getElementById('authLoginTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='block'; document.getElementById('signupPanel').style.display='none'; });
-        document.getElementById('authSignupTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='none'; document.getElementById('signupPanel').style.display='block'; });
-        document.getElementById('demoLoginBtn')?.addEventListener('click', signInWithGoogle);
-        document.getElementById('googleSignupBtn')?.addEventListener('click', signInWithGoogle);
-        document.getElementById('doLoginBtn')?.addEventListener('click', () => showToast("Use Google Sign In", true));
-        document.getElementById('doSignupBtn')?.addEventListener('click', () => showToast("Use Google Sign Up", true));
+        // Modal close handlers
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) modal.style.display = 'none';
+            });
+        });
 
+        document.querySelectorAll('.popup-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) modal.style.display = 'none';
+            });
+        });
+
+        // Event listeners for auth modal
+        const authLoginTab = document.getElementById('authLoginTab');
+        const authSignupTab = document.getElementById('authSignupTab');
+        const doLoginBtn = document.getElementById('doLoginBtn');
+        const doSignupBtn = document.getElementById('doSignupBtn');
+        const demoLoginBtn = document.getElementById('demoLoginBtn');
+        const googleSignupBtn = document.getElementById('googleSignupBtn');
+        const saveChannelBtn = document.getElementById('saveChannelBtn');
+        const confirmUploadBtn = document.getElementById('confirmUploadBtn');
+        const addMilestoneBtn = document.getElementById('addMilestoneBtn');
+        
+        if(authLoginTab) authLoginTab.addEventListener('click', () => { 
+            const loginPanel = document.getElementById('loginPanel');
+            const signupPanel = document.getElementById('signupPanel');
+            if(loginPanel) loginPanel.style.display = 'block';
+            if(signupPanel) signupPanel.style.display = 'none';
+        });
+        
+        if(authSignupTab) authSignupTab.addEventListener('click', () => { 
+            const loginPanel = document.getElementById('loginPanel');
+            const signupPanel = document.getElementById('signupPanel');
+            if(loginPanel) loginPanel.style.display = 'none';
+            if(signupPanel) signupPanel.style.display = 'block';
+        });
+        
+        if(demoLoginBtn) demoLoginBtn.addEventListener('click', signInWithGoogle);
+        if(googleSignupBtn) googleSignupBtn.addEventListener('click', signInWithGoogle);
+        if(doLoginBtn) doLoginBtn.addEventListener('click', () => showToast("Use Google Sign In", true));
+        if(doSignupBtn) doSignupBtn.addEventListener('click', () => showToast("Use Google Sign Up", true));
+        if(saveChannelBtn) saveChannelBtn.addEventListener('click', saveChannelChanges);
+        if(confirmUploadBtn) confirmUploadBtn.addEventListener('click', uploadVideo);
+        if(addMilestoneBtn) addMilestoneBtn.addEventListener('click', () => addMilestone());
+
+        // Initialize
         onAuthStateChanged(auth, handleAuthState);
         loadAllVideos();
         loadAllUsers();
@@ -656,30 +783,109 @@
         <div class="nav-buttons" id="navButtons"></div>
     </div>
 </nav>
-<div class="main-container" id="mainContainer"><div id="feedContent"><div style="text-align:center;padding:80px;"><div class="loading"></div><p>Loading videos...</p></div></div></div>
+<div class="main-container" id="mainContainer">
+    <div id="feedContent"><div class="loading-spinner"><i class="fas fa-spinner"></i><p>Loading videos...</p></div></div>
+</div>
 
-<div id="authModal" class="modal"><div class="modal-content"><h3><i class="fab fa-tiktok"></i> Join VertiFlow</h3><div style="display:flex;gap:12px;margin:20px 0;"><button id="authLoginTab" class="btn btn-primary" style="flex:1">Login</button><button id="authSignupTab" class="btn" style="flex:1;background:#2a2a2a">Sign Up</button></div>
-<div id="loginPanel"><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button><button class="btn btn-google" style="width:100%;margin-top:12px;" id="demoLoginBtn"><i class="fab fa-google"></i> Sign in with Google</button></div>
-<div id="signupPanel" style="display:none"><input type="text" id="signupName" placeholder="Channel name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button><button class="btn btn-google" style="width:100%;margin-top:12px;" id="googleSignupBtn"><i class="fab fa-google"></i> Sign up with Google</button></div></div></div>
+<!-- Auth Modal -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fab fa-tiktok"></i> Join VertiFlow</h3>
+        <div style="display:flex;gap:12px;margin:20px 0;">
+            <button id="authLoginTab" class="btn btn-primary" style="flex:1">Login</button>
+            <button id="authSignupTab" class="btn" style="flex:1;background:#2a2a2a">Sign Up</button>
+        </div>
+        <div id="loginPanel">
+            <input type="email" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPass" placeholder="Password">
+            <button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button>
+            <button class="btn btn-google" style="width:100%;margin-top:12px;" id="demoLoginBtn"><i class="fab fa-google"></i> Sign in with Google</button>
+        </div>
+        <div id="signupPanel" style="display:none">
+            <input type="text" id="signupName" placeholder="Channel name">
+            <input type="email" id="signupEmail" placeholder="Email">
+            <input type="password" id="signupPass" placeholder="Password">
+            <button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button>
+            <button class="btn btn-google" style="width:100%;margin-top:12px;" id="googleSignupBtn"><i class="fab fa-google"></i> Sign up with Google</button>
+        </div>
+    </div>
+</div>
 
-<div id="createChannelModal" class="modal"><div class="modal-content"><h3><i class="fas fa-plus-circle"></i> Create Your Channel</h3>
-<input type="text" id="createChannelName" placeholder="Channel Name (e.g., TechGuru)">
-<textarea id="createChannelBio" rows="3" placeholder="Tell us about your channel..."></textarea>
-<div><label>Profile Picture (optional)</label><input type="file" id="createAvatarFile" accept="image/*"></div>
-<div style="display:flex;gap:12px;margin-top:20px;"><button class="btn btn-outline" onclick="closeCreateChannelModal()">Cancel</button><button class="btn btn-primary" onclick="createChannel()"><i class="fas fa-rocket"></i> Create Channel</button></div></div></div>
+<!-- Create Channel Modal -->
+<div id="createChannelModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-plus-circle"></i> Create Your Channel</h3>
+        <input type="text" id="createChannelName" placeholder="Channel Name (e.g., TechGuru)">
+        <textarea id="createChannelBio" rows="3" placeholder="Tell us about your channel..."></textarea>
+        <div><label>Profile Picture (optional)</label><input type="file" id="createAvatarFile" accept="image/*"></div>
+        <div style="display:flex;gap:12px;margin-top:20px;">
+            <button class="btn btn-outline" onclick="closeCreateChannelModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="createChannel()"><i class="fas fa-rocket"></i> Create Channel</button>
+        </div>
+    </div>
+</div>
 
-<div id="customizeModal" class="modal"><div class="modal-content"><h3><i class="fas fa-palette"></i> Customize Channel</h3>
-<input type="text" id="editChannelName" placeholder="Channel name"><textarea id="editChannelBio" rows="4" placeholder="Channel description"></textarea>
-<input type="text" id="editChannelLinks" placeholder="External links (comma separated)"><div><label>Banner</label><input type="file" id="editBannerFile" accept="image/*"></div>
-<div><label>Profile Picture</label><input type="file" id="editAvatarFile" accept="image/*"></div>
-<h4 style="margin:16px 0 12px;"><i class="fas fa-trophy"></i> Milestones</h4><div id="milestonesList"></div>
-<button class="btn btn-outline" id="addMilestoneBtn" style="margin-bottom:16px;width:100%;"><i class="fas fa-plus"></i> Add Milestone</button>
-<div style="display:flex;gap:12px;margin-top:16px;"><button class="btn btn-outline" onclick="closeCustomizeModal()">Cancel</button><button class="btn btn-primary" id="saveChannelBtn">Save Changes</button></div></div></div>
+<!-- Customize Modal -->
+<div id="customizeModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-palette"></i> Customize Channel</h3>
+        <input type="text" id="editChannelName" placeholder="Channel name">
+        <textarea id="editChannelBio" rows="4" placeholder="Channel description"></textarea>
+        <input type="text" id="editChannelLinks" placeholder="External links (comma separated)">
+        <div><label>Banner</label><input type="file" id="editBannerFile" accept="image/*"></div>
+        <div><label>Profile Picture</label><input type="file" id="editAvatarFile" accept="image/*"></div>
+        <h4 style="margin:16px 0 12px;"><i class="fas fa-trophy"></i> Milestones</h4>
+        <div id="milestonesList"></div>
+        <button class="btn btn-outline" id="addMilestoneBtn" style="margin-bottom:16px;width:100%;"><i class="fas fa-plus"></i> Add Milestone</button>
+        <div style="display:flex;gap:12px;margin-top:16px;">
+            <button class="btn btn-outline" onclick="closeCustomizeModal()">Cancel</button>
+            <button class="btn btn-primary" id="saveChannelBtn">Save Changes</button>
+        </div>
+    </div>
+</div>
 
-<div id="uploadModal" class="modal"><div class="modal-content"><h3>Upload Video</h3><input type="text" id="videoTitle" placeholder="Title"><textarea id="videoDesc" rows="2" placeholder="Description"></textarea><input type="file" id="videoFile" accept="video/mp4,video/webm"><div style="display:flex;gap:12px;margin-top:16px;"><button class="btn" onclick="closeUploadModal()">Cancel</button><button class="btn btn-primary" id="confirmUploadBtn">Publish</button></div></div></div>
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <h3>Upload Video</h3>
+        <input type="text" id="videoTitle" placeholder="Title">
+        <textarea id="videoDesc" rows="2" placeholder="Description"></textarea>
+        <input type="file" id="videoFile" accept="video/mp4,video/webm">
+        <div style="display:flex;gap:12px;margin-top:16px;">
+            <button class="btn" onclick="closeUploadModal()">Cancel</button>
+            <button class="btn btn-primary" id="confirmUploadBtn">Publish</button>
+        </div>
+    </div>
+</div>
 
-<div id="infoPopupModal" class="popup-modal"><div class="popup-content"><div class="popup-header"><h3><i class="fas fa-user-circle"></i> <span id="popupChannelName">Channel</span></h3><button class="popup-close" onclick="closeInfoPopup()"><i class="fas fa-times"></i></button></div><div class="popup-body"><div id="popupFullBio" class="full-bio-text"></div><div id="popupLinksSection" class="popup-links"></div><div id="popupMilestonesSection" class="popup-milestones"></div></div></div></div>
+<!-- Info Popup Modal -->
+<div id="infoPopupModal" class="popup-modal">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3><i class="fas fa-user-circle"></i> <span id="popupChannelName">Channel</span></h3>
+            <button class="popup-close" onclick="closeInfoPopup()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="popup-body">
+            <div id="popupFullBio" class="full-bio-text"></div>
+            <div id="popupLinksSection" class="popup-links"></div>
+            <div id="popupMilestonesSection" class="popup-milestones"></div>
+        </div>
+    </div>
+</div>
 
-<div id="commentsPanel" class="comments-panel"><div class="comments-header"><span>Comments</span><button class="close-comments" onclick="closeComments()">✕</button></div><div class="comments-list" id="commentsList"></div><div class="add-comment-bar"><input type="text" id="commentInput" placeholder="Add a comment..."><button class="btn btn-primary" id="postCommentBtn">Post</button></div></div>
+<!-- Comments Panel -->
+<div id="commentsPanel" class="comments-panel">
+    <div class="comments-header">
+        <span>Comments</span>
+        <button class="close-comments" onclick="closeComments()">✕</button>
+    </div>
+    <div class="comments-list" id="commentsList"></div>
+    <div class="add-comment-bar">
+        <input type="text" id="commentInput" placeholder="Add a comment...">
+        <button class="btn btn-primary" id="postCommentBtn">Post</button>
+    </div>
+</div>
+
+<script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
 </body>
 </html>
