@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>VertiFlow — Watch & Discover</title>
+    <title>VertiFlow — Custom Channel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
@@ -41,8 +41,6 @@
         .btn-primary { background: var(--accent); }
         .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
         .btn-outline { background: transparent; border: 1px solid var(--accent); }
-        .btn-google { background: #db4437; color: white; }
-        .btn-google:hover { background: #c53929; }
         .user-avatar-btn { background: transparent; border: none; cursor: pointer; padding: 0; }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); }
         .dropdown-menu { position: absolute; top: 50px; right: 0; background: var(--bg-elevated); border-radius: 16px; width: 220px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.5); z-index: 200; display: none; overflow: hidden; }
@@ -137,20 +135,8 @@
 
 <!-- Auth Modal -->
 <div id="authModal" class="modal"><div class="modal-content"><h3>Join VertiFlow</h3><div style="display:flex;gap:12px;margin:20px 0;"><button id="authLoginTab" class="btn btn-primary" style="flex:1">Login</button><button id="authSignupTab" class="btn" style="flex:1;background:#2a2a2a">Sign Up</button></div>
-<div id="loginPanel">
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPass" placeholder="Password">
-    <button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button>
-    <button class="btn btn-google" style="width:100%; margin-top:12px;" id="googleLoginBtn"><i class="fab fa-google"></i> Login with Google</button>
-    <button class="btn" style="width:100%;margin-top:12px;" id="demoLoginBtn">✨ Demo Account</button>
-</div>
-<div id="signupPanel" style="display:none">
-    <input type="text" id="signupName" placeholder="Name">
-    <input type="email" id="signupEmail" placeholder="Email">
-    <input type="password" id="signupPass" placeholder="Password">
-    <button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button>
-    <button class="btn btn-google" style="width:100%; margin-top:12px;" id="googleSignupBtn"><i class="fab fa-google"></i> Sign up with Google</button>
-</div></div></div>
+<div id="loginPanel"><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button><button class="btn" style="width:100%;margin-top:12px;" id="demoLoginBtn">✨ Demo Account</button></div>
+<div id="signupPanel" style="display:none"><input type="text" id="signupName" placeholder="Channel name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button></div></div></div>
 
 <!-- Wizard Modal for new channel creation -->
 <div id="channelWizardModal" class="modal"><div class="modal-content"><h3>Create Your Channel</h3><input type="text" id="wizardChannelName" placeholder="Channel name"><textarea id="wizardChannelBio" rows="3" placeholder="Tell us about your channel..."></textarea><div style="margin:16px 0;"><label>Profile Picture</label><input type="file" id="wizardAvatarFile" accept="image/*"><img id="wizardAvatarPreview" src="https://ui-avatars.com/api/?background=fe2c55&color=fff&name=?" style="width:60px;height:60px;border-radius:50%;margin-top:8px;"></div><button class="btn btn-primary" id="completeWizardBtn">Create Channel 🚀</button><button class="btn btn-outline" onclick="document.getElementById('channelWizardModal').style.display='none'" style="margin-top:12px;">Cancel</button></div></div>
@@ -172,234 +158,213 @@
 <!-- Comments Panel -->
 <div id="commentsPanel" class="comments-panel"><div class="comments-header"><span>Comments</span><button class="close-comments" onclick="closeComments()">✕</button></div><div class="comments-list" id="commentsList"></div><div class="add-comment-bar"><input type="text" id="commentInput" placeholder="Add a comment..."><button class="btn btn-primary" id="postCommentBtn">Post</button></div></div>
 
-<!-- Google Sign-In Script -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+        }
+    }
+</script>
 
-<script>
-    // GLOBAL DATA - persists in localStorage across sessions
+<script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, updateDoc, arrayUnion, arrayRemove, increment, deleteDoc, where, Timestamp } from "firebase/firestore";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
+        authDomain: "vertexpaste.firebaseapp.com",
+        projectId: "vertexpaste",
+        storageBucket: "vertexpaste.firebasestorage.app",
+        messagingSenderId: "255275350380",
+        appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
     let currentUser = null;
     let allVideos = [];
     let allUsers = [];
     let activeVideoId = null;
+    let deviceId = null;
 
-    function loadData() {
+    // Helper functions
+    function showToast(msg) { 
+        const t = document.createElement('div'); 
+        t.className = 'toast'; 
+        t.innerHTML = msg; 
+        document.body.appendChild(t); 
+        setTimeout(() => t.remove(), 2500); 
+    }
+    
+    function escapeHtml(s) { 
+        if(!s) return ''; 
+        return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); 
+    }
+
+    // ============ MIGRATE EXISTING LOCALSTORAGE DATA TO CLOUD ============
+    async function migrateLocalStorageToCloud() {
         const storedUsers = localStorage.getItem('vf_users');
         const storedVideos = localStorage.getItem('vf_videos');
         
         if (storedUsers) {
-            allUsers = JSON.parse(storedUsers);
-        } else {
-            // Create default demo channels (visible to everyone)
-            const demoUser1 = {
-                uid: 'demo_user_1',
-                displayName: 'VertiCreator',
-                email: 'demo@vertiflow.com',
-                username: 'verticreator',
-                bio: "Welcome to my channel! I create awesome content about tech & gaming.\n\nThis is my full bio with lots of details about my journey. Subscribe for more! 🚀",
-                links: "https://youtube.com/vertiflow,https://twitter.com/vertiflow",
-                photoURL: null,
-                bannerURL: null,
-                createdAt: Date.now(),
-                hasChannel: true,
-                subscribers: 1250,
-                totalViews: 50000,
-                milestones: [
-                    { target: "100 subscribers", achieved: true, date: "Jan 1, 2025", color: "#10b981" },
-                    { target: "1000 subscribers", achieved: true, date: "Jan 22, 2025", color: "#f59e0b" },
-                    { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
-                ],
-                milestoneGoalText: "🎯 10k Subscriber Journey!"
-            };
-            
-            const demoUser2 = {
-                uid: 'demo_user_2',
-                displayName: 'MusicBeats',
-                email: 'music@vertiflow.com',
-                username: 'musicbeats',
-                bio: "🎵 Best music mixes and beats! Subscribe for daily uploads.",
-                links: "https://soundcloud.com/musicbeats",
-                photoURL: null,
-                bannerURL: null,
-                createdAt: Date.now(),
-                hasChannel: true,
-                subscribers: 3420,
-                totalViews: 120000,
-                milestones: [
-                    { target: "1000 subscribers", achieved: true, date: "Dec 15, 2024", color: "#10b981" },
-                    { target: "5000 subscribers", achieved: false, date: null, color: "#f59e0b" }
-                ],
-                milestoneGoalText: "🎯 Music Journey!"
-            };
-            
-            allUsers = [demoUser1, demoUser2];
-            saveUsers();
-        }
-        
-        // Try to recover your old channel from any backup key
-        const oldUsers = localStorage.getItem('vf_users_backup') || localStorage.getItem('vertiflow_users');
-        if (oldUsers && (!storedUsers || storedUsers === '[]')) {
             try {
-                const parsedOld = JSON.parse(oldUsers);
-                if (parsedOld.length > 0) {
-                    // Merge with existing users, avoid duplicates by email
-                    for (const oldUser of parsedOld) {
-                        if (!allUsers.find(u => u.email === oldUser.email)) {
-                            allUsers.push(oldUser);
-                        }
+                const localUsers = JSON.parse(storedUsers);
+                console.log(`Found ${localUsers.length} users in localStorage, migrating to cloud...`);
+                
+                for (const user of localUsers) {
+                    const userRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userRef);
+                    if (!userDoc.exists()) {
+                        await setDoc(userRef, {
+                            uid: user.uid,
+                            displayName: user.displayName,
+                            email: user.email,
+                            username: user.username,
+                            bio: user.bio || "Welcome to my channel! 🎉",
+                            links: user.links || "",
+                            photoURL: user.photoURL || null,
+                            bannerURL: user.bannerURL || null,
+                            createdAt: user.createdAt || Date.now(),
+                            hasChannel: user.hasChannel || true,
+                            subscribers: user.subscribers || 0,
+                            totalViews: user.totalViews || 0,
+                            milestones: user.milestones || [
+                                { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
+                                { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
+                                { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
+                            ],
+                            milestoneGoalText: user.milestoneGoalText || "My Channel Goals 🎯"
+                        });
+                        console.log(`Migrated user: ${user.displayName}`);
                     }
-                    saveUsers();
-                    console.log("Recovered old channel data!");
                 }
-            } catch(e) {}
+                showToast(`Migrated ${localUsers.length} channels to cloud!`);
+            } catch (e) {
+                console.error("Migration error:", e);
+            }
         }
         
         if (storedVideos) {
-            allVideos = JSON.parse(storedVideos);
-        } else {
-            allVideos = [];
-            saveVideos();
+            try {
+                const localVideos = JSON.parse(storedVideos);
+                console.log(`Found ${localVideos.length} videos in localStorage, migrating to cloud...`);
+                
+                for (const video of localVideos) {
+                    const videoRef = doc(db, 'videos', video.id);
+                    const videoDoc = await getDoc(videoRef);
+                    if (!videoDoc.exists()) {
+                        await setDoc(videoRef, {
+                            id: video.id,
+                            videoId: video.videoId,
+                            title: video.title,
+                            description: video.description || "",
+                            userId: video.userId,
+                            channelName: video.channelName,
+                            channelAvatar: video.channelAvatar || null,
+                            videoUrl: video.videoUrl,
+                            aspectRatio: video.aspectRatio || "landscape",
+                            createdAt: video.createdAt,
+                            likes: video.likes || [],
+                            comments: video.comments || [],
+                            views: video.views || 0
+                        });
+                        console.log(`Migrated video: ${video.title}`);
+                    }
+                }
+                showToast(`Migrated ${localVideos.length} videos to cloud!`);
+            } catch (e) {
+                console.error("Migration error:", e);
+            }
         }
     }
-    
-    function saveUsers() { localStorage.setItem('vf_users', JSON.stringify(allUsers)); }
-    function saveVideos() { localStorage.setItem('vf_videos', JSON.stringify(allVideos)); }
-    function showToast(msg, isError = false) { 
-        const t = document.createElement('div'); 
-        t.className = 'toast'; 
-        t.innerHTML = msg;
-        if (isError) t.style.borderLeftColor = '#ef4444';
-        document.body.appendChild(t); 
-        setTimeout(() => t.remove(), 2500); 
-    }
 
-    // Google Sign-In Handler
-    window.handleGoogleSignIn = async function(response) {
+    // ============ LOAD ALL DATA FROM CLOUD ============
+    async function loadAllUsers() {
         try {
-            // Decode the JWT token to get user info
-            const payload = parseJwt(response.credential);
-            const email = payload.email;
-            const name = payload.name;
-            const photoURL = payload.picture;
-            
-            let user = allUsers.find(u => u.email === email);
-            
-            if (!user) {
-                // Create new user with Google account
-                const username = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000);
-                const defaultMilestones = [
-                    { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
-                    { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
-                    { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
-                ];
-                
-                user = {
-                    uid: 'google_' + Date.now(),
-                    displayName: name,
-                    email: email,
-                    username: username,
-                    bio: "Welcome to my channel! 🎉",
-                    links: "",
-                    photoURL: photoURL,
-                    bannerURL: null,
-                    createdAt: Date.now(),
-                    hasChannel: false,
-                    subscribers: 0,
-                    totalViews: 0,
-                    milestones: defaultMilestones,
-                    milestoneGoalText: "My Channel Goals 🎯"
-                };
-                
-                allUsers.push(user);
-                saveUsers();
-                showToast('Welcome! Please create your channel.');
-            }
-            
-            currentUser = JSON.parse(JSON.stringify(user));
-            localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
-            document.getElementById('authModal').style.display = 'none';
-            
-            if (!currentUser.hasChannel) {
-                document.getElementById('channelWizardModal').style.display = 'flex';
-            } else {
-                goToHome();
-                updateNavbar();
-                showToast(`Welcome back, ${currentUser.displayName}!`);
-            }
-            
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            allUsers = [];
+            usersSnapshot.forEach((doc) => {
+                allUsers.push({ uid: doc.id, ...doc.data() });
+            });
+            console.log(`Loaded ${allUsers.length} users from cloud`);
         } catch (error) {
-            console.error('Google sign-in error:', error);
-            showToast('Google sign-in failed', true);
+            console.error('Error loading users:', error);
+            allUsers = [];
         }
-    };
-    
-    function parseJwt(token) {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
     }
     
-    // Initialize Google Sign-In button
-    function initGoogleSignIn() {
-        if (typeof google !== 'undefined') {
-            google.accounts.id.initialize({
-                client_id: '255275350380-9v2pqk9v3q78v8v3q3t2sdf5r8q3e8n8.apps.googleusercontent.com',
-                callback: handleGoogleSignIn
+    async function loadAllVideos() {
+        try {
+            const videosQuery = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
+            const videosSnapshot = await getDocs(videosQuery);
+            allVideos = [];
+            videosSnapshot.forEach((doc) => {
+                allVideos.push(doc.data());
             });
+            console.log(`Loaded ${allVideos.length} videos from cloud`);
+        } catch (error) {
+            console.error('Error loading videos:', error);
+            allVideos = [];
         }
     }
 
-    function login(email, pass) {
-        const user = allUsers.find(u => u.email === email);
-        if (user && pass && pass.length >= 3) {
-            currentUser = JSON.parse(JSON.stringify(user));
-            localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
+    // ============ AUTH FUNCTIONS ============
+    async function login(email, pass) {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, pass);
             return true;
-        }
-        return false;
-    }
-    
-    function signupAndCreateChannel(name, email, pass, avatarFile, bio) {
-        if (allUsers.find(u => u.email === email)) {
-            showToast("Email already exists");
+        } catch (error) {
+            showToast(error.message, true);
             return false;
         }
-        const username = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000);
-        const defaultMilestones = [
-            { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
-            { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
-            { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
-        ];
-        
-        const newUser = {
-            uid: 'user_' + Date.now(),
-            displayName: name,
-            email: email,
-            username: username,
-            bio: bio || "Welcome to my channel! 🎉",
-            links: "",
-            photoURL: null,
-            bannerURL: null,
-            createdAt: Date.now(),
-            hasChannel: true,
-            subscribers: 0,
-            totalViews: 0,
-            milestones: defaultMilestones,
-            milestoneGoalText: "My Channel Goals 🎯"
-        };
-        
-        allUsers.push(newUser);
-        saveUsers();
-        currentUser = JSON.parse(JSON.stringify(newUser));
-        localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
-        return true;
     }
     
-    function logout() {
+    async function signup(name, email, pass) {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            await updateProfile(userCredential.user, { displayName: name });
+            
+            const username = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000);
+            const defaultMilestones = [
+                { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
+                { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
+                { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
+            ];
+            
+            await setDoc(doc(db, 'users', userCredential.user.uid), {
+                uid: userCredential.user.uid,
+                displayName: name,
+                email: email,
+                username: username,
+                bio: "Welcome to my channel! 🎉\n\nI create amazing content. Subscribe and follow along!",
+                links: "",
+                photoURL: null,
+                bannerURL: null,
+                createdAt: Date.now(),
+                hasChannel: true,
+                subscribers: 0,
+                totalViews: 0,
+                milestones: defaultMilestones,
+                milestoneGoalText: "My Channel Goals 🎯"
+            });
+            
+            return true;
+        } catch (error) {
+            showToast(error.message, true);
+            return false;
+        }
+    }
+    
+    async function logout() {
+        await signOut(auth);
         currentUser = null;
-        localStorage.removeItem('vf_currentUser');
         closeDropdown();
         goToHome();
         updateNavbar();
@@ -407,56 +372,71 @@
     }
     
     async function updateChannel(data, avatarFile, bannerFile) {
+        if (!currentUser) return;
+        
+        let photoURL = data.photoURL;
+        let bannerURL = data.bannerURL;
+        
         if (avatarFile) {
             const reader = new FileReader();
-            data.photoURL = await new Promise(resolve => {
+            photoURL = await new Promise(resolve => {
                 reader.onload = e => resolve(e.target.result);
                 reader.readAsDataURL(avatarFile);
             });
         }
         if (bannerFile) {
             const reader = new FileReader();
-            data.bannerURL = await new Promise(resolve => {
+            bannerURL = await new Promise(resolve => {
                 reader.onload = e => resolve(e.target.result);
                 reader.readAsDataURL(bannerFile);
             });
         }
-        const idx = allUsers.findIndex(u => u.uid === currentUser.uid);
-        if (idx !== -1) {
-            allUsers[idx] = { ...allUsers[idx], ...data, hasChannel: true };
-            saveUsers();
-            currentUser = JSON.parse(JSON.stringify(allUsers[idx]));
-            localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
-        }
+        
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+            displayName: data.displayName,
+            bio: data.bio,
+            links: data.links,
+            milestones: data.milestones,
+            milestoneGoalText: data.milestoneGoalText,
+            photoURL: photoURL || currentUser.photoURL,
+            bannerURL: bannerURL || currentUser.bannerURL
+        });
+        
+        await loadAllUsers();
+        const updatedUser = allUsers.find(u => u.uid === currentUser.uid);
+        if (updatedUser) currentUser = updatedUser;
     }
     
-    function likeVideo(videoId) {
-        if (!currentUser) { showToast("Login to like videos"); return; }
-        const v = allVideos.find(vid => vid.id === videoId);
-        if (v) {
-            if (v.likes.includes(currentUser.uid)) {
-                v.likes = v.likes.filter(id => id !== currentUser.uid);
-            } else {
-                v.likes.push(currentUser.uid);
-            }
-            saveVideos();
-            renderFeed();
+    async function publishVideo(title, desc, file) {
+        if (!title || !file || !currentUser) {
+            showToast("Title & video required");
+            return false;
         }
-    }
-    
-    function addComment(videoId, text) {
-        if (!currentUser) { showToast("Login to comment"); return; }
-        const v = allVideos.find(vid => vid.id === videoId);
-        if (v && text.trim()) {
-            v.comments.push({
-                uid: currentUser.uid,
-                displayName: currentUser.displayName,
-                text: text,
-                timestamp: Date.now()
-            });
-            saveVideos();
-            renderFeed();
-        }
+        
+        const aspect = await getVideoAspect(file);
+        const videoUrl = URL.createObjectURL(file);
+        const videoId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        
+        const newVideo = {
+            id: videoId,
+            videoId: videoId,
+            title: title,
+            description: desc,
+            userId: currentUser.uid,
+            channelName: currentUser.displayName,
+            channelAvatar: currentUser.photoURL,
+            videoUrl: videoUrl,
+            aspectRatio: aspect,
+            createdAt: Date.now(),
+            likes: [],
+            comments: [],
+            views: 0
+        };
+        
+        await setDoc(doc(db, 'videos', videoId), newVideo);
+        await loadAllVideos();
+        return true;
     }
     
     function getVideoAspect(file) {
@@ -472,33 +452,41 @@
         });
     }
     
-    async function publishVideo(title, desc, file) {
-        if (!title || !file || !currentUser) {
-            showToast("Login & fill title");
-            return false;
+    async function likeVideo(videoId) {
+        if (!currentUser) { showToast("Login to like videos"); return; }
+        const video = allVideos.find(v => v.id === videoId);
+        if (video) {
+            const videoRef = doc(db, 'videos', videoId);
+            const likes = video.likes || [];
+            if (likes.includes(currentUser.uid)) {
+                await updateDoc(videoRef, { likes: arrayRemove(currentUser.uid) });
+            } else {
+                await updateDoc(videoRef, { likes: arrayUnion(currentUser.uid) });
+            }
+            await loadAllVideos();
+            renderFeed();
         }
-        const aspect = await getVideoAspect(file);
-        const videoUrl = URL.createObjectURL(file);
-        const newVideo = {
-            id: 'vid_' + Date.now(),
-            videoId: 'vid_' + Date.now(),
-            title: title,
-            description: desc,
-            userId: currentUser.uid,
-            channelName: currentUser.displayName,
-            channelAvatar: currentUser.photoURL,
-            videoUrl: videoUrl,
-            aspectRatio: aspect,
-            createdAt: Date.now(),
-            likes: [],
-            comments: [],
-            views: 0
-        };
-        allVideos.unshift(newVideo);
-        saveVideos();
-        return true;
     }
     
+    async function addComment(videoId, text) {
+        if (!currentUser) { showToast("Login to comment"); return; }
+        const video = allVideos.find(v => v.id === videoId);
+        if (video && text.trim()) {
+            const videoRef = doc(db, 'videos', videoId);
+            const newComment = {
+                uid: currentUser.uid,
+                displayName: currentUser.displayName,
+                text: text,
+                timestamp: Date.now()
+            };
+            const comments = [...(video.comments || []), newComment];
+            await updateDoc(videoRef, { comments: comments });
+            await loadAllVideos();
+            renderFeed();
+        }
+    }
+    
+    // ============ RENDER FUNCTIONS ============
     function renderFeed(videosToShow = null) {
         const videos = videosToShow !== null ? videosToShow : allVideos;
         const sorted = [...videos].sort((a, b) => b.createdAt - a.createdAt);
@@ -525,7 +513,7 @@
                 </div>
             </div>`;
         });
-        if (currentUser && currentUser.hasChannel) html += `<button class="upload-btn-floating" id="floatingUploadBtn"><i class="fas fa-plus"></i></button>`;
+        if (currentUser) html += `<button class="upload-btn-floating" id="floatingUploadBtn"><i class="fas fa-plus"></i></button>`;
         html += `</div>`;
         document.getElementById('feedContent').innerHTML = html;
         
@@ -543,118 +531,19 @@
             activeVideoId = btn.dataset.id;
             openComments(activeVideoId);
         }));
-        if (currentUser && currentUser.hasChannel) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
+        if (currentUser) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
     }
-    
-    // SEARCH FUNCTIONALITY - Shows only users with hasChannel = true
-    const searchInput = document.getElementById('globalSearchInput');
-    const searchDropdown = document.getElementById('searchDropdown');
-    
-    function updateSearchResults() {
-        const query = searchInput.value.trim().toLowerCase();
-        if (query === "") {
-            searchDropdown.classList.remove('show');
-            return;
-        }
-        
-        let results = [];
-        
-        // Only show channels that have hasChannel = true
-        const visibleChannels = allUsers.filter(u => u.hasChannel === true);
-        
-        if (query.startsWith('@')) {
-            const channelQuery = query.slice(1);
-            const matchedChannels = visibleChannels.filter(u =>
-                u.displayName.toLowerCase().includes(channelQuery) ||
-                (u.username && u.username.toLowerCase().includes(channelQuery))
-            );
-            matchedChannels.forEach(ch => {
-                results.push({
-                    type: 'channel',
-                    data: ch,
-                    title: ch.displayName,
-                    subtitle: '@' + (ch.username || ch.uid.substring(0,8)),
-                    icon: ch.photoURL,
-                    action: () => navigateToChannel(ch.uid)
-                });
-            });
-        } else {
-            const matchedVideos = allVideos.filter(v =>
-                v.title.toLowerCase().includes(query) ||
-                v.channelName.toLowerCase().includes(query)
-            );
-            matchedVideos.forEach(v => {
-                results.push({
-                    type: 'video',
-                    data: v,
-                    title: v.title,
-                    subtitle: 'Video by @' + v.channelName,
-                    icon: v.channelAvatar,
-                    action: () => {
-                        renderFeed([v]);
-                        setTimeout(() => {
-                            const el = document.querySelector(`.video-card[data-video-id="${v.id}"]`);
-                            if(el) el.scrollIntoView({behavior: 'smooth'});
-                        }, 100);
-                        searchDropdown.classList.remove('show');
-                        searchInput.value = '';
-                    }
-                });
-            });
-            const matchedChannels = visibleChannels.filter(u => 
-                u.displayName.toLowerCase().includes(query)
-            ).slice(0, 3);
-            matchedChannels.forEach(ch => {
-                results.push({
-                    type: 'channel',
-                    data: ch,
-                    title: ch.displayName,
-                    subtitle: '@' + (ch.username || ch.uid.substring(0,8)),
-                    icon: ch.photoURL,
-                    action: () => navigateToChannel(ch.uid)
-                });
-            });
-        }
-        
-        results = results.slice(0, 8);
-        
-        if (results.length === 0) {
-            searchDropdown.innerHTML = '<div class="search-result-item">No results found</div>';
-            searchDropdown.classList.add('show');
-            return;
-        }
-        
-        searchDropdown.innerHTML = results.map(r => {
-            const iconUrl = r.icon || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${r.title.charAt(0)}`;
-            return `<div class="search-result-item" onclick="(${r.action.toString()})()">
-                <img class="search-result-icon" src="${iconUrl}" onerror="this.src='https://ui-avatars.com/api/?background=fe2c55&color=fff&name=?'">
-                <div class="search-result-info"><div class="search-result-title">${escapeHtml(r.title)}</div><div class="search-result-sub">${escapeHtml(r.subtitle)}</div></div>
-            </div>`;
-        }).join('');
-        searchDropdown.classList.add('show');
-    }
-    
-    searchInput.addEventListener('input', updateSearchResults);
-    document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-            searchDropdown.classList.remove('show');
-        }
-    });
     
     function openComments(videoId) {
         const video = allVideos.find(v => v.id === videoId);
-        if (!video) return;
+        if(!video) return;
         document.getElementById('commentsList').innerHTML = (video.comments || []).map(c =>
             `<div class="comment-item"><div class="comment-content"><div class="comment-name">${escapeHtml(c.displayName)}</div><div class="comment-text">${escapeHtml(c.text)}</div></div></div>`
         ).join('') || '<div style="text-align:center;">No comments</div>';
         document.getElementById('commentsPanel').classList.add('open');
         document.getElementById('postCommentBtn').onclick = () => {
             const inp = document.getElementById('commentInput');
-            if (inp.value.trim()) {
-                addComment(videoId, inp.value);
-                inp.value = '';
-                openComments(videoId);
-            }
+            if(inp.value.trim()) { addComment(videoId, inp.value); inp.value = ''; openComments(videoId); }
         };
     }
     
@@ -662,7 +551,7 @@
     window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
     
     function openInfoPopup(user) {
-        if (!user) return;
+        if(!user) return;
         document.getElementById('popupChannelName').innerText = user.displayName;
         document.getElementById('popupFullBio').innerHTML = escapeHtml(user.bio || "No description.").replace(/\n/g, '<br>');
         const linksHtml = user.links ? user.links.split(',').map(l => `<div class="popup-link-item"><i class="fas fa-link"></i> <a href="${l.trim()}" target="_blank">${l.trim()}</a></div>`).join('') : '<div class="popup-link-item">No external links</div>';
@@ -681,9 +570,8 @@
     function closeInfoPopup() { document.getElementById('infoPopupModal').style.display = 'none'; }
     
     function renderChannelPage(uid) {
-        // Only show channels that have hasChannel = true
-        const user = allUsers.find(u => u.uid === uid && u.hasChannel === true);
-        if (!user) { showToast("Channel not found", true); goToHome(); return; }
+        const user = allUsers.find(u => u.uid === uid);
+        if (!user) { goToHome(); return; }
         const userVideos = allVideos.filter(v => v.userId === uid);
         const totalViews = userVideos.reduce((sum, v) => sum + (v.views || 0), 0);
         const subscriberCount = user.subscribers || 0;
@@ -695,12 +583,12 @@
             <div class="channel-banner" style="${bannerStyle}"></div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
                 <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${user.displayName?.charAt(0)}`}">
-                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : '<button class="btn btn-primary" onclick="showToast(\'Subscribed! (Demo)\')"><i class="fas fa-bell"></i> Subscribe</button>'}
+                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : '<button class="btn btn-primary" onclick="showToast(\'Subscribed!\')"><i class="fas fa-bell"></i> Subscribe</button>'}
             </div>
             <div class="channel-info-section">
                 <div class="channel-title">
                     <h1>${escapeHtml(user.displayName)}</h1>
-                    <div class="channel-handle">@${user.username || user.uid.substring(0,8)}</div>
+                    <div class="channel-handle">@${user.username || user.uid}</div>
                     <div class="channel-stats">
                         <span class="stat-badge"><i class="fas fa-users"></i> ${subscriberCount} subscribers</span>
                         <span class="stat-badge"><i class="fas fa-video"></i> ${userVideos.length} videos</span>
@@ -724,6 +612,117 @@
         closeDropdown();
     }
     
+    // ============ SEARCH FUNCTIONALITY ============
+    const searchInput = document.getElementById('globalSearchInput');
+    const searchDropdown = document.getElementById('searchDropdown');
+    
+    function updateSearchResults() {
+        const query = searchInput.value.trim().toLowerCase();
+        if (query === "") {
+            searchDropdown.classList.remove('show');
+            return;
+        }
+        
+        let results = [];
+        
+        if (query.startsWith('@')) {
+            const channelQuery = query.slice(1);
+            const matchedChannels = allUsers.filter(u =>
+                u.displayName.toLowerCase().includes(channelQuery) ||
+                (u.username && u.username.toLowerCase().includes(channelQuery))
+            );
+            matchedChannels.forEach(ch => {
+                results.push({
+                    type: 'channel',
+                    data: ch,
+                    title: ch.displayName,
+                    subtitle: '@' + (ch.username || ch.uid),
+                    icon: ch.photoURL
+                });
+            });
+        } else {
+            const matchedVideos = allVideos.filter(v =>
+                v.title.toLowerCase().includes(query) ||
+                v.channelName.toLowerCase().includes(query)
+            );
+            matchedVideos.forEach(v => {
+                results.push({
+                    type: 'video',
+                    data: v,
+                    title: v.title,
+                    subtitle: 'Video by @' + v.channelName,
+                    icon: v.channelAvatar
+                });
+            });
+            const matchedChannels = allUsers.filter(u =>
+                u.displayName.toLowerCase().includes(query)
+            ).slice(0, 3);
+            matchedChannels.forEach(ch => {
+                results.push({
+                    type: 'channel',
+                    data: ch,
+                    title: ch.displayName,
+                    subtitle: '@' + (ch.username || ch.uid),
+                    icon: ch.photoURL
+                });
+            });
+        }
+        
+        results = results.slice(0, 8);
+        
+        if (results.length === 0) {
+            searchDropdown.innerHTML = '<div class="search-result-item">No results found</div>';
+            searchDropdown.classList.add('show');
+            return;
+        }
+        
+        searchDropdown.innerHTML = results.map(r => {
+            const iconUrl = r.icon || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${r.title.charAt(0)}`;
+            if (r.type === 'channel') {
+                return `<div class="search-result-item" onclick="navigateToChannel('${r.data.uid}'); searchDropdown.classList.remove('show'); searchInput.value='';">
+                    <img class="search-result-icon" src="${iconUrl}" onerror="this.src='https://ui-avatars.com/api/?background=fe2c55&color=fff&name=?'">
+                    <div class="search-result-info"><div class="search-result-title">${escapeHtml(r.title)}</div><div class="search-result-sub">${escapeHtml(r.subtitle)}</div></div>
+                </div>`;
+            } else {
+                return `<div class="search-result-item" onclick="goToVideo('${r.data.id}'); searchDropdown.classList.remove('show'); searchInput.value='';">
+                    <img class="search-result-icon" src="${iconUrl}" onerror="this.src='https://ui-avatars.com/api/?background=fe2c55&color=fff&name=?'">
+                    <div class="search-result-info"><div class="search-result-title">${escapeHtml(r.title)}</div><div class="search-result-sub">${escapeHtml(r.subtitle)}</div></div>
+                </div>`;
+            }
+        }).join('');
+        searchDropdown.classList.add('show');
+    }
+    
+    function goToVideo(videoId) {
+        const video = allVideos.find(v => v.id === videoId);
+        if (video) {
+            renderFeed([video]);
+        }
+    }
+    
+    searchInput.addEventListener('input', updateSearchResults);
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+            searchDropdown.classList.remove('show');
+        }
+    });
+    
+    // ============ NAVIGATION ============
+    function navigateToChannel(uid) {
+        const user = allUsers.find(u => u.uid === uid);
+        if(user) {
+            history.pushState(null, '', `#@${user.username || user.uid}`);
+            renderChannelPage(uid);
+        }
+    }
+    
+    function goToHome() {
+        history.pushState(null, '', window.location.pathname);
+        renderFeed();
+        if (searchInput) searchInput.value = '';
+    }
+    
+    // ============ CUSTOMIZATION ============
     function renderMilestoneEditor() {
         const container = document.getElementById('milestonesList');
         if (!container || !currentUser) return;
@@ -780,34 +779,13 @@
                 });
             }
         }
-        await updateChannel({ displayName: newName, bio: newBio, links: newLinks, milestones: updatedMilestones }, avatarFile, bannerFile);
+        await updateChannel({ displayName: newName, bio: newBio, links: newLinks, milestones: updatedMilestones, milestoneGoalText: currentUser.milestoneGoalText }, avatarFile, bannerFile);
         closeCustomizeModal();
         navigateToChannel(currentUser.uid);
         showToast('Channel updated!');
     });
     
-    function navigateToChannel(uid) {
-        const user = allUsers.find(u => u.uid === uid && u.hasChannel === true);
-        if (user) {
-            history.pushState(null, '', `#@${user.username || user.uid}`);
-            renderChannelPage(uid);
-        } else {
-            showToast("Channel not found", true);
-        }
-    }
-    
-    function goToHome() {
-        history.pushState(null, '', window.location.pathname);
-        renderFeed();
-        if (searchInput) searchInput.value = '';
-        searchDropdown.classList.remove('show');
-    }
-    
-    function escapeHtml(s) {
-        if (!s) return '';
-        return s.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-    }
-    
+    // ============ NAVBAR ============
     function toggleDropdown() { document.getElementById('userDropdown')?.classList.toggle('show'); }
     function closeDropdown() { document.getElementById('userDropdown')?.classList.remove('show'); }
     
@@ -832,78 +810,95 @@
         }
     }
     
-    // Event Listeners
-    document.getElementById('addMilestoneBtn')?.addEventListener('click', () => addMilestone());
-    
-    document.getElementById('confirmUploadBtn')?.addEventListener('click', async () => {
-        const f = document.getElementById('videoFile').files[0];
-        const t = document.getElementById('videoTitle').value;
-        const d = document.getElementById('videoDesc').value;
-        if (await publishVideo(t, d, f)) {
-            document.getElementById('uploadModal').style.display = 'none';
-            renderFeed();
-            showToast('Video published!');
+    // ============ INITIALIZE ============
+    async function initialize() {
+        deviceId = localStorage.getItem('vertiflow_device_id');
+        if (!deviceId) {
+            deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('vertiflow_device_id', deviceId);
         }
-    });
-    
-    document.getElementById('doLoginBtn')?.addEventListener('click', () => {
-        if (login(document.getElementById('loginEmail').value, document.getElementById('loginPass').value)) {
-            document.getElementById('authModal').style.display = 'none';
-            if (!currentUser.hasChannel) {
-                document.getElementById('channelWizardModal').style.display = 'flex';
+        
+        // Migrate existing localStorage data to cloud
+        await migrateLocalStorageToCloud();
+        
+        await loadAllUsers();
+        await loadAllVideos();
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    currentUser = { uid: user.uid, ...userDoc.data() };
+                } else {
+                    currentUser = { uid: user.uid, displayName: user.displayName || user.email.split('@')[0], email: user.email };
+                }
+            } else {
+                currentUser = null;
+            }
+            updateNavbar();
+            
+            const hash = window.location.hash;
+            if (hash.startsWith('#@')) {
+                const username = hash.slice(2);
+                const channelUser = allUsers.find(u => u.username === username);
+                if (channelUser) renderChannelPage(channelUser.uid);
+                else goToHome();
             } else {
                 goToHome();
-                updateNavbar();
-                showToast('Logged in!');
             }
-        } else {
-            showToast('Invalid credentials');
-        }
-    });
-    
-    document.getElementById('googleLoginBtn')?.addEventListener('click', () => {
-        if (typeof google !== 'undefined') {
-            google.accounts.id.prompt();
-        } else {
-            showToast('Google Sign-In loading...', true);
-        }
-    });
-    
-    document.getElementById('googleSignupBtn')?.addEventListener('click', () => {
-        if (typeof google !== 'undefined') {
-            google.accounts.id.prompt();
-        } else {
-            showToast('Google Sign-In loading...', true);
-        }
-    });
-    
-    document.getElementById('demoLoginBtn')?.addEventListener('click', () => {
-        const demo = allUsers.find(u => u.email === 'demo@vertiflow.com');
-        if (demo) {
-            currentUser = JSON.parse(JSON.stringify(demo));
-            localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
-            document.getElementById('authModal').style.display = 'none';
-            if (!currentUser.hasChannel) {
-                document.getElementById('channelWizardModal').style.display = 'flex';
+        });
+        
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1);
+            if (hash.startsWith('@')) {
+                const id = hash.slice(1);
+                const user = allUsers.find(u => u.username === id);
+                if (user) renderChannelPage(user.uid);
+                else goToHome();
             } else {
                 goToHome();
-                updateNavbar();
-                showToast('Welcome to VertiFlow!');
             }
-        } else {
-            showToast('Demo account not found');
+        });
+    }
+    
+    // Expose globals
+    window.goToHome = goToHome;
+    window.navigateToChannel = navigateToChannel;
+    window.toggleDropdown = toggleDropdown;
+    window.openInfoPopup = openInfoPopup;
+    window.closeInfoPopup = closeInfoPopup;
+    window.openCustomizeModal = openCustomizeModal;
+    window.closeCustomizeModal = closeCustomizeModal;
+    window.closeUploadModal = () => document.getElementById('uploadModal').style.display = 'none';
+    window.showToast = showToast;
+    
+    // Auth event listeners
+    document.getElementById('doLoginBtn')?.addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        if (await login(email, pass)) {
+            document.getElementById('authModal').style.display = 'none';
+            showToast('Logged in!');
         }
     });
     
-    document.getElementById('doSignupBtn')?.addEventListener('click', () => {
+    document.getElementById('demoLoginBtn')?.addEventListener('click', async () => {
+        if (await login('demo@vertiflow.com', 'demo123')) {
+            document.getElementById('authModal').style.display = 'none';
+            showToast('Welcome to VertiFlow!');
+        } else {
+            showToast('Demo account not found, please sign up first');
+        }
+    });
+    
+    document.getElementById('doSignupBtn')?.addEventListener('click', async () => {
         const name = document.getElementById('signupName').value;
         const email = document.getElementById('signupEmail').value;
         const pass = document.getElementById('signupPass').value;
         if (name && email && pass) {
-            if (signupAndCreateChannel(name, email, pass, null, "Welcome to my new channel!")) {
+            if (await signup(name, email, pass)) {
                 document.getElementById('authModal').style.display = 'none';
                 document.getElementById('channelWizardModal').style.display = 'flex';
-                updateNavbar();
                 showToast('Account created! Complete your channel setup.');
             }
         } else {
@@ -916,10 +911,9 @@
         const channelBio = document.getElementById('wizardChannelBio').value;
         const avatarFile = document.getElementById('wizardAvatarFile').files[0];
         if (channelName && currentUser) {
-            await updateChannel({ displayName: channelName, bio: channelBio }, avatarFile, null);
+            await updateChannel({ displayName: channelName, bio: channelBio, links: "", milestones: currentUser.milestones, milestoneGoalText: currentUser.milestoneGoalText }, avatarFile, null);
             document.getElementById('channelWizardModal').style.display = 'none';
             goToHome();
-            updateNavbar();
             showToast('Channel created successfully!');
         } else {
             showToast('Please enter a channel name');
@@ -934,6 +928,19 @@
         }
     });
     
+    document.getElementById('confirmUploadBtn')?.addEventListener('click', async () => {
+        const f = document.getElementById('videoFile').files[0];
+        const t = document.getElementById('videoTitle').value;
+        const d = document.getElementById('videoDesc').value;
+        if (await publishVideo(t, d, f)) {
+            document.getElementById('uploadModal').style.display = 'none';
+            await loadAllVideos();
+            renderFeed();
+            showToast('Video published!');
+        }
+    });
+    
+    document.getElementById('addMilestoneBtn')?.addEventListener('click', () => addMilestone());
     document.getElementById('authLoginTab')?.addEventListener('click', () => {
         document.getElementById('loginPanel').style.display = 'block';
         document.getElementById('signupPanel').style.display = 'none';
@@ -943,42 +950,7 @@
         document.getElementById('signupPanel').style.display = 'block';
     });
     
-    window.closeUploadModal = () => document.getElementById('uploadModal').style.display = 'none';
-    window.goToHome = goToHome;
-    window.navigateToChannel = navigateToChannel;
-    window.toggleDropdown = toggleDropdown;
-    window.openInfoPopup = openInfoPopup;
-    window.closeInfoPopup = closeInfoPopup;
-    window.openCustomizeModal = openCustomizeModal;
-    window.closeCustomizeModal = closeCustomizeModal;
-    
-    // Initialize
-    loadData();
-    initGoogleSignIn();
-    
-    const saved = localStorage.getItem('vf_currentUser');
-    if (saved) {
-        const parsed = JSON.parse(saved);
-        const exists = allUsers.find(u => u.uid === parsed.uid && u.hasChannel === true);
-        if (exists) currentUser = JSON.parse(JSON.stringify(exists));
-        else if (parsed && !parsed.hasChannel) currentUser = parsed;
-        else currentUser = null;
-    }
-    
-    window.addEventListener('hashchange', () => {
-        const hash = window.location.hash.slice(1);
-        if (hash.startsWith('@')) {
-            const id = hash.slice(1);
-            const user = allUsers.find(u => u.username === id && u.hasChannel === true);
-            if (user) renderChannelPage(user.uid);
-            else goToHome();
-        } else {
-            goToHome();
-        }
-    });
-    
-    goToHome();
-    updateNavbar();
+    initialize();
 </script>
 </body>
 </html>
