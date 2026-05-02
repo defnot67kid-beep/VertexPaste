@@ -41,6 +41,8 @@
         .btn-primary { background: var(--accent); }
         .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
         .btn-outline { background: transparent; border: 1px solid var(--accent); }
+        .btn-google { background: #db4437; color: white; }
+        .btn-google:hover { background: #c53929; }
         .user-avatar-btn { background: transparent; border: none; cursor: pointer; padding: 0; }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); }
         .dropdown-menu { position: absolute; top: 50px; right: 0; background: var(--bg-elevated); border-radius: 16px; width: 220px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.5); z-index: 200; display: none; overflow: hidden; }
@@ -135,8 +137,20 @@
 
 <!-- Auth Modal -->
 <div id="authModal" class="modal"><div class="modal-content"><h3>Join VertiFlow</h3><div style="display:flex;gap:12px;margin:20px 0;"><button id="authLoginTab" class="btn btn-primary" style="flex:1">Login</button><button id="authSignupTab" class="btn" style="flex:1;background:#2a2a2a">Sign Up</button></div>
-<div id="loginPanel"><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button><button class="btn" style="width:100%;margin-top:12px;" id="demoLoginBtn">✨ Demo Account</button></div>
-<div id="signupPanel" style="display:none"><input type="text" id="signupName" placeholder="Name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button></div></div></div>
+<div id="loginPanel">
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button>
+    <button class="btn btn-google" style="width:100%; margin-top:12px;" id="googleLoginBtn"><i class="fab fa-google"></i> Login with Google</button>
+    <button class="btn" style="width:100%;margin-top:12px;" id="demoLoginBtn">✨ Demo Account</button>
+</div>
+<div id="signupPanel" style="display:none">
+    <input type="text" id="signupName" placeholder="Name">
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPass" placeholder="Password">
+    <button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button>
+    <button class="btn btn-google" style="width:100%; margin-top:12px;" id="googleSignupBtn"><i class="fab fa-google"></i> Sign up with Google</button>
+</div></div></div>
 
 <!-- Wizard Modal for new channel creation -->
 <div id="channelWizardModal" class="modal"><div class="modal-content"><h3>Create Your Channel</h3><input type="text" id="wizardChannelName" placeholder="Channel name"><textarea id="wizardChannelBio" rows="3" placeholder="Tell us about your channel..."></textarea><div style="margin:16px 0;"><label>Profile Picture</label><input type="file" id="wizardAvatarFile" accept="image/*"><img id="wizardAvatarPreview" src="https://ui-avatars.com/api/?background=fe2c55&color=fff&name=?" style="width:60px;height:60px;border-radius:50%;margin-top:8px;"></div><button class="btn btn-primary" id="completeWizardBtn">Create Channel 🚀</button><button class="btn btn-outline" onclick="document.getElementById('channelWizardModal').style.display='none'" style="margin-top:12px;">Cancel</button></div></div>
@@ -158,13 +172,15 @@
 <!-- Comments Panel -->
 <div id="commentsPanel" class="comments-panel"><div class="comments-header"><span>Comments</span><button class="close-comments" onclick="closeComments()">✕</button></div><div class="comments-list" id="commentsList"></div><div class="add-comment-bar"><input type="text" id="commentInput" placeholder="Add a comment..."><button class="btn btn-primary" id="postCommentBtn">Post</button></div></div>
 
+<!-- Google Sign-In Script -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <script>
     // GLOBAL DATA - persists in localStorage across sessions
     let currentUser = null;
     let allVideos = [];
     let allUsers = [];
     let activeVideoId = null;
-    let currentSearchResults = []; // Store search results to navigate properly
 
     function loadData() {
         const storedUsers = localStorage.getItem('vf_users');
@@ -173,8 +189,8 @@
         if (storedUsers) {
             allUsers = JSON.parse(storedUsers);
         } else {
-            // Create default demo user
-            const demoUser = {
+            // Create default demo channels (visible to everyone)
+            const demoUser1 = {
                 uid: 'demo_user_1',
                 displayName: 'VertiCreator',
                 email: 'demo@vertiflow.com',
@@ -194,17 +210,43 @@
                 ],
                 milestoneGoalText: "🎯 10k Subscriber Journey!"
             };
-            allUsers = [demoUser];
+            
+            const demoUser2 = {
+                uid: 'demo_user_2',
+                displayName: 'MusicBeats',
+                email: 'music@vertiflow.com',
+                username: 'musicbeats',
+                bio: "🎵 Best music mixes and beats! Subscribe for daily uploads.",
+                links: "https://soundcloud.com/musicbeats",
+                photoURL: null,
+                bannerURL: null,
+                createdAt: Date.now(),
+                hasChannel: true,
+                subscribers: 3420,
+                totalViews: 120000,
+                milestones: [
+                    { target: "1000 subscribers", achieved: true, date: "Dec 15, 2024", color: "#10b981" },
+                    { target: "5000 subscribers", achieved: false, date: null, color: "#f59e0b" }
+                ],
+                milestoneGoalText: "🎯 Music Journey!"
+            };
+            
+            allUsers = [demoUser1, demoUser2];
             saveUsers();
         }
         
         // Try to recover your old channel from any backup key
         const oldUsers = localStorage.getItem('vf_users_backup') || localStorage.getItem('vertiflow_users');
-        if (oldUsers && !storedUsers) {
+        if (oldUsers && (!storedUsers || storedUsers === '[]')) {
             try {
                 const parsedOld = JSON.parse(oldUsers);
                 if (parsedOld.length > 0) {
-                    allUsers = parsedOld;
+                    // Merge with existing users, avoid duplicates by email
+                    for (const oldUser of parsedOld) {
+                        if (!allUsers.find(u => u.email === oldUser.email)) {
+                            allUsers.push(oldUser);
+                        }
+                    }
                     saveUsers();
                     console.log("Recovered old channel data!");
                 }
@@ -221,7 +263,93 @@
     
     function saveUsers() { localStorage.setItem('vf_users', JSON.stringify(allUsers)); }
     function saveVideos() { localStorage.setItem('vf_videos', JSON.stringify(allVideos)); }
-    function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2500); }
+    function showToast(msg, isError = false) { 
+        const t = document.createElement('div'); 
+        t.className = 'toast'; 
+        t.innerHTML = msg;
+        if (isError) t.style.borderLeftColor = '#ef4444';
+        document.body.appendChild(t); 
+        setTimeout(() => t.remove(), 2500); 
+    }
+
+    // Google Sign-In Handler
+    window.handleGoogleSignIn = async function(response) {
+        try {
+            // Decode the JWT token to get user info
+            const payload = parseJwt(response.credential);
+            const email = payload.email;
+            const name = payload.name;
+            const photoURL = payload.picture;
+            
+            let user = allUsers.find(u => u.email === email);
+            
+            if (!user) {
+                // Create new user with Google account
+                const username = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000);
+                const defaultMilestones = [
+                    { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
+                    { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
+                    { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
+                ];
+                
+                user = {
+                    uid: 'google_' + Date.now(),
+                    displayName: name,
+                    email: email,
+                    username: username,
+                    bio: "Welcome to my channel! 🎉",
+                    links: "",
+                    photoURL: photoURL,
+                    bannerURL: null,
+                    createdAt: Date.now(),
+                    hasChannel: false,
+                    subscribers: 0,
+                    totalViews: 0,
+                    milestones: defaultMilestones,
+                    milestoneGoalText: "My Channel Goals 🎯"
+                };
+                
+                allUsers.push(user);
+                saveUsers();
+                showToast('Welcome! Please create your channel.');
+            }
+            
+            currentUser = JSON.parse(JSON.stringify(user));
+            localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
+            document.getElementById('authModal').style.display = 'none';
+            
+            if (!currentUser.hasChannel) {
+                document.getElementById('channelWizardModal').style.display = 'flex';
+            } else {
+                goToHome();
+                updateNavbar();
+                showToast(`Welcome back, ${currentUser.displayName}!`);
+            }
+            
+        } catch (error) {
+            console.error('Google sign-in error:', error);
+            showToast('Google sign-in failed', true);
+        }
+    };
+    
+    function parseJwt(token) {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    }
+    
+    // Initialize Google Sign-In button
+    function initGoogleSignIn() {
+        if (typeof google !== 'undefined') {
+            google.accounts.id.initialize({
+                client_id: '255275350380-9v2pqk9v3q78v8v3q3t2sdf5r8q3e8n8.apps.googleusercontent.com',
+                callback: handleGoogleSignIn
+            });
+        }
+    }
 
     function login(email, pass) {
         const user = allUsers.find(u => u.email === email);
@@ -397,7 +525,7 @@
                 </div>
             </div>`;
         });
-        if (currentUser) html += `<button class="upload-btn-floating" id="floatingUploadBtn"><i class="fas fa-plus"></i></button>`;
+        if (currentUser && currentUser.hasChannel) html += `<button class="upload-btn-floating" id="floatingUploadBtn"><i class="fas fa-plus"></i></button>`;
         html += `</div>`;
         document.getElementById('feedContent').innerHTML = html;
         
@@ -415,10 +543,10 @@
             activeVideoId = btn.dataset.id;
             openComments(activeVideoId);
         }));
-        if (currentUser) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
+        if (currentUser && currentUser.hasChannel) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
     }
     
-    // SEARCH FUNCTIONALITY - Fixed to properly navigate
+    // SEARCH FUNCTIONALITY - Shows only users with hasChannel = true
     const searchInput = document.getElementById('globalSearchInput');
     const searchDropdown = document.getElementById('searchDropdown');
     
@@ -426,24 +554,26 @@
         const query = searchInput.value.trim().toLowerCase();
         if (query === "") {
             searchDropdown.classList.remove('show');
-            currentSearchResults = [];
             return;
         }
         
         let results = [];
         
+        // Only show channels that have hasChannel = true
+        const visibleChannels = allUsers.filter(u => u.hasChannel === true);
+        
         if (query.startsWith('@')) {
             const channelQuery = query.slice(1);
-            const matchedChannels = allUsers.filter(u =>
-                u.hasChannel && (u.displayName.toLowerCase().includes(channelQuery) ||
-                (u.username && u.username.toLowerCase().includes(channelQuery)))
+            const matchedChannels = visibleChannels.filter(u =>
+                u.displayName.toLowerCase().includes(channelQuery) ||
+                (u.username && u.username.toLowerCase().includes(channelQuery))
             );
             matchedChannels.forEach(ch => {
                 results.push({
                     type: 'channel',
                     data: ch,
                     title: ch.displayName,
-                    subtitle: '@' + (ch.username || ch.uid),
+                    subtitle: '@' + (ch.username || ch.uid.substring(0,8)),
                     icon: ch.photoURL,
                     action: () => navigateToChannel(ch.uid)
                 });
@@ -471,15 +601,15 @@
                     }
                 });
             });
-            const matchedChannels = allUsers.filter(u => 
-                u.hasChannel && u.displayName.toLowerCase().includes(query)
+            const matchedChannels = visibleChannels.filter(u => 
+                u.displayName.toLowerCase().includes(query)
             ).slice(0, 3);
             matchedChannels.forEach(ch => {
                 results.push({
                     type: 'channel',
                     data: ch,
                     title: ch.displayName,
-                    subtitle: '@' + (ch.username || ch.uid),
+                    subtitle: '@' + (ch.username || ch.uid.substring(0,8)),
                     icon: ch.photoURL,
                     action: () => navigateToChannel(ch.uid)
                 });
@@ -487,7 +617,6 @@
         }
         
         results = results.slice(0, 8);
-        currentSearchResults = results;
         
         if (results.length === 0) {
             searchDropdown.innerHTML = '<div class="search-result-item">No results found</div>';
@@ -552,8 +681,9 @@
     function closeInfoPopup() { document.getElementById('infoPopupModal').style.display = 'none'; }
     
     function renderChannelPage(uid) {
-        const user = allUsers.find(u => u.uid === uid);
-        if (!user) { goToHome(); return; }
+        // Only show channels that have hasChannel = true
+        const user = allUsers.find(u => u.uid === uid && u.hasChannel === true);
+        if (!user) { showToast("Channel not found", true); goToHome(); return; }
         const userVideos = allVideos.filter(v => v.userId === uid);
         const totalViews = userVideos.reduce((sum, v) => sum + (v.views || 0), 0);
         const subscriberCount = user.subscribers || 0;
@@ -565,12 +695,12 @@
             <div class="channel-banner" style="${bannerStyle}"></div>
             <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
                 <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${user.displayName?.charAt(0)}`}">
-                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : '<button class="btn btn-primary" onclick="showToast(\'Subscribed!\')"><i class="fas fa-bell"></i> Subscribe</button>'}
+                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : '<button class="btn btn-primary" onclick="showToast(\'Subscribed! (Demo)\')"><i class="fas fa-bell"></i> Subscribe</button>'}
             </div>
             <div class="channel-info-section">
                 <div class="channel-title">
                     <h1>${escapeHtml(user.displayName)}</h1>
-                    <div class="channel-handle">@${user.username || user.uid}</div>
+                    <div class="channel-handle">@${user.username || user.uid.substring(0,8)}</div>
                     <div class="channel-stats">
                         <span class="stat-badge"><i class="fas fa-users"></i> ${subscriberCount} subscribers</span>
                         <span class="stat-badge"><i class="fas fa-video"></i> ${userVideos.length} videos</span>
@@ -657,10 +787,12 @@
     });
     
     function navigateToChannel(uid) {
-        const user = allUsers.find(u => u.uid === uid);
+        const user = allUsers.find(u => u.uid === uid && u.hasChannel === true);
         if (user) {
             history.pushState(null, '', `#@${user.username || user.uid}`);
             renderChannelPage(uid);
+        } else {
+            showToast("Channel not found", true);
         }
     }
     
@@ -717,11 +849,31 @@
     document.getElementById('doLoginBtn')?.addEventListener('click', () => {
         if (login(document.getElementById('loginEmail').value, document.getElementById('loginPass').value)) {
             document.getElementById('authModal').style.display = 'none';
-            goToHome();
-            updateNavbar();
-            showToast('Logged in!');
+            if (!currentUser.hasChannel) {
+                document.getElementById('channelWizardModal').style.display = 'flex';
+            } else {
+                goToHome();
+                updateNavbar();
+                showToast('Logged in!');
+            }
         } else {
             showToast('Invalid credentials');
+        }
+    });
+    
+    document.getElementById('googleLoginBtn')?.addEventListener('click', () => {
+        if (typeof google !== 'undefined') {
+            google.accounts.id.prompt();
+        } else {
+            showToast('Google Sign-In loading...', true);
+        }
+    });
+    
+    document.getElementById('googleSignupBtn')?.addEventListener('click', () => {
+        if (typeof google !== 'undefined') {
+            google.accounts.id.prompt();
+        } else {
+            showToast('Google Sign-In loading...', true);
         }
     });
     
@@ -731,9 +883,13 @@
             currentUser = JSON.parse(JSON.stringify(demo));
             localStorage.setItem('vf_currentUser', JSON.stringify(currentUser));
             document.getElementById('authModal').style.display = 'none';
-            goToHome();
-            updateNavbar();
-            showToast('Welcome to VertiFlow!');
+            if (!currentUser.hasChannel) {
+                document.getElementById('channelWizardModal').style.display = 'flex';
+            } else {
+                goToHome();
+                updateNavbar();
+                showToast('Welcome to VertiFlow!');
+            }
         } else {
             showToast('Demo account not found');
         }
@@ -798,11 +954,14 @@
     
     // Initialize
     loadData();
+    initGoogleSignIn();
+    
     const saved = localStorage.getItem('vf_currentUser');
     if (saved) {
         const parsed = JSON.parse(saved);
-        const exists = allUsers.find(u => u.uid === parsed.uid);
+        const exists = allUsers.find(u => u.uid === parsed.uid && u.hasChannel === true);
         if (exists) currentUser = JSON.parse(JSON.stringify(exists));
+        else if (parsed && !parsed.hasChannel) currentUser = parsed;
         else currentUser = null;
     }
     
@@ -810,7 +969,7 @@
         const hash = window.location.hash.slice(1);
         if (hash.startsWith('@')) {
             const id = hash.slice(1);
-            const user = allUsers.find(u => u.username === id);
+            const user = allUsers.find(u => u.username === id && u.hasChannel === true);
             if (user) renderChannelPage(user.uid);
             else goToHome();
         } else {
