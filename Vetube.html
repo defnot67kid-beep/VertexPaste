@@ -42,13 +42,16 @@
         .btn-google:hover { background: #357ae8; }
         .user-avatar-btn { background: transparent; border: none; cursor: pointer; padding: 0; }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); }
-        .dropdown-menu { position: absolute; top: 50px; right: 0; background: var(--bg-elevated); border-radius: 16px; width: 220px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.5); z-index: 200; display: none; overflow: hidden; }
+        .dropdown-menu { position: absolute; top: 50px; right: 0; background: var(--bg-elevated); border-radius: 16px; width: 250px; border: 1px solid var(--border); box-shadow: 0 8px 20px rgba(0,0,0,0.5); z-index: 200; display: none; overflow: hidden; }
         .dropdown-menu.show { display: block; animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .dropdown-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; color: var(--text-primary); font-size: 0.9rem; }
         .dropdown-item:hover { background: #2a2a2a; }
         .dropdown-item i { width: 20px; color: var(--accent); }
         .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+        .channel-preview { padding: 12px 16px; background: rgba(254,44,85,0.1); border-bottom: 1px solid var(--border); }
+        .channel-preview-name { font-weight: 700; margin-bottom: 4px; }
+        .channel-preview-handle { font-size: 0.7rem; color: var(--text-secondary); }
         .main-container { margin-top: 65px; height: calc(100vh - 65px); overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         .video-feed { display: flex; flex-direction: column; }
         .video-card { scroll-snap-align: start; scroll-snap-stop: always; height: calc(100vh - 65px); position: relative; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -67,7 +70,8 @@
         .comments-list { flex: 1; overflow-y: auto; padding: 12px 16px; }
         .comment-item { display: flex; gap: 12px; margin-bottom: 16px; }
         .comment-content { flex: 1; }
-        .comment-name { font-weight: 600; font-size: 0.85rem; }
+        .comment-name { font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+        .comment-name:hover { color: var(--accent); }
         .comment-text { font-size: 0.85rem; color: #ddd; }
         .add-comment-bar { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: var(--bg-elevated); }
         .add-comment-bar input { flex: 1; background: #2a2a2a; border: none; border-radius: 24px; padding: 10px 16px; color: white; }
@@ -110,6 +114,7 @@
         .video-card-mini:hover { transform: translateY(-4px); }
         .video-card-mini video { width: 100%; height: 160px; object-fit: cover; }
         .upload-btn-floating { position: fixed; bottom: 80px; right: 20px; background: var(--accent); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 50; border: none; color: white; font-size: 1.5rem; }
+        .create-channel-prompt { text-align: center; padding: 40px; background: linear-gradient(135deg, rgba(254,44,85,0.1), rgba(255,107,53,0.1)); border-radius: 24px; margin: 20px; }
         @media (max-width: 768px) { .search-container { order: 3; width: 100%; max-width: none; margin-top: 8px; } .navbar-content { gap: 10px; } }
     </style>
     <script type="module">
@@ -134,11 +139,19 @@
         const googleProvider = new GoogleAuthProvider();
 
         let currentUser = null;
+        let currentUserData = null;
         let allVideos = [];
         let allUsers = [];
         let activeVideoId = null;
 
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2500); }
+        function showToast(msg, isError = false) { 
+            const t = document.createElement('div'); 
+            t.className = 'toast'; 
+            t.innerHTML = msg; 
+            if(isError) t.style.borderLeftColor = '#ef4444';
+            document.body.appendChild(t); 
+            setTimeout(() => t.remove(), 2500); 
+        }
         function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
         async function loadAllVideos() {
@@ -159,37 +172,45 @@
             } catch(e) { console.error('Error loading users:', e); }
         }
 
-        async function saveChannelToFirestore(user) {
-            if (!user || !user.uid) return;
-            const userRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userRef);
-            if (!userDoc.exists()) {
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    displayName: user.displayName || user.email?.split('@')[0] || 'User',
-                    email: user.email,
-                    username: (user.displayName || user.email?.split('@')[0] || 'user').toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000),
-                    bio: "Welcome to my channel! 🎉\n\nI create amazing content. Subscribe and follow along!",
-                    links: "",
-                    photoURL: user.photoURL || null,
-                    bannerURL: null,
-                    createdAt: Timestamp.now(),
-                    subscribers: 0,
-                    totalViews: 0,
-                    milestones: [
-                        { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
-                        { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
-                        { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
-                    ],
-                    milestoneGoalText: "My Channel Goals 🎯"
-                });
-            }
-        }
-
         async function getUserData(uid) {
             const userDoc = await getDoc(doc(db, 'users', uid));
             if (userDoc.exists()) return { uid, ...userDoc.data() };
             return null;
+        }
+
+        async function createUserChannel(user, displayName, bio, avatarFile = null) {
+            const username = displayName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 1000);
+            let photoURL = user.photoURL || null;
+            
+            if (avatarFile) {
+                const avatarRef = ref(storage, `avatars/${user.uid}_${Date.now()}`);
+                await uploadBytes(avatarRef, avatarFile);
+                photoURL = await getDownloadURL(avatarRef);
+            }
+            
+            const userData = {
+                uid: user.uid,
+                email: user.email,
+                displayName: displayName,
+                username: username,
+                bio: bio || "Welcome to my channel! 🎉\n\nI create amazing content. Subscribe and follow along!",
+                links: "",
+                photoURL: photoURL,
+                bannerURL: null,
+                createdAt: Timestamp.now(),
+                hasChannel: true,
+                subscribers: 0,
+                totalViews: 0,
+                milestones: [
+                    { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
+                    { target: "1000 subscribers", achieved: false, date: null, color: "#f59e0b" },
+                    { target: "10000 subscribers", achieved: false, date: null, color: "#fe2c55" }
+                ],
+                milestoneGoalText: "My Channel Goals 🎯"
+            };
+            
+            await setDoc(doc(db, 'users', user.uid), userData);
+            return userData;
         }
 
         async function updateUserInFirestore(uid, data, avatarFile = null, bannerFile = null) {
@@ -229,7 +250,7 @@
                 videoId: 'vid_' + Date.now(),
                 title, description: desc, userId, channelName, channelAvatar,
                 videoUrl, aspectRatio: aspect, createdAt: Timestamp.now(),
-                likes: [], comments: [], views: 0, viewCount: 0
+                likes: [], comments: [], views: 0
             };
             const docRef = await setDoc(doc(collection(db, 'videos')), videoData);
             return docRef.id;
@@ -249,7 +270,7 @@
         }
 
         async function likeVideo(videoId) {
-            if (!currentUser) { showToast("Login to like"); return; }
+            if (!currentUser) { showToast("Login to like", true); return; }
             const videoRef = doc(db, 'videos', videoId);
             const videoDoc = await getDoc(videoRef);
             const video = videoDoc.data();
@@ -263,14 +284,15 @@
         }
 
         async function addComment(videoId, text) {
-            if (!currentUser) { showToast("Login to comment"); return; }
+            if (!currentUser) { showToast("Login to comment", true); return; }
+            if (!currentUserData?.hasChannel) { showToast("Create a channel first to comment", true); return; }
             const videoRef = doc(db, 'videos', videoId);
             const videoDoc = await getDoc(videoRef);
             const video = videoDoc.data();
             const comments = video.comments || [];
             comments.push({
                 uid: currentUser.uid,
-                displayName: currentUser.displayName,
+                displayName: currentUserData.displayName,
                 text: text,
                 timestamp: new Date().toISOString()
             });
@@ -281,7 +303,7 @@
 
         function renderFeed() {
             if (!allVideos.length) {
-                document.getElementById('feedContent').innerHTML = `<div style="text-align:center;padding:80px;"><i class="fas fa-video" style="font-size:64px;opacity:0.5;"></i><h3>No videos yet</h3>${currentUser ? '<button class="btn btn-primary" onclick="document.getElementById(\'uploadModal\').style.display=\'flex\'">Upload First Video</button>' : '<button class="btn btn-primary" onclick="document.getElementById(\'authModal\').style.display=\'flex\'">Sign In to Upload</button>'}</div>`;
+                document.getElementById('feedContent').innerHTML = `<div style="text-align:center;padding:80px;"><i class="fas fa-video" style="font-size:64px;opacity:0.5;"></i><h3>No videos yet</h3>${currentUser && currentUserData?.hasChannel ? '<button class="btn btn-primary" onclick="document.getElementById(\'uploadModal\').style.display=\'flex\'">Upload First Video</button>' : (currentUser ? '<p style="color:var(--text-secondary);margin-top:16px;">Create a channel first to upload videos!</p>' : '<button class="btn btn-primary" onclick="document.getElementById(\'authModal\').style.display=\'flex\'">Sign In to Upload</button>')}</div>`;
                 return;
             }
             let html = `<div class="video-feed">`;
@@ -301,19 +323,19 @@
                     </div>
                 </div>`;
             });
-            if(currentUser) html += `<button class="upload-btn-floating" id="floatingUploadBtn"><i class="fas fa-plus"></i></button>`;
+            if(currentUser && currentUserData?.hasChannel) html += `<button class="upload-btn-floating" id="floatingUploadBtn"><i class="fas fa-plus"></i></button>`;
             html += `</div>`;
             document.getElementById('feedContent').innerHTML = html;
             allVideos.forEach(v => { const p = document.getElementById(`player-${v.videoId}`); if(p && !p.player) videojs(p, { controls: true, preload: 'metadata', fluid: true }); });
             document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(btn.dataset.id); }));
             document.querySelectorAll('.comment-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); activeVideoId = btn.dataset.id; openComments(activeVideoId); }));
-            if(currentUser) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
+            if(currentUser && currentUserData?.hasChannel) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
         }
 
         function openComments(videoId) {
             const video = allVideos.find(v => v.id === videoId);
             if(!video) return;
-            document.getElementById('commentsList').innerHTML = (video.comments || []).map(c => `<div class="comment-item"><div class="comment-content"><div class="comment-name">${escapeHtml(c.displayName)}</div><div class="comment-text">${escapeHtml(c.text)}</div></div></div>`).join('') || '<div style="text-align:center;">No comments</div>';
+            document.getElementById('commentsList').innerHTML = (video.comments || []).map(c => `<div class="comment-item"><div class="comment-content"><div class="comment-name" onclick="navigateToChannel('${c.uid}')">${escapeHtml(c.displayName)}</div><div class="comment-text">${escapeHtml(c.text)}</div></div></div>`).join('') || '<div style="text-align:center;">No comments</div>';
             document.getElementById('commentsPanel').classList.add('open');
             document.getElementById('postCommentBtn').onclick = () => { const inp = document.getElementById('commentInput'); if(inp.value.trim()) { addComment(videoId, inp.value); inp.value = ''; } };
         }
@@ -339,7 +361,7 @@
                 <div class="channel-info-section">
                     <div class="channel-title">
                         <h1>${escapeHtml(user.displayName)}</h1>
-                        <div class="channel-handle">@${user.username || user.uid}</div>
+                        <div class="channel-handle">@${user.username || user.uid.substring(0,8)}</div>
                         <div class="channel-stats">
                             <span class="stat-badge"><i class="fas fa-users"></i> ${subscriberCount} subscribers</span>
                             <span class="stat-badge"><i class="fas fa-video"></i> ${userVideos.length} videos</span>
@@ -352,7 +374,7 @@
                     <div class="expand-hint"><i class="fas fa-mouse-pointer"></i> Click to view full bio & milestones ✨</div>
                 </div>
                 <div class="videos-grid">
-                    ${userVideos.map(v => `<div class="video-card-mini" onclick="goToHome(); setTimeout(()=>{ const el = document.querySelector('.video-card[data-video-id="${v.id}"]'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100)">
+                    ${userVideos.map(v => `<div class="video-card-mini" onclick="goToHome(); setTimeout(()=>{ location.reload(); }, 100);">
                         <video src="${v.videoUrl}"></video><div style="padding:12px;"><strong>${escapeHtml(v.title)}</strong><div>❤️ ${v.likes?.length||0}</div></div>
                     </div>`).join('')}
                 </div>
@@ -381,30 +403,26 @@
         }
         window.closeInfoPopup = () => document.getElementById('infoPopupModal').style.display = 'none';
 
-        let milestoneInputs = [];
         function renderMilestoneEditor() {
             const container = document.getElementById('milestonesList');
-            if(!container || !currentUser) return;
-            const milestones = currentUser.milestones || [];
+            if(!container || !currentUserData) return;
+            const milestones = currentUserData.milestones || [];
             container.innerHTML = '';
             milestones.forEach((m, idx) => {
                 const div = document.createElement('div');
-                div.className = 'milestone-item';
                 div.style.display = 'flex'; div.style.gap = '12px'; div.style.marginBottom = '12px';
                 div.innerHTML = `<input type="text" value="${escapeHtml(m.target)}" id="milestoneTarget_${idx}" style="flex:2"><input type="color" value="${m.color || '#fe2c55'}" id="milestoneColor_${idx}" style="width:50px;"><button class="btn" onclick="removeMilestone(${idx})"><i class="fas fa-trash"></i></button>`;
                 container.appendChild(div);
             });
         }
-        window.addMilestone = function() { if(!currentUser) return; currentUser.milestones = currentUser.milestones || []; currentUser.milestones.push({ target: "New Goal", achieved: false, date: null, color: "#fe2c55" }); renderMilestoneEditor(); };
-        window.removeMilestone = function(idx) { currentUser.milestones.splice(idx, 1); renderMilestoneEditor(); };
+        window.addMilestone = function() { if(!currentUserData) return; currentUserData.milestones = currentUserData.milestones || []; currentUserData.milestones.push({ target: "New Goal", achieved: false, date: null, color: "#fe2c55" }); renderMilestoneEditor(); };
+        window.removeMilestone = function(idx) { currentUserData.milestones.splice(idx, 1); renderMilestoneEditor(); };
 
         async function openCustomizeModal() {
-            if(!currentUser) { showToast("Login first"); return; }
-            const userData = await getUserData(currentUser.uid);
-            document.getElementById('editChannelName').value = userData.displayName || '';
-            document.getElementById('editChannelBio').value = userData.bio || '';
-            document.getElementById('editChannelLinks').value = userData.links || '';
-            currentUser.milestones = userData.milestones || [];
+            if(!currentUserData) { showToast("Create a channel first", true); return; }
+            document.getElementById('editChannelName').value = currentUserData.displayName || '';
+            document.getElementById('editChannelBio').value = currentUserData.bio || '';
+            document.getElementById('editChannelLinks').value = currentUserData.links || '';
             renderMilestoneEditor();
             document.getElementById('customizeModal').style.display = 'flex';
         }
@@ -418,14 +436,14 @@
             const avatarFile = document.getElementById('editAvatarFile').files[0];
             const bannerFile = document.getElementById('editBannerFile').files[0];
             const updatedMilestones = [];
-            for(let i = 0; i < currentUser.milestones.length; i++) {
+            for(let i = 0; i < currentUserData.milestones.length; i++) {
                 const targetInput = document.getElementById(`milestoneTarget_${i}`);
                 const colorInput = document.getElementById(`milestoneColor_${i}`);
                 if(targetInput) {
                     updatedMilestones.push({
                         target: targetInput.value,
-                        achieved: currentUser.milestones[i]?.achieved || false,
-                        date: currentUser.milestones[i]?.date || null,
+                        achieved: currentUserData.milestones[i]?.achieved || false,
+                        date: currentUserData.milestones[i]?.date || null,
                         color: colorInput ? colorInput.value : '#fe2c55'
                     });
                 }
@@ -434,7 +452,8 @@
             closeCustomizeModal();
             showToast('Channel updated!');
             await loadAllUsers();
-            if(currentUser) renderChannelPage(currentUser.uid);
+            currentUserData = await getUserData(currentUser.uid);
+            if(currentUserData) renderChannelPage(currentUser.uid);
         }
         document.getElementById('saveChannelBtn')?.addEventListener('click', saveChannelChanges);
         document.getElementById('addMilestoneBtn')?.addEventListener('click', () => addMilestone());
@@ -443,10 +462,9 @@
             const file = document.getElementById('videoFile').files[0];
             const title = document.getElementById('videoTitle').value;
             const desc = document.getElementById('videoDesc').value;
-            if(!file || !title) { showToast("Title & video required"); return; }
-            if(!currentUser) { showToast("Login first"); return; }
-            const userData = await getUserData(currentUser.uid);
-            await publishVideoToFirestore(title, desc, file, currentUser.uid, userData.displayName, userData.photoURL);
+            if(!file || !title) { showToast("Title & video required", true); return; }
+            if(!currentUser || !currentUserData?.hasChannel) { showToast("Create a channel first to upload", true); return; }
+            await publishVideoToFirestore(title, desc, file, currentUser.uid, currentUserData.displayName, currentUserData.photoURL);
             document.getElementById('uploadModal').style.display = 'none';
             document.getElementById('videoTitle').value = '';
             document.getElementById('videoDesc').value = '';
@@ -465,15 +483,18 @@
 
         function updateNavbar() {
             const nav = document.getElementById('navButtons');
-            if(currentUser) {
-                const avatar = currentUser.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${currentUser.displayName?.charAt(0)}`;
+            if(currentUser && currentUserData) {
+                const avatar = currentUserData.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${currentUserData.displayName?.charAt(0)}`;
                 nav.innerHTML = `<button class="user-avatar-btn" onclick="toggleDropdown()"><img class="user-avatar" src="${avatar}"></button>
                     <div class="dropdown-menu" id="userDropdown">
-                        <div class="channel-info"><div class="channel-info-name">${escapeHtml(currentUser.displayName)}</div><div class="channel-info-email">${escapeHtml(currentUser.email)}</div></div>
+                        <div class="channel-preview">
+                            <div class="channel-preview-name">${escapeHtml(currentUserData.displayName)}</div>
+                            <div class="channel-preview-handle">@${currentUserData.username || currentUser.uid.substring(0,8)}</div>
+                        </div>
                         <div class="dropdown-divider"></div>
                         <div class="dropdown-item" onclick="navigateToChannel('${currentUser.uid}'); closeDropdown();"><i class="fas fa-id-card"></i> My Channel</div>
-                        <div class="dropdown-item" onclick="document.getElementById('uploadModal').style.display='flex'; closeDropdown();"><i class="fas fa-upload"></i> Upload Video</div>
-                        <div class="dropdown-item" onclick="openCustomizeModal(); closeDropdown();"><i class="fas fa-pen"></i> Customize</div>
+                        ${currentUserData.hasChannel ? `<div class="dropdown-item" onclick="document.getElementById('uploadModal').style.display='flex'; closeDropdown();"><i class="fas fa-upload"></i> Upload Video</div>
+                        <div class="dropdown-item" onclick="openCustomizeModal(); closeDropdown();"><i class="fas fa-pen"></i> Customize Channel</div>` : `<div class="dropdown-item" onclick="showCreateChannelModal(); closeDropdown();"><i class="fas fa-plus-circle"></i> Create Channel</div>`}
                         <div class="dropdown-divider"></div>
                         <div class="dropdown-item" onclick="signOutUser(); closeDropdown();"><i class="fas fa-sign-out-alt"></i> Logout</div>
                     </div>`;
@@ -484,9 +505,32 @@
             }
         }
 
+        function showCreateChannelModal() {
+            document.getElementById('createChannelModal').style.display = 'flex';
+        }
+        
+        async function createChannel() {
+            const channelName = document.getElementById('createChannelName').value;
+            const channelBio = document.getElementById('createChannelBio').value;
+            const avatarFile = document.getElementById('createAvatarFile').files[0];
+            
+            if(!channelName) { showToast("Channel name required", true); return; }
+            
+            await createUserChannel(currentUser, channelName, channelBio, avatarFile);
+            currentUserData = await getUserData(currentUser.uid);
+            document.getElementById('createChannelModal').style.display = 'none';
+            document.getElementById('createChannelName').value = '';
+            document.getElementById('createChannelBio').value = '';
+            document.getElementById('createAvatarFile').value = '';
+            updateNavbar();
+            showToast(`Channel "${channelName}" created!`);
+            renderChannelPage(currentUser.uid);
+        }
+
         async function signOutUser() {
             await signOut(auth);
             currentUser = null;
+            currentUserData = null;
             goToHome();
             updateNavbar();
             showToast("Logged out");
@@ -494,14 +538,19 @@
 
         async function handleAuthState(user) {
             if(user) {
-                await saveChannelToFirestore(user);
                 const userData = await getUserData(user.uid);
-                currentUser = { uid: user.uid, email: user.email, displayName: userData.displayName, photoURL: userData.photoURL, ...userData };
+                currentUser = user;
+                if(userData && userData.hasChannel) {
+                    currentUserData = userData;
+                } else {
+                    currentUserData = { uid: user.uid, email: user.email, displayName: user.displayName || user.email.split('@')[0], hasChannel: false };
+                }
                 updateNavbar();
                 await loadAllUsers();
                 await loadAllVideos();
             } else {
                 currentUser = null;
+                currentUserData = null;
                 updateNavbar();
                 await loadAllUsers();
                 await loadAllVideos();
@@ -511,7 +560,12 @@
         async function signInWithGoogle() {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
-                showToast(`Welcome ${result.user.displayName}!`);
+                const userData = await getUserData(result.user.uid);
+                if(!userData || !userData.hasChannel) {
+                    showToast(`Welcome ${result.user.displayName}! Create your channel to start posting.`);
+                } else {
+                    showToast(`Welcome back ${userData.displayName}!`);
+                }
                 document.getElementById('authModal').style.display = 'none';
             } catch(e) { showToast(e.message, true); }
         }
@@ -521,6 +575,8 @@
         window.navigateToChannel = navigateToChannel;
         window.toggleDropdown = toggleDropdown;
         window.openInfoPopup = openInfoPopup;
+        window.createChannel = createChannel;
+        window.closeCreateChannelModal = () => document.getElementById('createChannelModal').style.display = 'none';
         
         const searchInput = document.getElementById('globalSearchInput');
         const searchDropdown = document.getElementById('searchDropdown');
@@ -531,12 +587,12 @@
             if(query.startsWith('@')) {
                 const channelQuery = query.slice(1);
                 const matchedChannels = allUsers.filter(u => u.displayName?.toLowerCase().includes(channelQuery) || u.username?.toLowerCase().includes(channelQuery));
-                matchedChannels.forEach(ch => { results.push({ type: 'channel', data: ch, title: ch.displayName, subtitle: '@' + (ch.username || ch.uid), icon: ch.photoURL }); });
+                matchedChannels.forEach(ch => { results.push({ type: 'channel', data: ch, title: ch.displayName, subtitle: '@' + (ch.username || ch.uid.substring(0,8)), icon: ch.photoURL }); });
             } else {
                 const matchedVideos = allVideos.filter(v => v.title?.toLowerCase().includes(query) || v.channelName?.toLowerCase().includes(query));
                 matchedVideos.forEach(v => { results.push({ type: 'video', data: v, title: v.title, subtitle: 'Video by @' + v.channelName, icon: v.channelAvatar }); });
                 const matchedChannels = allUsers.filter(u => u.displayName?.toLowerCase().includes(query)).slice(0, 3);
-                matchedChannels.forEach(ch => { results.push({ type: 'channel', data: ch, title: ch.displayName, subtitle: '@' + (ch.username || ch.uid), icon: ch.photoURL }); });
+                matchedChannels.forEach(ch => { results.push({ type: 'channel', data: ch, title: ch.displayName, subtitle: '@' + (ch.username || ch.uid.substring(0,8)), icon: ch.photoURL }); });
             }
             results = results.slice(0, 8);
             if(results.length === 0) { searchDropdown.innerHTML = '<div class="search-result-item">No results found</div>'; searchDropdown.classList.add('show'); return; }
@@ -560,6 +616,7 @@
         document.getElementById('authLoginTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='block'; document.getElementById('signupPanel').style.display='none'; });
         document.getElementById('authSignupTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='none'; document.getElementById('signupPanel').style.display='block'; });
         document.getElementById('demoLoginBtn')?.addEventListener('click', signInWithGoogle);
+        document.getElementById('googleSignupBtn')?.addEventListener('click', signInWithGoogle);
 
         onAuthStateChanged(auth, handleAuthState);
         loadAllVideos();
@@ -581,7 +638,13 @@
 
 <div id="authModal" class="modal"><div class="modal-content"><h3><i class="fab fa-tiktok"></i> Join VertiFlow</h3><div style="display:flex;gap:12px;margin:20px 0;"><button id="authLoginTab" class="btn btn-primary" style="flex:1">Login</button><button id="authSignupTab" class="btn" style="flex:1;background:#2a2a2a">Sign Up</button></div>
 <div id="loginPanel"><input type="email" id="loginEmail" placeholder="Email"><input type="password" id="loginPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doLoginBtn">Login</button><button class="btn btn-google" style="width:100%;margin-top:12px;" id="demoLoginBtn"><i class="fab fa-google"></i> Sign in with Google</button></div>
-<div id="signupPanel" style="display:none"><input type="text" id="signupName" placeholder="Channel name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button><button class="btn btn-google" style="width:100%;margin-top:12px;" onclick="signInWithGoogle()"><i class="fab fa-google"></i> Sign up with Google</button></div></div></div>
+<div id="signupPanel" style="display:none"><input type="text" id="signupName" placeholder="Channel name"><input type="email" id="signupEmail" placeholder="Email"><input type="password" id="signupPass" placeholder="Password"><button class="btn btn-primary" style="width:100%" id="doSignupBtn">Create Account</button><button class="btn btn-google" style="width:100%;margin-top:12px;" id="googleSignupBtn"><i class="fab fa-google"></i> Sign up with Google</button></div></div></div>
+
+<div id="createChannelModal" class="modal"><div class="modal-content"><h3><i class="fas fa-plus-circle"></i> Create Your Channel</h3>
+<input type="text" id="createChannelName" placeholder="Channel Name (e.g., TechGuru)">
+<textarea id="createChannelBio" rows="3" placeholder="Tell us about your channel..."></textarea>
+<div><label>Profile Picture (optional)</label><input type="file" id="createAvatarFile" accept="image/*"></div>
+<div style="display:flex;gap:12px;margin-top:20px;"><button class="btn btn-outline" onclick="closeCreateChannelModal()">Cancel</button><button class="btn btn-primary" onclick="createChannel()"><i class="fas fa-rocket"></i> Create Channel</button></div></div></div>
 
 <div id="customizeModal" class="modal"><div class="modal-content"><h3><i class="fas fa-palette"></i> Customize Channel</h3>
 <input type="text" id="editChannelName" placeholder="Channel name"><textarea id="editChannelBio" rows="4" placeholder="Channel description"></textarea>
