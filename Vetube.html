@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>VertiFlow — Shorts & Videos</title>
+    <title>VertiFlow — Goals & Videos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
@@ -21,6 +21,9 @@
             --bg-elevated: #1a1a1a;
             --accent: #fe2c55;
             --accent-hover: #ff3b6f;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             --text-primary: #ffffff;
             --text-secondary: #aaaaaa;
             --border: #272727;
@@ -81,30 +84,11 @@
             align-items: center;
             gap: 8px;
         }
-        .btn-primary {
-            background: var(--accent);
-        }
-        .btn-primary:hover {
-            background: var(--accent-hover);
-            transform: scale(1.02);
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--accent);
-        }
-        .user-avatar-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-        }
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1.5px solid var(--accent);
-        }
+        .btn-primary { background: var(--accent); }
+        .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); }
+        .user-avatar-btn { background: transparent; border: none; cursor: pointer; padding: 0; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); }
 
         .dropdown-menu {
             position: absolute;
@@ -119,24 +103,9 @@
             display: none;
             overflow: hidden;
         }
-        .dropdown-menu.show {
-            display: block;
-            animation: fadeIn 0.2s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .dropdown-item {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-        }
+        .dropdown-menu.show { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .dropdown-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; color: var(--text-primary); font-size: 0.9rem; }
         .dropdown-item:hover { background: #2a2a2a; }
         .dropdown-item i { width: 20px; color: var(--accent); }
         .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
@@ -144,229 +113,125 @@
         .channel-info-name { font-weight: 600; margin-bottom: 4px; }
         .channel-info-email { font-size: 0.7rem; color: var(--text-secondary); }
 
-        .main-container {
-            margin-top: 65px;
-            height: calc(100vh - 65px);
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-        }
+        .main-container { margin-top: 65px; height: calc(100vh - 65px); overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         .video-feed { display: flex; flex-direction: column; }
-        .video-card {
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            height: calc(100vh - 65px);
-            position: relative;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+        .video-card { scroll-snap-align: start; scroll-snap-stop: always; height: calc(100vh - 65px); position: relative; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .video-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         .video-js { width: 100%; height: 100%; object-fit: cover; }
         .video-card.shorts .video-wrapper { max-width: 400px; margin: 0 auto; }
 
-        .video-overlay {
-            position: absolute;
-            bottom: 100px;
-            right: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 10;
-        }
-        .action-button {
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px);
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            cursor: pointer;
-            border: none;
-            color: white;
-            font-size: 0.7rem;
-        }
+        .video-overlay { position: absolute; bottom: 100px; right: 16px; display: flex; flex-direction: column; gap: 20px; z-index: 10; }
+        .action-button { background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); border-radius: 50%; width: 48px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; border: none; color: white; font-size: 0.7rem; }
         .action-button i { font-size: 1.5rem; }
-        .action-button:active { transform: scale(0.95); }
+        .video-info-overlay { position: absolute; bottom: 100px; left: 16px; right: 80px; z-index: 10; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .channel-name { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; cursor: pointer; }
+        .channel-avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid white; }
 
-        .video-info-overlay {
-            position: absolute;
-            bottom: 100px;
-            left: 16px;
-            right: 80px;
-            z-index: 10;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-        .channel-name {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-        .channel-avatar-small {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid white;
-        }
         .comments-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(18,18,18,0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 24px 24px 0 0;
-            max-height: 60vh;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            border-top: 1px solid var(--border);
+            position: fixed; bottom: 0; left: 0; right: 0; background: rgba(18,18,18,0.98); backdrop-filter: blur(20px);
+            border-radius: 24px 24px 0 0; max-height: 60vh; transform: translateY(100%); transition: transform 0.3s; z-index: 200;
+            display: flex; flex-direction: column; border-top: 1px solid var(--border);
         }
         .comments-panel.open { transform: translateY(0); }
-        .comments-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            font-weight: 600;
-        }
+        .comments-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
         .comments-list { flex: 1; overflow-y: auto; padding: 12px 16px; }
         .comment-item { display: flex; gap: 12px; margin-bottom: 16px; }
         .comment-content { flex: 1; }
         .comment-name { font-weight: 600; font-size: 0.85rem; }
         .comment-text { font-size: 0.85rem; color: #ddd; }
-        .add-comment-bar {
-            padding: 12px 16px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 12px;
-            background: var(--bg-elevated);
-        }
-        .add-comment-bar input {
-            flex: 1;
-            background: #2a2a2a;
-            border: none;
-            border-radius: 24px;
-            padding: 10px 16px;
-            color: white;
-        }
+        .add-comment-bar { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: var(--bg-elevated); }
+        .add-comment-bar input { flex: 1; background: #2a2a2a; border: none; border-radius: 24px; padding: 10px 16px; color: white; }
         .close-comments { background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.96);
-            z-index: 300;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: var(--bg-elevated);
-            border-radius: 24px;
-            max-width: 500px;
-            width: 90%;
-            padding: 28px;
-            border: 1px solid var(--border);
-        }
-        input, textarea {
-            width: 100%;
-            background: #2a2a2a;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            color: white;
-            margin-bottom: 16px;
-        }
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .step-dot {
-            width: 36px;
-            height: 36px;
-            border-radius: 36px;
-            background: #2a2a2a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .step-dot.active { background: var(--accent); }
-        .step-dot.completed { background: #10b981; }
-        .wizard-step { display: none; }
-        .wizard-step.active-step { display: block; }
-        .avatar-preview {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 12px auto;
-            display: block;
-            object-fit: cover;
-        }
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2a2a2a;
-            padding: 10px 20px;
-            border-radius: 40px;
-            z-index: 400;
-            font-size: 0.85rem;
-            border-left: 3px solid var(--accent);
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 300; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg-elevated); border-radius: 24px; max-width: 500px; width: 90%; padding: 28px; border: 1px solid var(--border); }
+        input, textarea { width: 100%; background: #2a2a2a; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: white; margin-bottom: 16px; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2a2a2a; padding: 10px 20px; border-radius: 40px; z-index: 400; font-size: 0.85rem; border-left: 3px solid var(--accent); }
 
-        /* Channel Page - YouTube Style */
-        .channel-page {
-            min-height: 100vh;
-            background: var(--bg-dark);
-            padding: 80px 20px 40px;
-        }
-        .channel-banner {
-            height: 180px;
-            background: linear-gradient(135deg, #1a1a3a, #0a0a1a);
-            border-radius: 20px;
-            margin-bottom: -60px;
-            position: relative;
-        }
-        .channel-avatar-large {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--bg-dark);
-            position: relative;
-            margin-left: 40px;
-        }
-        .channel-info-section {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 20px 40px;
-            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.5));
-        }
+        /* Channel Page - Goal Tracker */
+        .channel-page { min-height: 100vh; background: var(--bg-dark); padding: 80px 20px 40px; }
+        .channel-banner { height: 160px; background: linear-gradient(135deg, #1a1a3a, #0a0a1a); border-radius: 20px; margin-bottom: -60px; }
+        .channel-avatar-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-dark); margin-left: 40px; }
+        .channel-info-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; padding: 20px 40px; }
         .channel-title h1 { font-size: 1.8rem; margin-bottom: 4px; }
         .channel-handle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px; }
         .channel-stats { display: flex; gap: 24px; margin: 16px 0; flex-wrap: wrap; }
         .stat-badge { background: var(--bg-elevated); padding: 6px 16px; border-radius: 40px; font-size: 0.85rem; }
-        .channel-bio-card {
+
+        /* Goal Tracker Card */
+        .goal-card {
+            background: var(--bg-elevated);
+            border-radius: 20px;
+            margin: 20px 40px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .goal-header {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(254,44,85,0.1);
+            border-bottom: 1px solid var(--border);
+        }
+        .goal-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .goal-title i { color: var(--accent); }
+        .chevron { transition: transform 0.3s; }
+        .goal-content {
+            padding: 20px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        .goal-content.show { display: block; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .goal-milestone {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .milestone-left { display: flex; align-items: center; gap: 12px; }
+        .milestone-emoji { font-size: 1.3rem; }
+        .milestone-check { font-size: 1.2rem; }
+        .milestone-check.completed { color: var(--success); }
+        .milestone-check.pending { color: var(--warning); }
+        .milestone-date { font-size: 0.75rem; color: var(--text-secondary); }
+        .progress-bar-container {
+            background: #2a2a2a;
+            border-radius: 20px;
+            height: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, var(--accent), #ff6b35);
+            width: 0%;
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.5s;
+        }
+        .goal-footer {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .bio-card {
             background: var(--bg-elevated);
             border-radius: 20px;
             margin: 20px 40px;
@@ -380,72 +245,17 @@
             align-items: center;
             border-bottom: 1px solid var(--border);
         }
-        .bio-content {
-            padding: 20px;
-            line-height: 1.6;
-            display: none;
-        }
-        .bio-content.show {
-            display: block;
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .bio-links {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-        }
-        .bio-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--accent);
-            text-decoration: none;
-            margin: 8px 0;
-        }
-        .action-buttons-channel {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        .videos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin: 20px 40px;
-        }
-        .video-card-mini {
-            background: var(--bg-elevated);
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+        .bio-content { padding: 20px; display: none; line-height: 1.6; }
+        .bio-content.show { display: block; animation: slideDown 0.3s ease; }
+        .bio-links { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .bio-link { display: flex; align-items: center; gap: 8px; margin: 8px 0; color: var(--accent); text-decoration: none; }
+        
+        .action-buttons-channel { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+        .videos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 40px; }
+        .video-card-mini { background: var(--bg-elevated); border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
         .video-card-mini:hover { transform: translateY(-4px); }
         .video-card-mini video { width: 100%; height: 160px; object-fit: cover; }
-        .video-card-mini .video-info { padding: 12px; }
-        .upload-btn-floating {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: var(--accent);
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            z-index: 50;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-        }
-        .edit-modal input, .edit-modal textarea { margin-bottom: 12px; }
+        .upload-btn-floating { position: fixed; bottom: 80px; right: 20px; background: var(--accent); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 50; border: none; color: white; font-size: 1.5rem; }
     </style>
 </head>
 <body>
@@ -486,25 +296,25 @@
 <!-- Channel Wizard -->
 <div id="channelWizardModal" class="modal">
     <div class="modal-content">
-        <div class="step-indicator">
-            <div class="step-dot" id="step1Dot">1</div>
-            <div class="step-dot" id="step2Dot">2</div>
-            <div class="step-dot" id="step3Dot">3</div>
+        <div class="step-indicator" style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px;">
+            <div class="step-dot" style="width:36px;height:36px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;" id="step1Dot">1</div>
+            <div class="step-dot" id="step2Dot" style="width:36px;height:36px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;">2</div>
+            <div class="step-dot" id="step3Dot" style="width:36px;height:36px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;">3</div>
         </div>
-        <div id="wizardStep1" class="wizard-step active-step">
+        <div id="wizardStep1" class="wizard-step" style="display:block;">
             <h3>Create your channel</h3>
             <input type="text" id="channelName" placeholder="Channel name">
             <textarea id="channelBio" rows="2" placeholder="Bio"></textarea>
             <button class="btn btn-primary" id="wizardNext1">Continue →</button>
         </div>
-        <div id="wizardStep2" class="wizard-step">
+        <div id="wizardStep2" style="display:none;">
             <h3>Profile picture</h3>
-            <img class="avatar-preview" id="avatarPreviewImg" src="https://ui-avatars.com/api/?background=fe2c55&color=fff&name=U">
+            <img id="avatarPreviewImg" src="https://ui-avatars.com/api/?background=fe2c55&color=fff&name=U" style="width:80px;height:80px;border-radius:50%;margin:12px auto;display:block;">
             <input type="file" id="channelAvatarFile" accept="image/*">
             <button class="btn btn-outline" id="wizardBack2">Back</button>
             <button class="btn btn-primary" id="wizardNext2">Continue →</button>
         </div>
-        <div id="wizardStep3" class="wizard-step">
+        <div id="wizardStep3" style="display:none;">
             <h3>Ready to launch!</h3>
             <p>Your channel is almost ready!</p>
             <button class="btn btn-outline" id="wizardBack3">Back</button>
@@ -513,9 +323,9 @@
     </div>
 </div>
 
-<!-- Customize Channel Modal -->
+<!-- Customize Modal -->
 <div id="customizeModal" class="modal">
-    <div class="modal-content edit-modal">
+    <div class="modal-content">
         <h3>Customize Channel</h3>
         <input type="text" id="editChannelName" placeholder="Channel name">
         <textarea id="editChannelBio" rows="3" placeholder="Channel description"></textarea>
@@ -568,8 +378,6 @@
     function saveVideos() { localStorage.setItem('vf_videos', JSON.stringify(allVideos)); }
     function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2500); }
 
-    function getChannelUrl(user) { return `${window.location.origin}${window.location.pathname}#@${user.username || user.uid}`; }
-
     function login(email, pass) {
         const user = allUsers.find(u => u.email === email);
         if (user && pass && pass.length >= 3) { currentUser = { ...user }; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); return true; }
@@ -578,7 +386,22 @@
     function signup(name, email, pass) {
         if (allUsers.find(u => u.email === email)) { showToast("Email exists"); return false; }
         const username = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 100);
-        const newUser = { uid: 'user_' + Date.now(), displayName: name, email: email, username: username, bio: '', links: '', photoURL: null, createdAt: Date.now(), hasChannel: false, subscribers: [], totalViews: 0 };
+        const milestoneData = {
+            goalText: "Get me to 10k subs before the end of the month!",
+            milestones: [
+                { target: 1, achieved: true, date: new Date(Date.now() - 30*24*60*60*1000).toLocaleDateString() },
+                { target: 10, achieved: true, date: new Date(Date.now() - 25*24*60*60*1000).toLocaleDateString() },
+                { target: 100, achieved: true, date: new Date(Date.now() - 20*24*60*60*1000).toLocaleDateString() },
+                { target: 1000, achieved: true, date: "22 January 2026" },
+                { target: 10000, achieved: false, date: null }
+            ]
+        };
+        const newUser = { 
+            uid: 'user_' + Date.now(), displayName: name, email: email, username: username, 
+            bio: "Content creator sharing amazing videos! 🔥", links: "", photoURL: null, 
+            createdAt: Date.now(), hasChannel: false, subscribers: 0, totalViews: 0,
+            goalData: milestoneData
+        };
         allUsers.push(newUser); saveUsers(); currentUser = newUser; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); return true;
     }
     function logout() { currentUser = null; localStorage.removeItem('vf_currentUser'); closeDropdown(); goToHome(); updateNavbar(); showToast("Logged out"); }
@@ -611,9 +434,6 @@
         const videoUrl = URL.createObjectURL(file);
         const newVideo = { id: 'vid_' + Date.now(), videoId: 'vid_' + Date.now(), title, description: desc, userId: currentUser.uid, channelName: currentUser.displayName, channelAvatar: currentUser.photoURL, videoUrl, aspectRatio: aspect, createdAt: Date.now(), likes: [], comments: [], views: 0 };
         allVideos.unshift(newVideo); saveVideos();
-        // Update user total views
-        const userIdx = allUsers.findIndex(u => u.uid === currentUser.uid);
-        if(userIdx !== -1) { allUsers[userIdx].totalViews = (allUsers[userIdx].totalViews || 0) + 0; saveUsers(); }
         return true;
     }
 
@@ -625,7 +445,7 @@
         }
         const sorted = [...allVideos].sort((a,b) => b.createdAt - a.createdAt);
         if (sorted.length === 0) {
-            document.getElementById('feedContent').innerHTML = `<div class="empty-state" style="text-align:center; padding:80px;"><i class="fas fa-video" style="font-size:64px; opacity:0.5;"></i><h3>No videos yet</h3><button class="btn btn-primary" id="emptyUploadBtn">Upload First Video</button></div>`;
+            document.getElementById('feedContent').innerHTML = `<div style="text-align:center; padding:80px;"><i class="fas fa-video" style="font-size:64px; opacity:0.5;"></i><h3>No videos yet</h3><button class="btn btn-primary" id="emptyUploadBtn">Upload First Video</button></div>`;
             document.getElementById('emptyUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
             return;
         }
@@ -645,9 +465,6 @@
         html += `<button class="upload-btn-floating" id="floatingUploadBtn"><i class="fas fa-plus"></i></button></div>`;
         document.getElementById('feedContent').innerHTML = html;
         sorted.forEach(v => { const p = document.getElementById(`player-${v.videoId}`); if(p && !p.player) videojs(p, { controls: true, preload: 'metadata', fluid: true }); });
-        // scroll handling
-        const container = document.getElementById('mainContainer');
-        container.onscroll = () => { /* autoplay logic */ };
         document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(btn.dataset.id); renderFeed(); }));
         document.querySelectorAll('.comment-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); activeVideoId = btn.dataset.id; openComments(activeVideoId); }));
         document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
@@ -668,16 +485,36 @@
         if (!user) { goToHome(); return; }
         const userVideos = allVideos.filter(v => v.userId === uid);
         const totalViews = userVideos.reduce((sum, v) => sum + (v.views || 0), 0);
-        const subscriberCount = user.subscribers?.length || 0;
+        const subscriberCount = user.subscribers || 0;
         const joinDate = new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        const channelUrl = getChannelUrl(user);
+        const channelUrl = `${window.location.origin}${window.location.pathname}#@${user.username || user.uid}`;
         const isOwner = currentUser && currentUser.uid === uid;
+        const goal = user.goalData || { goalText: "Get me to 10k subs before the end of the month!", milestones: [{ target: 1, achieved: true, date: "1 Jan 2025" }, { target: 10, achieved: true, date: "5 Jan 2025" }, { target: 100, achieved: true, date: "10 Jan 2025" }, { target: 1000, achieved: true, date: "22 January 2026" }, { target: 10000, achieved: false, date: null }] };
+        const currentSubs = subscriberCount;
+        const nextMilestone = goal.milestones.find(m => !m.achieved);
+        const achievedCount = goal.milestones.filter(m => m.achieved).length;
+        const progressPercent = Math.min(100, (achievedCount / goal.milestones.length) * 100);
+        
+        let milestonesHtml = '';
+        goal.milestones.forEach(m => {
+            const isAchieved = m.achieved;
+            milestonesHtml += `<div class="goal-milestone">
+                <div class="milestone-left">
+                    <span class="milestone-emoji">${isAchieved ? '✅' : '🎯'}</span>
+                    <span><strong>${m.target.toLocaleString()} subs</strong></span>
+                </div>
+                <div class="milestone-right">
+                    <span class="milestone-check ${isAchieved ? 'completed' : 'pending'}">${isAchieved ? '✓ Completed' : '⏳ In Progress'}</span>
+                    ${m.date ? `<span class="milestone-date">${m.date}</span>` : ''}
+                </div>
+            </div>`;
+        });
         
         const html = `<div class="channel-page">
             <div class="channel-banner"></div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
                 <img class="channel-avatar-large" src="${user.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${user.displayName?.charAt(0)}`}">
-                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize Channel</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Manage Videos</button></div>` : '<button class="btn btn-primary"><i class="fas fa-bell"></i> Subscribe</button>'}
+                ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Manage Videos</button></div>` : '<button class="btn btn-primary" onclick="subscribeToChannel()"><i class="fas fa-bell"></i> Subscribe</button>'}
             </div>
             <div class="channel-info-section">
                 <div class="channel-title">
@@ -690,10 +527,26 @@
                     </div>
                 </div>
             </div>
-            <div class="channel-bio-card">
+            
+            <!-- Goal Tracker Card -->
+            <div class="goal-card">
+                <div class="goal-header" onclick="toggleGoal()">
+                    <div class="goal-title"><i class="fas fa-trophy"></i> ${escapeHtml(goal.goalText)}</div>
+                    <i class="fas fa-chevron-down chevron" id="goalChevron"></i>
+                </div>
+                <div class="goal-content" id="goalContent">
+                    <div class="progress-bar-container"><div class="progress-fill" style="width: ${progressPercent}%;"></div></div>
+                    <div style="font-size: 0.8rem; margin-bottom: 16px;">${achievedCount}/${goal.milestones.length} milestones completed</div>
+                    ${milestonesHtml}
+                    <div class="goal-footer"><i class="fas fa-heart" style="color: var(--accent);"></i> Help me reach 10k subs by the end of the month!</div>
+                </div>
+            </div>
+            
+            <!-- Description Card -->
+            <div class="bio-card">
                 <div class="bio-header" onclick="toggleBio()">
                     <span><i class="fas fa-info-circle"></i> Description</span>
-                    <i class="fas fa-chevron-down" id="bioChevron"></i>
+                    <i class="fas fa-chevron-down chevron" id="bioChevron"></i>
                 </div>
                 <div class="bio-content" id="bioContent">
                     <p>${escapeHtml(user.bio || 'No description yet.')}</p>
@@ -702,28 +555,38 @@
                         ${user.links ? user.links.split(',').map(l => `<div class="bio-link"><i class="fas fa-external-link-alt"></i> <a href="${l.trim()}" target="_blank">${l.trim()}</a></div>`).join('') : ''}
                         <div class="bio-link"><i class="fas fa-calendar-alt"></i> Joined ${joinDate}</div>
                     </div>
-                    ${isOwner ? `<button class="btn btn-outline" style="margin-top: 16px;" onclick="openCustomizeModal()"><i class="fas fa-edit"></i> Edit Description</button>` : ''}
                 </div>
             </div>
+            
             <div class="videos-grid">
                 ${userVideos.map(v => `<div class="video-card-mini" onclick="goToHome(); setTimeout(()=>{ const el = document.querySelector('.video-card[data-video-id="${v.id}"]'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100)">
                     <video src="${v.videoUrl}"></video>
-                    <div class="video-info"><strong>${escapeHtml(v.title)}</strong><div>❤️ ${v.likes?.length||0} 👁️ ${v.views||0}</div></div>
+                    <div class="video-info" style="padding:12px;"><strong>${escapeHtml(v.title)}</strong><div>❤️ ${v.likes?.length||0} 👁️ ${v.views||0}</div></div>
                 </div>`).join('')}
             </div>
-            ${userVideos.length === 0 ? '<div class="empty-state" style="text-align:center; padding:40px;">No videos uploaded yet</div>' : ''}
+            ${userVideos.length === 0 ? '<div style="text-align:center; padding:40px;">No videos uploaded yet</div>' : ''}
             <button class="btn btn-outline" onclick="goToHome()" style="display:block; margin:20px auto;">← Back to Home</button>
         </div>`;
         document.getElementById('feedContent').innerHTML = html;
         closeDropdown();
     }
 
+    function subscribeToChannel() { showToast("Subscribed! (Demo feature)"); }
+
+    function toggleGoal() {
+        const content = document.getElementById('goalContent');
+        const chevron = document.getElementById('goalChevron');
+        if(content) {
+            content.classList.toggle('show');
+            if(chevron) chevron.style.transform = content.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+    }
     function toggleBio() {
-        const bio = document.getElementById('bioContent');
+        const content = document.getElementById('bioContent');
         const chevron = document.getElementById('bioChevron');
-        if(bio) {
-            bio.classList.toggle('show');
-            if(chevron) chevron.style.transform = bio.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        if(content) {
+            content.classList.toggle('show');
+            if(chevron) chevron.style.transform = content.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
         }
     }
 
@@ -747,16 +610,11 @@
 
     function navigateToChannel(uid) { 
         const user = allUsers.find(u => u.uid === uid);
-        if(user) { 
-            const identifier = user.username || user.uid;
-            history.pushState(null, '', `#@${identifier}`);
-            renderChannelPage(uid);
-        }
+        if(user) { history.pushState(null, '', `#@${user.username || user.uid}`); renderChannelPage(uid); }
     }
     function goToHome() { history.pushState(null, '', window.location.pathname); renderFeed(); }
     function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-    // Dropdown & UI
     function toggleDropdown() { document.getElementById('userDropdown')?.classList.toggle('show'); }
     function closeDropdown() { document.getElementById('userDropdown')?.classList.remove('show'); }
     function updateNavbar() {
@@ -778,32 +636,36 @@
             document.getElementById('showAuthBtn')?.addEventListener('click', () => document.getElementById('authModal').style.display = 'flex'); }
     }
 
-    // Event binding
+    // Wizard
+    window.wizardData = {};
+    document.getElementById('wizardNext1')?.addEventListener('click', () => { const n = document.getElementById('channelName').value.trim(); if(!n) return; window.wizardData = { displayName: n, bio: document.getElementById('channelBio').value }; document.getElementById('wizardStep1').style.display='none'; document.getElementById('wizardStep2').style.display='block'; document.getElementById('step1Dot').style.background='#10b981'; document.getElementById('step2Dot').style.background='var(--accent)'; });
+    document.getElementById('wizardBack2')?.addEventListener('click', () => { document.getElementById('wizardStep2').style.display='none'; document.getElementById('wizardStep1').style.display='block'; });
+    document.getElementById('wizardNext2')?.addEventListener('click', () => { document.getElementById('wizardStep2').style.display='none'; document.getElementById('wizardStep3').style.display='block'; document.getElementById('step2Dot').style.background='#10b981'; document.getElementById('step3Dot').style.background='var(--accent)'; });
+    document.getElementById('wizardBack3')?.addEventListener('click', () => { document.getElementById('wizardStep3').style.display='none'; document.getElementById('wizardStep2').style.display='block'; });
+    document.getElementById('finishChannelBtn')?.addEventListener('click', async () => { const file = document.getElementById('channelAvatarFile').files[0]; await updateChannel(window.wizardData, file); document.getElementById('channelWizardModal').style.display = 'none'; goToHome(); updateNavbar(); showToast('Channel created!'); });
+    document.getElementById('channelAvatarFile')?.addEventListener('change', (e) => { if(e.target.files[0]) { const r = new FileReader(); r.onload = ev => document.getElementById('avatarPreviewImg').src = ev.target.result; r.readAsDataURL(e.target.files[0]); } });
+
     document.getElementById('authLoginTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='block'; document.getElementById('signupPanel').style.display='none'; });
     document.getElementById('authSignupTab')?.addEventListener('click', () => { document.getElementById('loginPanel').style.display='none'; document.getElementById('signupPanel').style.display='block'; });
     document.getElementById('doLoginBtn')?.addEventListener('click', () => { if(login(document.getElementById('loginEmail').value, document.getElementById('loginPass').value)) { document.getElementById('authModal').style.display='none'; goToHome(); updateNavbar(); } else showToast('Invalid'); });
     document.getElementById('demoLoginBtn')?.addEventListener('click', () => {
         let demo = allUsers.find(u => u.email === 'demo@vertiflow.com');
-        if(!demo) { demo = { uid: 'demo_user', displayName: 'VertiCreator', email: 'demo@vertiflow.com', username: 'verticreator', bio: 'Content creator sharing amazing videos!', links: 'https://example.com', photoURL: null, createdAt: Date.now(), hasChannel: true, subscribers: [], totalViews: 0 }; allUsers.push(demo); saveUsers(); }
-        currentUser = { ...demo }; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); document.getElementById('authModal').style.display='none'; goToHome(); updateNavbar(); showToast('Welcome!'); });
+        if(!demo) { 
+            const milestoneData = { goalText: "Get me to 10k subs before the end of the month!", milestones: [{ target: 1, achieved: true, date: "1 Dec 2025" }, { target: 10, achieved: true, date: "5 Dec 2025" }, { target: 100, achieved: true, date: "10 Dec 2025" }, { target: 1000, achieved: true, date: "22 January 2026" }, { target: 10000, achieved: false, date: null }] };
+            demo = { uid: 'demo_user', displayName: 'VertiCreator', email: 'demo@vertiflow.com', username: 'verticreator', bio: 'Content creator sharing amazing videos! 🔥 Join the journey to 10k!', links: 'https://example.com', photoURL: null, createdAt: Date.now() - 90*24*60*60*1000, hasChannel: true, subscribers: 1250, totalViews: 50000, goalData: milestoneData }; 
+            allUsers.push(demo); saveUsers(); 
+        }
+        currentUser = { ...demo }; localStorage.setItem('vf_currentUser', JSON.stringify(currentUser)); document.getElementById('authModal').style.display='none'; goToHome(); updateNavbar(); showToast('Welcome to VertiFlow!'); });
     document.getElementById('doSignupBtn')?.addEventListener('click', () => { if(signup(document.getElementById('signupName').value, document.getElementById('signupEmail').value, document.getElementById('signupPass').value)) { document.getElementById('authModal').style.display='none'; document.getElementById('channelWizardModal').style.display='flex'; updateNavbar(); } });
     document.getElementById('confirmUploadBtn')?.addEventListener('click', async () => { const f = document.getElementById('videoFile').files[0]; const t = document.getElementById('videoTitle').value; const d = document.getElementById('videoDesc').value; if(await publishVideo(t,d,f)) { document.getElementById('uploadModal').style.display='none'; renderFeed(); showToast('Published!'); } });
     window.closeUploadModal = () => document.getElementById('uploadModal').style.display = 'none';
     window.goToHome = goToHome;
     window.navigateToChannel = navigateToChannel;
     window.toggleDropdown = toggleDropdown;
+    window.toggleGoal = toggleGoal;
     window.toggleBio = toggleBio;
     window.openCustomizeModal = openCustomizeModal;
     window.closeCustomizeModal = closeCustomizeModal;
-
-    // Wizard
-    window.wizardData = {};
-    document.getElementById('wizardNext1')?.addEventListener('click', () => { const n = document.getElementById('channelName').value.trim(); if(!n) return; window.wizardData = { displayName: n, bio: document.getElementById('channelBio').value }; document.getElementById('wizardStep1').classList.remove('active-step'); document.getElementById('wizardStep2').classList.add('active-step'); document.getElementById('step1Dot').classList.add('completed'); document.getElementById('step2Dot').classList.add('active'); });
-    document.getElementById('wizardBack2')?.addEventListener('click', () => { document.getElementById('wizardStep2').classList.remove('active-step'); document.getElementById('wizardStep1').classList.add('active-step'); });
-    document.getElementById('wizardNext2')?.addEventListener('click', () => { document.getElementById('wizardStep2').classList.remove('active-step'); document.getElementById('wizardStep3').classList.add('active-step'); document.getElementById('step2Dot').classList.add('completed'); document.getElementById('step3Dot').classList.add('active'); });
-    document.getElementById('wizardBack3')?.addEventListener('click', () => { document.getElementById('wizardStep3').classList.remove('active-step'); document.getElementById('wizardStep2').classList.add('active-step'); });
-    document.getElementById('finishChannelBtn')?.addEventListener('click', async () => { const file = document.getElementById('channelAvatarFile').files[0]; await updateChannel(window.wizardData, file); document.getElementById('channelWizardModal').style.display = 'none'; goToHome(); updateNavbar(); showToast('Channel created!'); });
-    document.getElementById('channelAvatarFile')?.addEventListener('change', (e) => { if(e.target.files[0]) { const r = new FileReader(); r.onload = ev => document.getElementById('avatarPreviewImg').src = ev.target.result; r.readAsDataURL(e.target.files[0]); } });
 
     loadData();
     const saved = localStorage.getItem('vf_currentUser');
