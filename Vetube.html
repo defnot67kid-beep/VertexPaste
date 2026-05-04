@@ -116,6 +116,8 @@
         .upload-btn-floating { position: fixed; bottom: 80px; right: 20px; background: var(--accent); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 50; border: none; color: white; font-size: 1.5rem; }
         .milestone-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .milestone-item input { margin-bottom: 0; flex: 1; }
+        .subscribe-btn.subscribed { background: #1e293b; border: 1px solid var(--success); color: var(--success); }
+        .subscribe-btn.subscribed:hover { background: var(--danger); border-color: var(--danger); color: white; }
         @media (max-width: 768px) { .search-container { order: 3; width: 100%; max-width: none; margin-top: 8px; } .navbar-content { gap: 10px; } }
     </style>
     <script type="module">
@@ -155,13 +157,36 @@
         }
         function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
+        // --- Routing: Support #@channelname from URL ---
+        async function handleRouting() {
+            const hash = window.location.hash.slice(1);
+            if (hash.startsWith('@')) {
+                const usernameOrId = hash.slice(1);
+                // First try to find by username, then by uid
+                let channel = allUsers.find(u => u.hasChannel && u.username === usernameOrId);
+                if (!channel) {
+                    channel = allUsers.find(u => u.hasChannel && u.uid === usernameOrId);
+                }
+                if (channel) {
+                    await renderChannelPage(channel.uid);
+                    return true;
+                } else {
+                    showToast("Channel not found", true);
+                    goToHome();
+                    return false;
+                }
+            }
+            return false;
+        }
+
         async function loadAllVideos() {
             try {
                 const q = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
                 const snapshot = await getDocs(q);
                 allVideos = [];
                 snapshot.forEach(doc => { allVideos.push({ id: doc.id, ...doc.data() }); });
-                if (!handleRouting()) renderFeed();
+                const routed = await handleRouting();
+                if (!routed) renderFeed();
             } catch(e) { console.error('Error loading videos:', e); }
         }
 
@@ -170,7 +195,7 @@
                 const snapshot = await getDocs(collection(db, 'users'));
                 allUsers = [];
                 snapshot.forEach(doc => { allUsers.push({ uid: doc.id, ...doc.data() }); });
-                handleRouting();
+                await handleRouting();
             } catch(e) { console.error('Error loading users:', e); }
         }
 
@@ -202,7 +227,6 @@
                 createdAt: Timestamp.now(),
                 hasChannel: true,
                 subscribers: [],
-                subscriberCount: 0,
                 totalViews: 0,
                 milestones: [
                     { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
@@ -243,34 +267,6 @@
             if (bannerURL) updateData.bannerURL = bannerURL;
             
             await updateDoc(userRef, updateData);
-        }
-
-        async function toggleSubscribe(targetUserId) {
-            if (!currentUser) { showToast("Login to subscribe", true); return; }
-            if (currentUser.uid === targetUserId) { showToast("You cannot subscribe to yourself", true); return; }
-            
-            const targetRef = doc(db, 'users', targetUserId);
-            const targetDoc = await getDoc(targetRef);
-            const targetData = targetDoc.data();
-            const isSubscribed = targetData.subscribers?.includes(currentUser.uid) || false;
-            
-            if (isSubscribed) {
-                await updateDoc(targetRef, {
-                    subscribers: arrayRemove(currentUser.uid),
-                    subscriberCount: increment(-1)
-                });
-                showToast(`Unsubscribed from ${targetData.displayName}`);
-            } else {
-                await updateDoc(targetRef, {
-                    subscribers: arrayUnion(currentUser.uid),
-                    subscriberCount: increment(1)
-                });
-                showToast(`Subscribed to ${targetData.displayName}`);
-            }
-            
-            await loadAllUsers();
-            if (handleRouting()) return;
-            renderChannelPage(targetUserId);
         }
 
         async function publishVideoToFirestore(title, desc, file, userId, channelName, channelAvatar) {
@@ -374,12 +370,34 @@
         window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
         window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
 
+        async function toggleSubscribe(targetUid) {
+            if (!currentUser) { showToast("Login to subscribe", true); return; }
+            if (currentUser.uid === targetUid) { showToast("You can't subscribe to yourself", true); return; }
+            
+            const targetRef = doc(db, 'users', targetUid);
+            const targetDoc = await getDoc(targetRef);
+            const targetData = targetDoc.data();
+            
+            const isSubscribed = targetData.subscribers?.includes(currentUser.uid) || false;
+            
+            if (isSubscribed) {
+                await updateDoc(targetRef, { subscribers: arrayRemove(currentUser.uid) });
+                showToast("Unsubscribed");
+            } else {
+                await updateDoc(targetRef, { subscribers: arrayUnion(currentUser.uid) });
+                showToast("Subscribed!");
+            }
+            
+            // Refresh the channel page
+            await renderChannelPage(targetUid);
+        }
+
         async function renderChannelPage(uid) {
             const channel = await getUserChannel(uid);
             if (!channel) { showToast("Channel not found", true); goToHome(); return; }
             const channelVideos = allVideos.filter(v => v.userId === uid);
             const totalViews = channelVideos.reduce((sum, v) => sum + (v.views || 0), 0);
-            const subscriberCount = channel.subscriberCount || 0;
+            const subscriberCount = channel.subscribers?.length || 0;
             const isOwner = currentChannel && currentChannel.uid === uid;
             const isSubscribed = currentUser && channel.subscribers?.includes(currentUser.uid);
             const bannerStyle = channel.bannerURL ? `background-image: url('${channel.bannerURL}'); background-size: cover;` : 'background: linear-gradient(135deg, #1a1a3a, #0a0a1a);';
@@ -390,14 +408,17 @@
                 <div class="channel-banner" style="${bannerStyle}"></div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
                     <img class="channel-avatar-large" src="${channel.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${channel.displayName?.charAt(0)}`}">
-                    ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : `<button class="subscribe-btn ${isSubscribed ? 'subscribed' : ''}" style="background: ${isSubscribed ? '#1e293b' : 'var(--accent)'}; border: ${isSubscribed ? '1px solid var(--accent)' : 'none'}; padding: 8px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;" onclick="toggleSubscribe('${uid}')"><i class="fas ${isSubscribed ? 'fa-check' : 'fa-bell'}"></i> ${isSubscribed ? 'Subscribed' : 'Subscribe'}</button>`}
+                    ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : 
+                    `<button class="subscribe-btn ${isSubscribed ? 'subscribed' : ''}" onclick="toggleSubscribe('${uid}')">
+                        <i class="fas ${isSubscribed ? 'fa-check' : 'fa-bell'}"></i> ${isSubscribed ? 'Subscribed' : 'Subscribe'}
+                    </button>`}
                 </div>
                 <div class="channel-info-section">
                     <div class="channel-title">
                         <h1>${escapeHtml(channel.displayName)}</h1>
                         <div class="channel-handle">
                             @${escapeHtml(channel.username || channel.uid.substring(0,8))}
-                            <button class="copy-btn" style="padding:4px 12px; font-size:12px; background:#2a2a2a; border-radius:20px; cursor:pointer;" onclick="copyToClipboard('${channelUrl}')"><i class="fas fa-copy"></i> Copy link</button>
+                            <button class="copy-btn" style="padding:4px 12px; font-size:12px; background:#2a2a2a; border:none; border-radius:20px; cursor:pointer;" onclick="copyToClipboard('${channelUrl}')"><i class="fas fa-copy"></i> Copy link</button>
                         </div>
                         <div class="channel-stats">
                             <span class="stat-badge"><i class="fas fa-users"></i> ${subscriberCount} subscribers</span>
@@ -490,7 +511,7 @@
             }
             await updateChannelInFirestore(currentChannel.uid, { displayName: newName, bio: newBio, links: newLinks, milestones: updatedMilestones, milestoneGoalText: currentChannel.milestoneGoalText }, avatarFile, bannerFile);
             closeCustomizeModal();
-            showToast('Channel updated successfully!');
+            showToast('Channel updated!');
             await loadAllUsers();
             currentChannel = await getUserChannel(currentUser.uid);
             if(currentChannel) renderChannelPage(currentChannel.uid);
@@ -630,19 +651,6 @@
             } catch(e) { showToast(e.message, true); }
         }
 
-        function handleRouting() {
-            const hash = window.location.hash.slice(1);
-            if (hash.startsWith('@')) {
-                const usernameOrId = hash.slice(1);
-                const channel = allUsers.find(u => u.hasChannel && (u.username === usernameOrId || u.uid === usernameOrId));
-                if (channel) {
-                    renderChannelPage(channel.uid);
-                    return true;
-                }
-            }
-            return false;
-        }
-
         window.signInWithGoogle = signInWithGoogle;
         window.goToHome = goToHome;
         window.navigateToChannel = navigateToChannel;
@@ -651,6 +659,7 @@
         window.createChannel = createChannel;
         window.closeCreateChannelModal = () => document.getElementById('createChannelModal').style.display = 'none';
         
+        // Search: Support @channelname
         const searchInput = document.getElementById('globalSearchInput');
         const searchDropdown = document.getElementById('searchDropdown');
         function updateSearchResults() {
@@ -693,8 +702,9 @@
         document.getElementById('doLoginBtn')?.addEventListener('click', () => showToast("Use Google Sign In", true));
         document.getElementById('doSignupBtn')?.addEventListener('click', () => showToast("Use Google Sign Up", true));
 
-        window.addEventListener('hashchange', () => {
-            if (!handleRouting()) {
+        window.addEventListener('hashchange', async () => {
+            const routed = await handleRouting();
+            if (!routed) {
                 renderFeed();
             }
         });
