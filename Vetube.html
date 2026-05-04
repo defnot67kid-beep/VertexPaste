@@ -77,7 +77,7 @@
         .add-comment-bar input { flex: 1; background: #2a2a2a; border: none; border-radius: 24px; padding: 10px 16px; color: white; }
         .close-comments { background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
         
-        /* MODAL STYLES - FIXED */
+        /* MODAL STYLES */
         .modal { 
             display: none; 
             position: fixed; 
@@ -108,6 +108,57 @@
         
         input, textarea { width: 100%; background: #2a2a2a; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: white; margin-bottom: 16px; font-family: inherit; }
         input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        
+        /* Image upload area */
+        .image-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--darker);
+            margin-bottom: 16px;
+        }
+        .image-upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(254,44,85,0.1);
+        }
+        .image-upload-area i {
+            font-size: 32px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+            margin: 10px auto;
+            display: none;
+        }
+        .image-preview.show {
+            display: block;
+        }
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 10px;
+            display: none;
+        }
+        .upload-progress.active {
+            display: block;
+        }
+        .upload-progress-bar {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
         
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2a2a2a; padding: 12px 24px; border-radius: 40px; z-index: 2000; font-size: 0.9rem; border-left: 3px solid var(--accent); animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
@@ -152,6 +203,19 @@
         .loading-spinner { text-align: center; padding: 40px; }
         .loading-spinner i { font-size: 48px; color: var(--accent); animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .avatar-preview-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            display: none;
+            border: 2px solid var(--accent);
+        }
+        .avatar-preview-circle.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +234,7 @@
 </div>
 
 <!-- Auth Modal -->
-<div id="authModal" class="modal">
+<div id="authModal" class="modal" style="display: none;">
     <div class="modal-content">
         <h3><i class="fab fa-tiktok"></i> Join VertiFlow</h3>
         <div style="display:flex;gap:12px;margin:20px 0;">
@@ -193,16 +257,24 @@
     </div>
 </div>
 
-<!-- Create Channel Modal - FIXED with proper visibility -->
+<!-- Create Channel Modal with Cloudinary Upload -->
 <div id="createChannelModal" class="modal" style="display: none;">
     <div class="modal-content">
         <h3 style="margin-bottom: 20px;"><i class="fas fa-plus-circle"></i> Create Your Channel</h3>
+        
+        <div class="image-upload-area" onclick="document.getElementById('createAvatarFileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload profile picture</p>
+            <input type="file" id="createAvatarFileInput" accept="image/*" style="display: none;">
+        </div>
+        <div class="upload-progress" id="avatarUploadProgress">
+            <div class="upload-progress-bar"></div>
+        </div>
+        <img id="avatarPreview" class="avatar-preview-circle" src="" alt="Preview">
+        
         <input type="text" id="createChannelName" placeholder="Channel Name (e.g., TechGuru)" required>
         <textarea id="createChannelBio" rows="3" placeholder="Tell us about your channel..."></textarea>
-        <div style="margin-bottom: 16px;">
-            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);"><i class="fas fa-image"></i> Profile Picture (optional)</label>
-            <input type="file" id="createAvatarFile" accept="image/*" style="margin-bottom: 0;">
-        </div>
+        
         <div style="display:flex;gap:12px;margin-top:20px;">
             <button class="btn btn-outline" onclick="closeCreateChannelModal()">Cancel</button>
             <button class="btn btn-primary" id="confirmCreateChannelBtn"><i class="fas fa-rocket"></i> Create Channel</button>
@@ -290,10 +362,18 @@
     const storage = getStorage(app);
     const googleProvider = new GoogleAuthProvider();
 
+    // Cloudinary configuration (from the working portfolio script)
+    const CLOUDINARY_CONFIG = {
+        cloudName: 'dsv2sthkf',
+        uploadPreset: 'portfoliohub_uploads'
+    };
+
     let currentUser = null;
     let currentChannel = null;
     let allVideos = [];
     let allUsers = [];
+    let activeVideoId = null;
+    let pendingAvatarUrl = null;
 
     function showToast(msg, isError = false) { 
         const t = document.createElement('div'); 
@@ -307,6 +387,29 @@
     function escapeHtml(s) { 
         if(!s) return ''; 
         return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); 
+    }
+
+    // Cloudinary upload function
+    async function uploadImageToCloudinary(file, onProgress) {
+        if (!file) return null;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+        
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            return data.secure_url;
+        } catch (error) {
+            console.error('Upload error:', error);
+            showToast('Failed to upload image', true);
+            return null;
+        }
     }
 
     async function loadAllVideos() {
@@ -344,15 +447,8 @@
         }
     }
 
-    async function createUserChannel(uid, email, displayName, bio, avatarFile = null) {
+    async function createUserChannel(uid, email, displayName, bio, avatarUrl = null) {
         const username = displayName.toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 10000);
-        let photoURL = null;
-        
-        if (avatarFile) {
-            const avatarRef = ref(storage, `avatars/${uid}_${Date.now()}`);
-            await uploadBytes(avatarRef, avatarFile);
-            photoURL = await getDownloadURL(avatarRef);
-        }
         
         const channelData = {
             uid: uid,
@@ -361,7 +457,7 @@
             username: username,
             bio: bio || "Welcome to my channel! 🎉\n\nI create amazing content. Subscribe and follow along!",
             links: "",
-            photoURL: photoURL,
+            photoURL: avatarUrl,
             bannerURL: null,
             createdAt: Timestamp.now(),
             hasChannel: true,
@@ -379,7 +475,49 @@
         return channelData;
     }
 
-    // FIXED: Function to show create channel modal
+    // Setup avatar upload preview
+    function setupAvatarUpload() {
+        const avatarInput = document.getElementById('createAvatarFileInput');
+        const avatarPreview = document.getElementById('avatarPreview');
+        const progressBar = document.querySelector('#avatarUploadProgress .upload-progress-bar');
+        const progressContainer = document.getElementById('avatarUploadProgress');
+        
+        if (!avatarInput) return;
+        
+        avatarInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                avatarPreview.src = ev.target.result;
+                avatarPreview.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+            
+            // Show progress
+            progressContainer.classList.add('active');
+            progressBar.style.width = '50%';
+            
+            // Upload to Cloudinary
+            const imageUrl = await uploadImageToCloudinary(file);
+            
+            if (imageUrl) {
+                progressBar.style.width = '100%';
+                pendingAvatarUrl = imageUrl;
+                showToast('Avatar uploaded successfully!', false);
+            } else {
+                showToast('Avatar upload failed', true);
+            }
+            
+            setTimeout(() => {
+                progressContainer.classList.remove('active');
+                progressBar.style.width = '0%';
+            }, 500);
+        });
+    }
+
     function showCreateChannelModal() {
         if(!currentUser) {
             showToast("Please sign in first", true);
@@ -393,10 +531,18 @@
             // Clear previous values
             const nameInput = document.getElementById('createChannelName');
             const bioInput = document.getElementById('createChannelBio');
-            const avatarInput = document.getElementById('createAvatarFile');
+            const avatarInput = document.getElementById('createAvatarFileInput');
+            const avatarPreview = document.getElementById('avatarPreview');
+            
             if(nameInput) nameInput.value = '';
             if(bioInput) bioInput.value = '';
             if(avatarInput) avatarInput.value = '';
+            if(avatarPreview) {
+                avatarPreview.src = '';
+                avatarPreview.classList.remove('show');
+            }
+            
+            pendingAvatarUrl = null;
             
             // Show modal
             modal.style.display = 'flex';
@@ -431,15 +577,13 @@
         if(modal) modal.style.display = 'flex';
     }
 
-    // FIXED: Create channel function
     async function createChannel() {
         const channelNameInput = document.getElementById('createChannelName');
         const channelBioInput = document.getElementById('createChannelBio');
-        const avatarFileInput = document.getElementById('createAvatarFile');
         
         const channelName = channelNameInput ? channelNameInput.value.trim() : '';
         const channelBio = channelBioInput ? channelBioInput.value : '';
-        const avatarFile = avatarFileInput && avatarFileInput.files.length > 0 ? avatarFileInput.files[0] : null;
+        const avatarUrl = pendingAvatarUrl;
         
         if(!channelName) { 
             showToast("❌ Channel name is required!", true); 
@@ -457,7 +601,7 @@
         createBtn.disabled = true;
         
         try {
-            await createUserChannel(currentUser.uid, currentUser.email, channelName, channelBio, avatarFile);
+            await createUserChannel(currentUser.uid, currentUser.email, channelName, channelBio, avatarUrl);
             await new Promise(resolve => setTimeout(resolve, 1000));
             currentChannel = await getUserChannel(currentUser.uid);
             
@@ -523,6 +667,23 @@
         await loadAllVideos();
     }
 
+    async function addComment(videoId, text) {
+        if (!currentUser) { showToast("Login to comment", true); return; }
+        if (!currentChannel) { showToast("Create a channel first to comment", true); return; }
+        const videoRef = doc(db, 'videos', videoId);
+        const videoDoc = await getDoc(videoRef);
+        const video = videoDoc.data();
+        const comments = video.comments || [];
+        comments.push({
+            uid: currentUser.uid,
+            displayName: currentChannel.displayName,
+            text: text,
+            timestamp: new Date().toISOString()
+        });
+        await updateDoc(videoRef, { comments });
+        await loadAllVideos();
+    }
+
     function renderFeed() {
         if (!allVideos.length) {
             document.getElementById('feedContent').innerHTML = `<div style="text-align:center;padding:80px;"><i class="fas fa-video" style="font-size:64px;opacity:0.5;"></i><h3>No videos yet</h3>${currentChannel ? '<button class="btn btn-primary" onclick="document.getElementById(\'uploadModal\').style.display=\'flex\'">Upload First Video</button>' : (currentUser ? '<p style="color:var(--text-secondary);margin-top:16px;"><i class="fas fa-plus-circle"></i> Create a channel from your profile menu to start uploading!</p>' : '<button class="btn btn-primary" onclick="document.getElementById(\'authModal\').style.display=\'flex\'">Sign In to Upload</button>')}</div>`;
@@ -550,8 +711,20 @@
         document.getElementById('feedContent').innerHTML = html;
         allVideos.forEach(v => { const p = document.getElementById(`player-${v.videoId}`); if(p && !p.player) videojs(p, { controls: true, preload: 'metadata', fluid: true }); });
         document.querySelectorAll('.like-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); likeVideo(btn.dataset.id); }));
+        document.querySelectorAll('.comment-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); activeVideoId = btn.dataset.id; openComments(activeVideoId); }));
         if(currentChannel) document.getElementById('floatingUploadBtn')?.addEventListener('click', () => document.getElementById('uploadModal').style.display = 'flex');
     }
+
+    function openComments(videoId) {
+        const video = allVideos.find(v => v.id === videoId);
+        if(!video) return;
+        document.getElementById('commentsList').innerHTML = (video.comments || []).map(c => `<div class="comment-item"><div class="comment-content"><div class="comment-name" onclick="navigateToChannel('${c.uid}')">${escapeHtml(c.displayName)}</div><div class="comment-text">${escapeHtml(c.text)}</div></div></div>`).join('') || '<div style="text-align:center;">No comments</div>';
+        document.getElementById('commentsPanel').classList.add('open');
+        document.getElementById('postCommentBtn').onclick = () => { const inp = document.getElementById('commentInput'); if(inp.value.trim()) { addComment(videoId, inp.value); inp.value = ''; } };
+    }
+    
+    window.closeComments = () => document.getElementById('commentsPanel').classList.remove('open');
+    window.copyVideoLink = (id) => { navigator.clipboard.writeText(window.location.href); showToast('Link copied!'); };
 
     async function renderChannelPage(uid) {
         const channel = await getUserChannel(uid);
@@ -608,16 +781,6 @@
     function closeInfoPopup() {
         const modal = document.getElementById('infoPopupModal');
         if(modal) modal.style.display = 'none';
-    }
-    
-    function closeComments() {
-        const panel = document.getElementById('commentsPanel');
-        if(panel) panel.classList.remove('open');
-    }
-    
-    function copyVideoLink(id) {
-        navigator.clipboard.writeText(window.location.href);
-        showToast('Link copied!');
     }
 
     function updateNavbar() {
@@ -765,6 +928,9 @@
             if(e.target === modal) modal.style.display = 'none';
         });
     });
+
+    // Setup avatar upload
+    setupAvatarUpload();
 
     // Initialize
     onAuthStateChanged(auth, handleAuthState);
