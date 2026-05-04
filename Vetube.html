@@ -88,9 +88,6 @@
         .channel-handle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .channel-stats { display: flex; gap: 24px; margin: 16px 0; flex-wrap: wrap; }
         .stat-badge { background: var(--bg-elevated); padding: 6px 16px; border-radius: 40px; font-size: 0.85rem; }
-        .subscribe-btn { background: var(--accent); color: white; border: none; padding: 8px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
-        .subscribe-btn.subscribed { background: #2a2a2a; border: 1px solid var(--accent); color: var(--accent); }
-        .subscribe-btn:hover { transform: scale(1.02); }
         .description-normal { background: var(--bg-elevated); border-radius: 20px; margin: 20px 40px; padding: 20px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
         .description-normal:hover { background: #222; border-color: var(--accent); }
         .description-normal p { color: var(--text-secondary); line-height: 1.5; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -119,14 +116,14 @@
         .upload-btn-floating { position: fixed; bottom: 80px; right: 20px; background: var(--accent); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 50; border: none; color: white; font-size: 1.5rem; }
         .milestone-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .milestone-item input { margin-bottom: 0; flex: 1; }
-        .copy-btn { background: #2a2a2a; border: none; border-radius: 8px; padding: 4px 12px; color: white; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+        .copy-btn { background: #2a2a2a; border: none; border-radius: 8px; padding: 4px 12px; color: white; cursor: pointer; transition: all 0.2s; }
         .copy-btn:hover { background: var(--accent); }
         @media (max-width: 768px) { .search-container { order: 3; width: 100%; max-width: none; margin-top: 8px; } .navbar-content { gap: 10px; } }
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, where, updateDoc, arrayUnion, arrayRemove, increment, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, where, updateDoc, arrayUnion, arrayRemove, increment, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
@@ -220,7 +217,6 @@
                 createdAt: Timestamp.now(),
                 hasChannel: true,
                 subscribers: [],
-                subscriberCount: 0,
                 totalViews: 0,
                 milestones: [
                     { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
@@ -263,34 +259,26 @@
             await updateDoc(userRef, updateData);
         }
 
-        async function toggleSubscribe(targetChannelId) {
+        async function toggleSubscribe(targetUserId) {
             if (!currentUser) { showToast("Login to subscribe", true); return; }
-            if (!currentChannel) { showToast("Create a channel first", true); return; }
-            if (currentUser.uid === targetChannelId) { showToast("You can't subscribe to yourself", true); return; }
+            if (currentUser.uid === targetUserId) { showToast("You can't subscribe to yourself", true); return; }
             
-            const targetRef = doc(db, 'users', targetChannelId);
+            const targetRef = doc(db, 'users', targetUserId);
             const targetDoc = await getDoc(targetRef);
             const targetData = targetDoc.data();
-            
             const subscribers = targetData.subscribers || [];
             const isSubscribed = subscribers.includes(currentUser.uid);
             
             if (isSubscribed) {
-                await updateDoc(targetRef, {
-                    subscribers: arrayRemove(currentUser.uid),
-                    subscriberCount: increment(-1)
-                });
+                await updateDoc(targetRef, { subscribers: arrayRemove(currentUser.uid) });
                 showToast(`Unsubscribed from ${targetData.displayName}`);
             } else {
-                await updateDoc(targetRef, {
-                    subscribers: arrayUnion(currentUser.uid),
-                    subscriberCount: increment(1)
-                });
+                await updateDoc(targetRef, { subscribers: arrayUnion(currentUser.uid) });
                 showToast(`Subscribed to ${targetData.displayName}!`);
             }
             
             await loadAllUsers();
-            await renderChannelPage(targetChannelId);
+            renderChannelPage(targetUserId);
         }
 
         async function publishVideoToFirestore(title, desc, file, userId, channelName, channelAvatar) {
@@ -399,9 +387,10 @@
             if (!channel) { showToast("Channel not found", true); goToHome(); return; }
             const channelVideos = allVideos.filter(v => v.userId === uid);
             const totalViews = channelVideos.reduce((sum, v) => sum + (v.views || 0), 0);
-            const subscriberCount = channel.subscriberCount || channel.subscribers?.length || 0;
+            const subscribers = channel.subscribers || [];
+            const subscriberCount = subscribers.length;
             const isOwner = currentChannel && currentChannel.uid === uid;
-            const isSubscribed = currentUser && channel.subscribers?.includes(currentUser.uid);
+            const isSubscribed = currentUser && subscribers.includes(currentUser.uid);
             const bannerStyle = channel.bannerURL ? `background-image: url('${channel.bannerURL}'); background-size: cover;` : 'background: linear-gradient(135deg, #1a1a3a, #0a0a1a);';
             const bioPreview = channel.bio ? (channel.bio.length > 100 ? channel.bio.substring(0,100)+"..." : channel.bio) : "No description yet. Click to see full bio & milestones!";
             const channelUrl = `${window.location.origin}${window.location.pathname}#@${channel.username || channel.uid}`;
@@ -410,21 +399,9 @@
                 <div class="channel-banner" style="${bannerStyle}"></div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
                     <img class="channel-avatar-large" src="${channel.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${channel.displayName?.charAt(0)}`}">
-                    <div class="action-buttons-channel">
-                        ${isOwner ? `
-                            <button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button>
-                            <button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button>
-                        ` : (currentUser ? `
-                            <button class="subscribe-btn ${isSubscribed ? 'subscribed' : ''}" onclick="toggleSubscribe('${uid}')">
-                                <i class="fas ${isSubscribed ? 'fa-bell-slash' : 'fa-bell'}"></i>
-                                ${isSubscribed ? 'Unsubscribe' : 'Subscribe'}
-                            </button>
-                        ` : `
-                            <button class="subscribe-btn" onclick="document.getElementById('authModal').style.display='flex'">
-                                <i class="fas fa-bell"></i> Subscribe
-                            </button>
-                        `)}
-                    </div>
+                    ${!isOwner ? `<button class="btn ${isSubscribed ? 'btn-outline' : 'btn-primary'}" onclick="toggleSubscribe('${uid}')">
+                        <i class="fas ${isSubscribed ? 'fa-bell-slash' : 'fa-bell'}"></i> ${isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+                    </button>` : `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>`}
                 </div>
                 <div class="channel-info-section">
                     <div class="channel-title">
@@ -456,8 +433,6 @@
             closeDropdown();
         }
 
-        window.toggleSubscribe = toggleSubscribe;
-
         async function openInfoPopup(uid) {
             const channel = await getUserChannel(uid);
             if(!channel) return;
@@ -476,6 +451,7 @@
         }
         window.closeInfoPopup = () => document.getElementById('infoPopupModal').style.display = 'none';
         window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); showToast('Link copied!'); };
+        window.toggleSubscribe = toggleSubscribe;
 
         function renderMilestoneEditor() {
             const container = document.getElementById('milestonesList');
@@ -494,8 +470,6 @@
 
         async function openCustomizeModal() {
             if(!currentChannel) { showToast("Create a channel first", true); return; }
-            const freshChannel = await getUserChannel(currentChannel.uid);
-            if(freshChannel) currentChannel = freshChannel;
             document.getElementById('editChannelName').value = currentChannel.displayName || '';
             document.getElementById('editChannelBio').value = currentChannel.bio || '';
             document.getElementById('editChannelLinks').value = currentChannel.links || '';
@@ -506,15 +480,13 @@
         window.openCustomizeModal = openCustomizeModal;
 
         async function saveChannelChanges() {
-            if(!currentChannel) { showToast("No channel found", true); return; }
-            
+            if(!currentChannel) return;
             const newName = document.getElementById('editChannelName').value;
             const newBio = document.getElementById('editChannelBio').value;
             const newLinks = document.getElementById('editChannelLinks').value;
             const avatarFile = document.getElementById('editAvatarFile').files[0];
             const bannerFile = document.getElementById('editBannerFile').files[0];
             const updatedMilestones = [];
-            
             for(let i = 0; i < currentChannel.milestones.length; i++) {
                 const targetInput = document.getElementById(`milestoneTarget_${i}`);
                 const colorInput = document.getElementById(`milestoneColor_${i}`);
@@ -527,30 +499,13 @@
                     });
                 }
             }
-            
-            try {
-                await updateChannelInFirestore(currentChannel.uid, { 
-                    displayName: newName, 
-                    bio: newBio, 
-                    links: newLinks, 
-                    milestones: updatedMilestones, 
-                    milestoneGoalText: currentChannel.milestoneGoalText || "My Channel Goals 🎯" 
-                }, avatarFile, bannerFile);
-                
-                closeCustomizeModal();
-                showToast('Channel updated successfully!');
-                
-                document.getElementById('editAvatarFile').value = '';
-                document.getElementById('editBannerFile').value = '';
-                
-                await loadAllUsers();
-                currentChannel = await getUserChannel(currentUser.uid);
-                updateNavbar();
-                await renderChannelPage(currentChannel.uid);
-            } catch(error) {
-                console.error('Save error:', error);
-                showToast('Error saving channel: ' + error.message, true);
-            }
+            await updateChannelInFirestore(currentChannel.uid, { displayName: newName, bio: newBio, links: newLinks, milestones: updatedMilestones, milestoneGoalText: currentChannel.milestoneGoalText || "My Channel Goals 🎯" }, avatarFile, bannerFile);
+            closeCustomizeModal();
+            showToast('Channel updated successfully!');
+            await loadAllUsers();
+            currentChannel = await getUserChannel(currentUser.uid);
+            if(currentChannel) renderChannelPage(currentChannel.uid);
+            updateNavbar();
         }
         document.getElementById('saveChannelBtn')?.addEventListener('click', saveChannelChanges);
         document.getElementById('addMilestoneBtn')?.addEventListener('click', () => addMilestone());
@@ -693,7 +648,6 @@
         window.openInfoPopup = openInfoPopup;
         window.createChannel = createChannel;
         window.closeCreateChannelModal = () => document.getElementById('createChannelModal').style.display = 'none';
-        window.toggleSubscribe = toggleSubscribe;
         
         const searchInput = document.getElementById('globalSearchInput');
         const searchDropdown = document.getElementById('searchDropdown');
