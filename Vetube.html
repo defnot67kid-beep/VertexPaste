@@ -155,25 +155,6 @@
         }
         function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-        // --- Routing: Support #@channelname from URL ---
-        function handleRouting() {
-            const hash = window.location.hash.slice(1); // Remove #
-            if (hash.startsWith('@')) {
-                const usernameOrId = hash.slice(1);
-                // Find channel by username or uid
-                const channel = allUsers.find(u => u.hasChannel && (u.username === usernameOrId || u.uid === usernameOrId));
-                if (channel) {
-                    renderChannelPage(channel.uid);
-                    return true;
-                } else {
-                    showToast("Channel not found", true);
-                    goToHome();
-                    return false;
-                }
-            }
-            return false;
-        }
-
         async function loadAllVideos() {
             try {
                 const q = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
@@ -189,7 +170,7 @@
                 const snapshot = await getDocs(collection(db, 'users'));
                 allUsers = [];
                 snapshot.forEach(doc => { allUsers.push({ uid: doc.id, ...doc.data() }); });
-                handleRouting(); // Re-check routing after users loaded
+                handleRouting();
             } catch(e) { console.error('Error loading users:', e); }
         }
 
@@ -220,7 +201,8 @@
                 bannerURL: null,
                 createdAt: Timestamp.now(),
                 hasChannel: true,
-                subscribers: 0,
+                subscribers: [],
+                subscriberCount: 0,
                 totalViews: 0,
                 milestones: [
                     { target: "100 subscribers", achieved: false, date: null, color: "#10b981" },
@@ -261,6 +243,34 @@
             if (bannerURL) updateData.bannerURL = bannerURL;
             
             await updateDoc(userRef, updateData);
+        }
+
+        async function toggleSubscribe(targetUserId) {
+            if (!currentUser) { showToast("Login to subscribe", true); return; }
+            if (currentUser.uid === targetUserId) { showToast("You cannot subscribe to yourself", true); return; }
+            
+            const targetRef = doc(db, 'users', targetUserId);
+            const targetDoc = await getDoc(targetRef);
+            const targetData = targetDoc.data();
+            const isSubscribed = targetData.subscribers?.includes(currentUser.uid) || false;
+            
+            if (isSubscribed) {
+                await updateDoc(targetRef, {
+                    subscribers: arrayRemove(currentUser.uid),
+                    subscriberCount: increment(-1)
+                });
+                showToast(`Unsubscribed from ${targetData.displayName}`);
+            } else {
+                await updateDoc(targetRef, {
+                    subscribers: arrayUnion(currentUser.uid),
+                    subscriberCount: increment(1)
+                });
+                showToast(`Subscribed to ${targetData.displayName}`);
+            }
+            
+            await loadAllUsers();
+            if (handleRouting()) return;
+            renderChannelPage(targetUserId);
         }
 
         async function publishVideoToFirestore(title, desc, file, userId, channelName, channelAvatar) {
@@ -369,8 +379,9 @@
             if (!channel) { showToast("Channel not found", true); goToHome(); return; }
             const channelVideos = allVideos.filter(v => v.userId === uid);
             const totalViews = channelVideos.reduce((sum, v) => sum + (v.views || 0), 0);
-            const subscriberCount = channel.subscribers || 0;
+            const subscriberCount = channel.subscriberCount || 0;
             const isOwner = currentChannel && currentChannel.uid === uid;
+            const isSubscribed = currentUser && channel.subscribers?.includes(currentUser.uid);
             const bannerStyle = channel.bannerURL ? `background-image: url('${channel.bannerURL}'); background-size: cover;` : 'background: linear-gradient(135deg, #1a1a3a, #0a0a1a);';
             const bioPreview = channel.bio ? (channel.bio.length > 100 ? channel.bio.substring(0,100)+"..." : channel.bio) : "No description yet. Click to see full bio & milestones!";
             const channelUrl = `${window.location.origin}${window.location.pathname}#@${channel.username || channel.uid}`;
@@ -379,14 +390,14 @@
                 <div class="channel-banner" style="${bannerStyle}"></div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; flex-wrap: wrap;">
                     <img class="channel-avatar-large" src="${channel.photoURL || `https://ui-avatars.com/api/?background=fe2c55&color=fff&name=${channel.displayName?.charAt(0)}`}">
-                    ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : '<button class="btn btn-primary" onclick="showToast(\'Subscribed!\')"><i class="fas fa-bell"></i> Subscribe</button>'}
+                    ${isOwner ? `<div class="action-buttons-channel"><button class="btn btn-outline" onclick="openCustomizeModal()"><i class="fas fa-pen"></i> Customize</button><button class="btn btn-outline" onclick="document.getElementById('uploadModal').style.display='flex'"><i class="fas fa-video"></i> Upload</button></div>` : `<button class="subscribe-btn ${isSubscribed ? 'subscribed' : ''}" style="background: ${isSubscribed ? '#1e293b' : 'var(--accent)'}; border: ${isSubscribed ? '1px solid var(--accent)' : 'none'}; padding: 8px 24px; border-radius: 40px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;" onclick="toggleSubscribe('${uid}')"><i class="fas ${isSubscribed ? 'fa-check' : 'fa-bell'}"></i> ${isSubscribed ? 'Subscribed' : 'Subscribe'}</button>`}
                 </div>
                 <div class="channel-info-section">
                     <div class="channel-title">
                         <h1>${escapeHtml(channel.displayName)}</h1>
                         <div class="channel-handle">
                             @${escapeHtml(channel.username || channel.uid.substring(0,8))}
-                            <button class="copy-btn" style="padding:4px 12px; font-size:12px;" onclick="copyToClipboard('${channelUrl}')"><i class="fas fa-copy"></i> Copy link</button>
+                            <button class="copy-btn" style="padding:4px 12px; font-size:12px; background:#2a2a2a; border-radius:20px; cursor:pointer;" onclick="copyToClipboard('${channelUrl}')"><i class="fas fa-copy"></i> Copy link</button>
                         </div>
                         <div class="channel-stats">
                             <span class="stat-badge"><i class="fas fa-users"></i> ${subscriberCount} subscribers</span>
@@ -429,6 +440,7 @@
         }
         window.closeInfoPopup = () => document.getElementById('infoPopupModal').style.display = 'none';
         window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); showToast('Link copied!'); };
+        window.toggleSubscribe = toggleSubscribe;
 
         function renderMilestoneEditor() {
             const container = document.getElementById('milestonesList');
@@ -478,7 +490,7 @@
             }
             await updateChannelInFirestore(currentChannel.uid, { displayName: newName, bio: newBio, links: newLinks, milestones: updatedMilestones, milestoneGoalText: currentChannel.milestoneGoalText }, avatarFile, bannerFile);
             closeCustomizeModal();
-            showToast('Channel updated!');
+            showToast('Channel updated successfully!');
             await loadAllUsers();
             currentChannel = await getUserChannel(currentUser.uid);
             if(currentChannel) renderChannelPage(currentChannel.uid);
@@ -618,6 +630,19 @@
             } catch(e) { showToast(e.message, true); }
         }
 
+        function handleRouting() {
+            const hash = window.location.hash.slice(1);
+            if (hash.startsWith('@')) {
+                const usernameOrId = hash.slice(1);
+                const channel = allUsers.find(u => u.hasChannel && (u.username === usernameOrId || u.uid === usernameOrId));
+                if (channel) {
+                    renderChannelPage(channel.uid);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         window.signInWithGoogle = signInWithGoogle;
         window.goToHome = goToHome;
         window.navigateToChannel = navigateToChannel;
@@ -626,7 +651,6 @@
         window.createChannel = createChannel;
         window.closeCreateChannelModal = () => document.getElementById('createChannelModal').style.display = 'none';
         
-        // Search: Support @channelname
         const searchInput = document.getElementById('globalSearchInput');
         const searchDropdown = document.getElementById('searchDropdown');
         function updateSearchResults() {
