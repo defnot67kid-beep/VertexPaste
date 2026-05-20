@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stonks Sever · Trade Chat</title>
+    <title>Stonks Sever · Admin Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDKs (non-module, global) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,38 +19,13 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background: #0f0f13;
+            background: #0a0a0f;
             color: #e2e8f0;
             height: 100vh;
             overflow: hidden;
-            transition: background 0.2s;
         }
         
-        /* Themes */
-        body.theme-light {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-        body.theme-light .sidebar, body.theme-light .chat-area, body.theme-light .message {
-            background: white;
-            border-color: #e2e8f0;
-        }
-        body.theme-light .message-author { color: #1e293b; }
-        body.theme-light .message-text { color: #334155; }
-        body.theme-light .sidebar-header { background: #f8fafc; }
-        
-        body.theme-forest {
-            background: #0f2a1f;
-            color: #d1fae5;
-        }
-        body.theme-forest .sidebar, body.theme-forest .chat-area {
-            background: #1a3a2a;
-            border-color: #2d5a3b;
-        }
-        body.theme-forest .message { background: #1e4a2f; }
-        body.theme-forest .message-author { color: #a7f3d0; }
-        
-        /* Layout */
+        /* App Layout */
         .app {
             display: flex;
             height: 100vh;
@@ -64,15 +38,11 @@
             border-right: 1px solid #1f2937;
             display: flex;
             flex-direction: column;
-            backdrop-filter: blur(4px);
         }
         
         .sidebar-header {
             padding: 20px;
             border-bottom: 1px solid #1f2937;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .logo {
@@ -84,14 +54,13 @@
             color: transparent;
         }
         
-        .settings-icon {
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-        .settings-icon:hover {
-            background: #374151;
+        .admin-badge {
+            background: linear-gradient(135deg, #ef4444, #f59e0b);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+            color: white;
         }
         
         .user-profile {
@@ -100,58 +69,25 @@
             border-bottom: 1px solid #1f2937;
         }
         
-        .avatar-wrapper {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-        
         .avatar-img {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #fbbf24;
         }
         
-        .edit-avatar-icon {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            background: #fbbf24;
-            border-radius: 50%;
-            padding: 6px;
-            font-size: 12px;
-            color: #000;
-            cursor: pointer;
-        }
-        
         .user-name {
-            margin-top: 12px;
+            margin-top: 10px;
             font-weight: 600;
-        }
-        
-        .premium-badge {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #000;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 8px;
-        }
-        
-        .sidebar-nav {
-            flex: 1;
-            padding: 20px;
         }
         
         .nav-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 12px;
+            padding: 12px 16px;
+            margin: 4px 12px;
             border-radius: 12px;
             cursor: pointer;
             transition: 0.2s;
@@ -162,6 +98,7 @@
             color: #fbbf24;
         }
         
+        /* Main Chat Area */
         .chat-area {
             flex: 1;
             display: flex;
@@ -170,32 +107,22 @@
         }
         
         .chat-header {
-            padding: 20px;
+            padding: 16px 24px;
             border-bottom: 1px solid #1e293b;
-            background: rgba(0,0,0,0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .server-title {
-            font-weight: 700;
-            font-size: 1.2rem;
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         
-        .action-buttons button {
-            background: #1e293b;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 30px;
-            margin-left: 8px;
-            color: #fbbf24;
-            cursor: pointer;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .action-buttons button:hover {
-            background: #334155;
+        .channel-name {
+            font-size: 1.2rem;
+            font-weight: 600;
         }
         
         .messages-container {
@@ -204,47 +131,47 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
         
         .message {
             display: flex;
             gap: 12px;
             max-width: 85%;
-            animation: fadeIn 0.2s ease;
         }
         .message-avatar {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
         }
         .message-content {
             background: #1e293b;
-            padding: 10px 16px;
-            border-radius: 20px;
-            border-top-left-radius: 4px;
+            padding: 8px 14px;
+            border-radius: 18px;
         }
         .message-author {
             font-weight: 600;
-            font-size: 0.85rem;
-            margin-bottom: 4px;
+            font-size: 0.8rem;
             display: flex;
             gap: 8px;
             align-items: baseline;
         }
         .message-time {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #94a3b8;
-            font-weight: normal;
         }
         .message-text {
-            font-size: 0.95rem;
-            word-break: break-word;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        .system-message {
+            background: rgba(245, 158, 11, 0.2);
+            border-left: 3px solid #fbbf24;
         }
         
         .input-area {
-            padding: 20px;
+            padding: 16px 20px;
             border-top: 1px solid #1e293b;
             display: flex;
             gap: 12px;
@@ -254,29 +181,40 @@
             flex: 1;
             background: #1e293b;
             border: none;
-            padding: 14px 18px;
+            padding: 12px 18px;
             border-radius: 40px;
             color: white;
-            font-size: 0.95rem;
             outline: none;
         }
         .input-area button {
             background: #fbbf24;
             border: none;
-            padding: 0 28px;
+            padding: 0 24px;
             border-radius: 40px;
             font-weight: bold;
             cursor: pointer;
             color: #0f172a;
         }
         
+        /* Auth Overlay */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0f;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .auth-card {
-            max-width: 420px;
-            margin: auto;
-            text-align: center;
+            max-width: 400px;
             background: #1e293b;
             padding: 40px;
             border-radius: 32px;
+            text-align: center;
         }
         .auth-card button {
             background: #fbbf24;
@@ -284,11 +222,11 @@
             padding: 12px 32px;
             border-radius: 40px;
             font-weight: bold;
-            font-size: 1rem;
             cursor: pointer;
             margin-top: 20px;
         }
         
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -296,7 +234,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
@@ -315,10 +253,10 @@
             width: 100%;
             background: #0f172a;
             border: 1px solid #334155;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 10px;
+            border-radius: 10px;
             color: white;
-            margin: 12px 0;
+            margin: 10px 0;
         }
         .modal-buttons {
             display: flex;
@@ -335,6 +273,10 @@
             font-weight: bold;
             cursor: pointer;
         }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
         .hidden { display: none; }
         .toast {
             position: fixed;
@@ -342,151 +284,163 @@
             left: 50%;
             transform: translateX(-50%) translateY(70px);
             background: #1e293b;
-            color: white;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 40px;
             z-index: 1100;
             transition: 0.3s;
-            font-weight: 500;
-            border-left: 4px solid #fbbf24;
+            border-left: 3px solid #fbbf24;
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
-        .toast.success { background: #2e7d32; border-left-color: #a5d6a7; }
-        .toast.error { background: #c62828; }
-        .empty-chat {
-            text-align: center;
-            padding: 40px;
-            color: #94a3b8;
+        
+        .category-group {
+            margin: 15px 0;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        .category-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            padding: 8px 12px;
+            letter-spacing: 1px;
         }
-        .flex-center { display: flex; align-items: center; justify-content: center; height: 100%; }
-        .welcome-banner {
-            background: linear-gradient(135deg, #fbbf2410, #ef444410);
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            margin-left: 12px;
-        }
-        button.link-like {
-            background: none;
-            border: none;
-            color: #fbbf24;
-            cursor: pointer;
-        }
-        .auth-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #0f0f13;
-            z-index: 100;
+        .channel-item {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 10px;
+            padding: 8px 12px 8px 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        .channel-item:hover, .channel-item.active {
+            background: #1f2937;
+            color: #fbbf24;
+        }
+        .add-channel {
+            margin-left: auto;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .bot-tag {
+            background: #8b5cf6;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
     </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app">
     <!-- Sidebar -->
     <div class="sidebar" id="sidebarPanel" style="display: none;">
         <div class="sidebar-header">
             <div class="logo">📈 STONKS SEVER</div>
-            <div class="settings-icon" id="settingsIcon"><i class="fas fa-cog"></i></div>
         </div>
-        <div class="user-profile" id="userPanel">
-            <div class="avatar-wrapper" id="editAvatarBtn">
-                <img id="sidebarAvatarImg" class="avatar-img" src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="avatar">
-                <div class="edit-avatar-icon"><i class="fas fa-camera"></i></div>
-            </div>
-            <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
-            <div class="user-name" id="sidebarUserName">Stonks Member</div>
-            <div id="premiumBadge" class="premium-badge hidden">✨ PLUS MEMBER</div>
+        <div class="user-profile">
+            <img id="sidebarAvatar" class="avatar-img" src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff">
+            <div class="user-name" id="sidebarName">Loading...</div>
+            <div id="adminIndicator" class="admin-badge hidden">👑 ADMIN</div>
         </div>
-        <div class="sidebar-nav">
-            <div class="nav-item active"><i class="fas fa-chart-line"></i> Live Trading Chat</div>
-            <div class="nav-item" id="botMakerBtn"><i class="fas fa-robot"></i> Bot Studio</div>
-            <div class="nav-item" id="clearChatBtn"><i class="fas fa-trash"></i> Clear Local View</div>
+        <div style="flex:1; overflow-y: auto;" id="channelsList">
+            <!-- Channels will be loaded here -->
+        </div>
+        <div class="nav-item" id="adminPanelBtn" style="margin-top: auto; margin-bottom: 20px; background:#1f2937;">
+            <i class="fas fa-crown"></i> Admin Panel
+        </div>
+        <div class="nav-item" id="signOutBtnNav">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
         </div>
     </div>
 
-    <!-- Main chat -->
+    <!-- Main Chat -->
     <div class="chat-area" id="chatArea" style="display: none;">
         <div class="chat-header">
-            <div class="server-title">
-                <i class="fas fa-hashtag"></i> <span id="serverHeaderTitle">Stonks Sever</span>
-                <span class="welcome-banner" id="customWelcome">Welcome to the Stonks Sever! 📈</span>
+            <div class="channel-info">
+                <i class="fas fa-hashtag"></i>
+                <span class="channel-name" id="currentChannelName">general</span>
             </div>
-            <div class="action-buttons">
-                <button id="signOutBtn"><i class="fas fa-sign-out-alt"></i> Leave</button>
-            </div>
+            <button id="signOutBtnTop" style="background:#1e293b; border:none; padding:6px 16px; border-radius:20px; color:#fbbf24; cursor:pointer;">Exit</button>
         </div>
         <div class="messages-container" id="messagesContainer"></div>
         <div class="input-area">
-            <input type="text" id="messageInput" placeholder="Type /stonks, /moon, or custom bot commands...">
+            <input type="text" id="messageInput" placeholder="Type a message...">
             <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
         </div>
     </div>
 
-    <!-- Auth overlay -->
+    <!-- Auth Overlay -->
     <div id="authOverlay" class="auth-overlay">
         <div class="auth-card">
-            <i class="fas fa-chart-simple" style="font-size: 64px; color: #fbbf24; margin-bottom: 20px;"></i>
+            <i class="fas fa-chart-line" style="font-size: 64px; color: #fbbf24; margin-bottom: 20px;"></i>
             <h2>STONKS SEVER</h2>
-            <p style="margin: 16px 0">Sign in with Google to join the trading floor</p>
-            <button id="signInBtn"><i class="fab fa-google"></i> Continue with Google</button>
-            <p style="font-size: 0.7rem; margin-top: 20px;">🔥 Roblox-style profile + Cloudinary avatars</p>
+            <p style="margin: 16px 0">Sign in with Google</p>
+            <button id="signInBtn"><i class="fab fa-google"></i> Continue</button>
         </div>
     </div>
 </div>
 
-<!-- Settings Modal -->
-<div id="settingsModal" class="modal">
+<!-- ADMIN PANEL MODAL -->
+<div id="adminModal" class="modal">
+    <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+        <h2><i class="fas fa-crown"></i> Admin Control Panel</h2>
+        <p style="color:#fbbf24; margin-bottom:20px;">Manage Categories, Channels & Bots</p>
+        
+        <!-- Categories & Channels Section -->
+        <div style="background:#0f172a; padding:16px; border-radius:16px; margin-bottom:20px;">
+            <h3><i class="fas fa-folder"></i> Manage Categories</h3>
+            <div id="categoriesListAdmin" style="margin: 10px 0;"></div>
+            <div class="flex-between" style="margin-top:10px;">
+                <input type="text" id="newCategoryName" placeholder="New category name" style="flex:1; margin-right:10px;">
+                <button class="btn-gold" id="addCategoryBtn">+ Add Category</button>
+            </div>
+        </div>
+        
+        <div style="background:#0f172a; padding:16px; border-radius:16px; margin-bottom:20px;">
+            <h3><i class="fas fa-hashtag"></i> Add Channel to Category</h3>
+            <select id="categorySelect" style="width:100%; margin:10px 0;"></select>
+            <input type="text" id="newChannelName" placeholder="Channel name (e.g., announcements)" style="width:100%; margin:10px 0;">
+            <button class="btn-gold" id="addChannelBtn">+ Add Channel</button>
+        </div>
+        
+        <!-- Bot Management -->
+        <div style="background:#0f172a; padding:16px; border-radius:16px; margin-bottom:20px;">
+            <h3><i class="fas fa-robot"></i> Auto-Bot Manager</h3>
+            <p style="font-size:0.8rem; color:#9ca3af;">Bots can send scheduled notifications or auto-reply</p>
+            <div id="botsList" style="margin: 15px 0; max-height:200px; overflow-y:auto;"></div>
+            <button class="btn-gold" id="createBotBtn"><i class="fas fa-plus"></i> Create New Bot</button>
+        </div>
+        
+        <div class="modal-buttons">
+            <button id="closeAdminBtn" class="btn-danger">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create Bot Modal -->
+<div id="botModal" class="modal">
     <div class="modal-content">
-        <h3><i class="fas fa-server"></i> Server Management</h3>
-        <label>Server Name</label>
-        <input type="text" id="serverNameInput" placeholder="Server Name">
-        <label>Welcome Message</label>
-        <input type="text" id="welcomeMsgInput" placeholder="Welcome...">
-        <label>Theme</label>
-        <select id="themeSelect">
-            <option value="dark">Dark (Default)</option>
-            <option value="light">Light Mode</option>
-            <option value="forest">Forest Vibes</option>
+        <h3><i class="fas fa-code"></i> Create Auto-Bot</h3>
+        <input type="text" id="botName" placeholder="Bot Name (e.g., Announcement Bot)">
+        <select id="botType">
+            <option value="auto">Auto Message (sends every X minutes)</option>
+            <option value="command">Command Bot (responds to /command)</option>
         </select>
+        <textarea id="botMessage" rows="3" placeholder="Message to send / response text"></textarea>
+        <input type="number" id="botInterval" placeholder="Interval (minutes) - for auto type" value="5">
         <div class="modal-buttons">
-            <button class="btn-gold" id="saveSettings">Save Changes</button>
-            <button id="closeSettings" class="link-like">Cancel</button>
+            <button id="saveBotBtn" class="btn-gold">Save Bot</button>
+            <button id="closeBotModal" class="btn-danger">Cancel</button>
         </div>
     </div>
 </div>
 
-<!-- Bot Maker Modal -->
-<div id="botMakerModal" class="modal">
-    <div class="modal-content">
-        <h3><i class="fas fa-code"></i> Create Custom Bot Commands</h3>
-        <p style="font-size: 0.8rem;">Write JavaScript that returns a string for commands like <code>/diamond</code></p>
-        <textarea id="botCodeArea" rows="8" placeholder="// Example bot command handler
-function customBotCommand(msg) {
-    if (msg === '/diamond') return '💎 Diamond hands! 💎';
-    if (msg === '/hodl') return 'HODL forever! 🚀';
-    if (msg === '/stonks') return '📈 STONKS ONLY GO UP! 📈';
-    return null;
-}
-// Register the handler
-window.customBotHandler = customBotCommand;"></textarea>
-        <div class="modal-buttons">
-            <button class="btn-gold" id="saveBotCode">Deploy Bot</button>
-            <button id="closeBotMaker" class="link-like">Close</button>
-        </div>
-    </div>
-</div>
-
-<div id="toastMsg" class="toast">Message</div>
+<div id="toastMsg" class="toast">Toast</div>
 
 <script>
     // Firebase Config
@@ -499,19 +453,17 @@ window.customBotHandler = customBotCommand;"></textarea>
         appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
     };
     
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const storage = firebase.storage();
     
-    // Cloudinary config
-    const CLOUD_NAME = "dsv2sthkf";
-    const UPLOAD_PRESET = "stonks_avatar";
-    
-    // Global state
+    // Admin email
+    const ADMIN_EMAIL = "defnot67kid@gmail.com";
     let currentUser = null;
+    let isAdmin = false;
+    let currentChannelId = "general";
     let unsubscribeMessages = null;
+    let botIntervals = [];
     
     // Helper functions
     function escapeHtml(str) {
@@ -528,126 +480,88 @@ window.customBotHandler = customBotCommand;"></textarea>
     function showToast(msg, type = "info") {
         const toast = document.getElementById('toastMsg');
         toast.innerText = msg;
-        toast.className = `toast ${type}`;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
     
-    // Upload avatar to Cloudinary
-    async function uploadToCloudinary(file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', UPLOAD_PRESET);
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-            return data.secure_url;
-        } catch (err) {
-            console.error("Cloudinary error", err);
-            return null;
-        }
-    }
-    
-    // Update user profile picture
-    async function updateUserAvatar(file, userId) {
-        const url = await uploadToCloudinary(file);
-        if (url) {
-            const userRef = db.collection("users").doc(userId);
-            await userRef.update({ photoURL: url });
-            if (currentUser && currentUser.uid === userId) {
-                currentUser.photoURL = url;
-                document.getElementById('sidebarAvatarImg').src = url;
-            }
-            showToast("Avatar updated successfully!", "success");
+    // Load channels structure from Firestore
+    async function loadChannels() {
+        const docRef = db.collection("server").doc("structure");
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+            return docSnap.data();
         } else {
-            showToast("Upload failed", "error");
+            // Default structure
+            const defaultData = {
+                categories: [
+                    { name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }, { id: "announcements", name: "announcements" }] },
+                    { name: "TRADING", channels: [{ id: "stonks", name: "stonks" }, { id: "crypto", name: "crypto" }] }
+                ]
+            };
+            await docRef.set(defaultData);
+            return defaultData;
         }
     }
     
-    // Send message
-    async function sendMessage() {
-        if (!currentUser) { showToast("Sign in first", "error"); return; }
-        const input = document.getElementById('messageInput');
-        const text = input.value.trim();
-        if (!text) return;
-        
-        // Bot command handling
-        if (text.startsWith('/')) {
-            const handled = handleBotCommands(text);
-            if (handled) {
-                input.value = '';
-                return;
+    async function saveChannels(data) {
+        await db.collection("server").doc("structure").set(data);
+    }
+    
+    // Render sidebar channels
+    async function renderSidebar() {
+        const structure = await loadChannels();
+        const container = document.getElementById('channelsList');
+        if (!container) return;
+        let html = '';
+        for (const cat of structure.categories) {
+            html += `<div class="category-group"><div class="category-title">${escapeHtml(cat.name)}`;
+            if (isAdmin) html += `<span class="add-channel" onclick="openAdminPanel()"> <i class="fas fa-plus"></i></span>`;
+            html += `</div>`;
+            for (const ch of cat.channels) {
+                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}" data-channel-id="${ch.id}" data-channel-name="${ch.name}">
+                            <i class="fas fa-hashtag"></i> ${escapeHtml(ch.name)}
+                         </div>`;
             }
+            html += `</div>`;
         }
-        
-        try {
-            await db.collection("messages").add({
-                text: text,
-                uid: currentUser.uid,
-                displayName: currentUser.displayName,
-                photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=6366f1&color=fff`,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        container.innerHTML = html;
+        // attach click events
+        document.querySelectorAll('.channel-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const id = el.dataset.channelId;
+                const name = el.dataset.channelName;
+                if (id) switchChannel(id, name);
             });
-            input.value = '';
-            const container = document.getElementById('messagesContainer');
-            container.scrollTop = container.scrollHeight;
-        } catch(e) { 
-            console.error(e); 
-            showToast("Failed to send", "error"); 
-        }
+        });
     }
     
-    // Bot command handler
-    function handleBotCommands(text) {
-        const lower = text.toLowerCase();
-        if (lower === '/stonks') {
-            showToast("📈 STONKS ONLY GO UP! 📈", "info");
-            return true;
-        } else if (lower === '/moon') {
-            showToast("🌕 To the moon! 🚀", "success");
-            return true;
-        } else if (lower.startsWith('/echo ')) {
-            const msg = text.slice(6);
-            if (msg) showToast(`Echo: ${msg}`, "info");
-            return true;
-        } else if (lower === '/help') {
-            showToast("/stonks, /moon, /echo [msg], /clear", "info");
-            return true;
-        }
-        
-        // Custom bot handler
-        if (window.customBotHandler && typeof window.customBotHandler === 'function') {
-            const response = window.customBotHandler(text);
-            if (response && typeof response === 'string') {
-                showToast(response, "info");
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    // Subscribe to messages
-    function subscribeMessages() {
+    function switchChannel(channelId, channelName) {
         if (unsubscribeMessages) unsubscribeMessages();
-        unsubscribeMessages = db.collection("messages")
+        currentChannelId = channelId;
+        document.getElementById('currentChannelName').innerText = channelName;
+        loadMessagesForChannel(channelId);
+        renderSidebar(); // re-render to update active class
+    }
+    
+    function loadMessagesForChannel(channelId) {
+        const container = document.getElementById('messagesContainer');
+        container.innerHTML = '<div style="text-align:center; padding:40px;">Loading messages...</div>';
+        unsubscribeMessages = db.collection("channels").doc(channelId).collection("messages")
             .orderBy("createdAt", "asc")
-            .onSnapshot((snapshot) => {
-                const container = document.getElementById('messagesContainer');
-                if (!container) return;
+            .onSnapshot(snapshot => {
                 let html = '';
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const time = formatTime(data.createdAt);
                     const avatar = data.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.displayName || 'User')}&background=6366f1&color=fff`;
+                    const isSystem = data.isBot || data.displayName === 'System Bot';
                     html += `
-                        <div class="message">
+                        <div class="message ${isSystem ? 'system-message' : ''}">
                             <img src="${avatar}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=6366f1&color=fff'">
                             <div class="message-content">
                                 <div class="message-author">
-                                    ${escapeHtml(data.displayName || 'Unknown')}
+                                    ${escapeHtml(data.displayName || 'Anonymous')}
+                                    ${data.isBot ? '<span class="bot-tag">BOT</span>' : ''}
                                     <span class="message-time">${time}</span>
                                 </div>
                                 <div class="message-text">${escapeHtml(data.text)}</div>
@@ -655,240 +569,251 @@ window.customBotHandler = customBotCommand;"></textarea>
                         </div>
                     `;
                 });
-                if (html === '') html = '<div class="empty-chat"><i class="fas fa-comment-dots"></i> No messages yet. Start the convo!</div>';
+                if (html === '') html = '<div class="empty-chat"><i class="fas fa-comment-dots"></i> No messages in #' + escapeHtml(channelId) + '</div>';
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
             });
     }
     
-    // Update UI based on auth state
+    async function sendMessage() {
+        if (!currentUser) return;
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text) return;
+        try {
+            await db.collection("channels").doc(currentChannelId).collection("messages").add({
+                text: text,
+                uid: currentUser.uid,
+                displayName: currentUser.displayName,
+                photoURL: currentUser.photoURL,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                isBot: false
+            });
+            input.value = '';
+        } catch(e) { showToast("Failed", "error"); }
+    }
+    
+    // Bot: send notification to all users (global channel)
+    async function sendGlobalNotification(message, botName = "System Bot") {
+        const channels = await loadChannels();
+        for (const cat of channels.categories) {
+            for (const ch of cat.channels) {
+                await db.collection("channels").doc(ch.id).collection("messages").add({
+                    text: `🤖 **${botName}**: ${message}`,
+                    uid: "system_bot",
+                    displayName: botName,
+                    photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    isBot: true
+                });
+            }
+        }
+        showToast(`Notification sent by ${botName}`, "success");
+    }
+    
+    // Load bots from Firestore and start intervals
+    async function loadBots() {
+        botIntervals.forEach(clearInterval);
+        botIntervals = [];
+        const botsSnap = await db.collection("bots").get();
+        botsSnap.forEach(doc => {
+            const bot = doc.data();
+            if (bot.type === "auto" && bot.active !== false) {
+                const intervalId = setInterval(async () => {
+                    await sendGlobalNotification(bot.message, bot.name);
+                }, (bot.interval || 5) * 60 * 1000);
+                botIntervals.push(intervalId);
+            }
+        });
+    }
+    
+    async function createBot(name, type, message, interval) {
+        await db.collection("bots").add({
+            name: name,
+            type: type,
+            message: message,
+            interval: parseInt(interval) || 5,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            active: true
+        });
+        await loadBots();
+        showToast(`Bot "${name}" created`, "success");
+    }
+    
+    // Admin panel UI
+    async function openAdminPanel() {
+        if (!isAdmin) { showToast("Access denied", "error"); return; }
+        const modal = document.getElementById('adminModal');
+        const structure = await loadChannels();
+        // Render categories
+        const categoriesDiv = document.getElementById('categoriesListAdmin');
+        categoriesDiv.innerHTML = '';
+        structure.categories.forEach((cat, idx) => {
+            categoriesDiv.innerHTML += `
+                <div class="flex-between" style="background:#0f172a; padding:8px; margin:5px 0; border-radius:8px;">
+                    <span><i class="fas fa-folder"></i> ${escapeHtml(cat.name)}</span>
+                    <button class="btn-danger" style="padding:2px 10px;" onclick="deleteCategory(${idx})">Delete</button>
+                </div>
+            `;
+        });
+        // Populate category select
+        const catSelect = document.getElementById('categorySelect');
+        catSelect.innerHTML = '';
+        structure.categories.forEach((cat, idx) => {
+            catSelect.innerHTML += `<option value="${idx}">${escapeHtml(cat.name)}</option>`;
+        });
+        // Render bots list
+        const botsSnap = await db.collection("bots").get();
+        const botsDiv = document.getElementById('botsList');
+        botsDiv.innerHTML = '';
+        botsSnap.forEach(async (docSnap) => {
+            const b = docSnap.data();
+            botsDiv.innerHTML += `
+                <div class="flex-between" style="background:#0f172a; padding:8px; margin:5px 0; border-radius:8px;">
+                    <div><strong>${escapeHtml(b.name)}</strong><br><small>${b.type} | ${b.message.substring(0,30)}</small></div>
+                    <button class="btn-danger" onclick="deleteBot('${docSnap.id}')">Delete</button>
+                </div>
+            `;
+        });
+        modal.classList.add('active');
+    }
+    
+    window.deleteCategory = async (index) => {
+        const structure = await loadChannels();
+        structure.categories.splice(index, 1);
+        await saveChannels(structure);
+        await renderSidebar();
+        openAdminPanel();
+        showToast("Category deleted", "info");
+    };
+    
+    window.deleteBot = async (botId) => {
+        await db.collection("bots").doc(botId).delete();
+        await loadBots();
+        openAdminPanel();
+        showToast("Bot deleted", "info");
+    };
+    
+    // Add category
+    document.getElementById('addCategoryBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('newCategoryName').value.trim();
+        if (!name) return;
+        const structure = await loadChannels();
+        structure.categories.push({ name: name.toUpperCase(), channels: [] });
+        await saveChannels(structure);
+        await renderSidebar();
+        openAdminPanel();
+        document.getElementById('newCategoryName').value = '';
+        showToast("Category added", "success");
+    });
+    
+    document.getElementById('addChannelBtn')?.addEventListener('click', async () => {
+        const catIdx = parseInt(document.getElementById('categorySelect').value);
+        const chName = document.getElementById('newChannelName').value.trim();
+        if (!chName) return;
+        const structure = await loadChannels();
+        const newId = chName.toLowerCase().replace(/\s/g, '_') + Date.now();
+        structure.categories[catIdx].channels.push({ id: newId, name: chName });
+        await saveChannels(structure);
+        await renderSidebar();
+        openAdminPanel();
+        document.getElementById('newChannelName').value = '';
+        showToast("Channel added", "success");
+    });
+    
+    // Bot creation modal
+    let currentBotCallback = null;
+    document.getElementById('createBotBtn')?.addEventListener('click', () => {
+        document.getElementById('botModal').classList.add('active');
+    });
+    document.getElementById('saveBotBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('botName').value.trim();
+        const type = document.getElementById('botType').value;
+        const message = document.getElementById('botMessage').value.trim();
+        const interval = document.getElementById('botInterval').value;
+        if (!name || !message) { showToast("Fill all fields", "error"); return; }
+        await createBot(name, type, message, interval);
+        document.getElementById('botModal').classList.remove('active');
+        document.getElementById('botName').value = '';
+        document.getElementById('botMessage').value = '';
+        openAdminPanel();
+    });
+    document.getElementById('closeBotModal')?.addEventListener('click', () => {
+        document.getElementById('botModal').classList.remove('active');
+    });
+    document.getElementById('closeAdminBtn')?.addEventListener('click', () => {
+        document.getElementById('adminModal').classList.remove('active');
+    });
+    document.getElementById('adminPanelBtn')?.addEventListener('click', openAdminPanel);
+    
+    // Auth & UI
     function updateUI(user) {
         const authOverlay = document.getElementById('authOverlay');
         const sidebar = document.getElementById('sidebarPanel');
         const chatArea = document.getElementById('chatArea');
-        
         if (user) {
             authOverlay.style.display = 'none';
             sidebar.style.display = 'flex';
             chatArea.style.display = 'flex';
-            
-            document.getElementById('sidebarUserName').innerText = user.displayName || 'Trader';
-            const avatarUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=6366f1&color=fff`;
-            document.getElementById('sidebarAvatarImg').src = avatarUrl;
-            
-            // Ensure user document exists
-            const userRef = db.collection("users").doc(user.uid);
-            userRef.get().then(doc => {
-                if (!doc.exists) {
-                    userRef.set({
-                        displayName: user.displayName,
-                        email: user.email,
-                        photoURL: user.photoURL,
-                        createdAt: new Date()
-                    });
-                }
-            });
-            
-            subscribeMessages();
+            document.getElementById('sidebarName').innerText = user.displayName || user.email;
+            document.getElementById('sidebarAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=6366f1&color=fff`;
+            isAdmin = (user.email === ADMIN_EMAIL);
+            if (isAdmin) {
+                document.getElementById('adminIndicator').classList.remove('hidden');
+                document.getElementById('adminPanelBtn').style.display = 'flex';
+            } else {
+                document.getElementById('adminIndicator').classList.add('hidden');
+                document.getElementById('adminPanelBtn').style.display = 'none';
+            }
+            renderSidebar();
+            loadMessagesForChannel(currentChannelId);
+            loadBots();
         } else {
             authOverlay.style.display = 'flex';
             sidebar.style.display = 'none';
             chatArea.style.display = 'none';
-            if (unsubscribeMessages) {
-                unsubscribeMessages();
-                unsubscribeMessages = null;
-            }
+            if (unsubscribeMessages) unsubscribeMessages();
         }
     }
     
-    // Sign in with Google
+    // Sign In
     async function signIn() {
         const provider = new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
         try {
             const result = await auth.signInWithPopup(provider);
             currentUser = result.user;
             updateUI(currentUser);
-            showToast(`Welcome ${currentUser.displayName} 🚀`, "success");
-        } catch (error) {
-            console.error("Sign-in error:", error);
-            if (error.code === 'auth/popup-blocked') {
-                showToast("Popup blocked! Please allow popups for this site.", "error");
-            } else if (error.code === 'auth/unauthorized-domain') {
-                showToast("Domain not authorized. Please check Firebase console.", "error");
-            } else {
-                showToast("Sign-in failed: " + error.message, "error");
-            }
-        }
+            showToast(`Welcome ${currentUser.displayName}`, "success");
+        } catch(e) { showToast("Sign in failed", "error"); }
     }
     
-    // Sign out
     async function signOutUser() {
-        try {
-            await auth.signOut();
-            currentUser = null;
-            updateUI(null);
-            showToast("Signed out", "info");
-        } catch (error) {
-            showToast("Sign out failed", "error");
-        }
+        await auth.signOut();
+        updateUI(null);
+        showToast("Signed out", "info");
     }
     
-    // Settings functions
-    function openSettings() {
-        const modal = document.getElementById('settingsModal');
-        modal.classList.add('active');
-        document.getElementById('serverNameInput').value = localStorage.getItem('serverName') || 'Stonks Sever';
-        document.getElementById('welcomeMsgInput').value = localStorage.getItem('welcomeMsg') || 'Welcome to the Stonks Sever! 📈';
-        document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'dark';
-        applyTheme(localStorage.getItem('theme') || 'dark');
-    }
+    // Event Listeners
+    document.getElementById('signInBtn')?.addEventListener('click', signIn);
+    document.getElementById('signOutBtnNav')?.addEventListener('click', signOutUser);
+    document.getElementById('signOutBtnTop')?.addEventListener('click', signOutUser);
+    document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
+    document.getElementById('messageInput')?.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
     
-    function closeSettings() {
-        document.getElementById('settingsModal').classList.remove('active');
-    }
+    // Close modals on backdrop click
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+    });
     
-    function saveSettings() {
-        const serverName = document.getElementById('serverNameInput').value.trim();
-        const welcomeMsg = document.getElementById('welcomeMsgInput').value.trim();
-        const theme = document.getElementById('themeSelect').value;
-        if (serverName) localStorage.setItem('serverName', serverName);
-        if (welcomeMsg) localStorage.setItem('welcomeMsg', welcomeMsg);
-        localStorage.setItem('theme', theme);
-        document.getElementById('serverHeaderTitle').innerText = serverName || 'Stonks Sever';
-        const welcomeBanner = document.getElementById('customWelcome');
-        if (welcomeBanner) welcomeBanner.innerText = welcomeMsg || 'Welcome to the Stonks Sever! 📈';
-        applyTheme(theme);
-        closeSettings();
-        showToast("Server settings saved!", "success");
-    }
-    
-    function applyTheme(theme) {
-        if (theme === 'light') {
-            document.body.classList.add('theme-light');
-            document.body.classList.remove('theme-dark', 'theme-forest');
-        } else if (theme === 'forest') {
-            document.body.classList.add('theme-forest');
-            document.body.classList.remove('theme-light', 'theme-dark');
-        } else {
-            document.body.classList.remove('theme-light', 'theme-forest');
-            document.body.classList.add('theme-dark');
-        }
-    }
-    
-    // Bot maker functions
-    function openBotMaker() {
-        const modal = document.getElementById('botMakerModal');
-        modal.classList.add('active');
-        const saved = localStorage.getItem('customBotScript');
-        if (saved) {
-            document.getElementById('botCodeArea').value = saved;
-        }
-    }
-    
-    function closeBotMaker() {
-        document.getElementById('botMakerModal').classList.remove('active');
-    }
-    
-    function saveBotCode() {
-        const code = document.getElementById('botCodeArea').value;
-        try {
-            // Test the code
-            const testFunc = new Function(code);
-            testFunc();
-            if (window.customBotHandler && typeof window.customBotHandler === 'function') {
-                localStorage.setItem('customBotScript', code);
-                showToast("Bot script saved! Try /diamond or /hodl", "success");
-                closeBotMaker();
-            } else {
-                showToast("Code must define window.customBotHandler function", "error");
-            }
-        } catch(e) {
-            showToast("Invalid JavaScript code: " + e.message, "error");
-        }
-    }
-    
-    function initCustomBot() {
-        const saved = localStorage.getItem('customBotScript');
-        if (saved) {
-            try {
-                eval(saved);
-            } catch(e) { console.warn(e); }
-        }
-    }
-    
-    function clearLocalChat() {
-        const container = document.getElementById('messagesContainer');
-        if (container) {
-            container.innerHTML = '<div class="empty-chat"><i class="fas fa-comment-dots"></i> Chat cleared locally. Refresh to see history.</div>';
-            showToast("Chat cleared locally", "info");
-        }
-    }
-    
-    function setupAvatarUpload() {
-        const fileInput = document.getElementById('avatarFileInput');
-        const editBtn = document.getElementById('editAvatarBtn');
-        editBtn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', async (e) => {
-            if (e.target.files && e.target.files[0] && currentUser) {
-                const file = e.target.files[0];
-                await updateUserAvatar(file, currentUser.uid);
-                fileInput.value = '';
-            }
-        });
-    }
-    
-    // Auth state listener
     auth.onAuthStateChanged((user) => {
         currentUser = user;
         updateUI(user);
-        if (user) {
-            initCustomBot();
-        }
     });
     
-    // DOM event listeners after page load
-    document.addEventListener('DOMContentLoaded', () => {
-        // Apply saved theme
-        applyTheme(localStorage.getItem('theme') || 'dark');
-        
-        // Load saved server settings
-        const savedName = localStorage.getItem('serverName');
-        if (savedName) document.getElementById('serverHeaderTitle').innerText = savedName;
-        const savedWelcome = localStorage.getItem('welcomeMsg');
-        if (savedWelcome) document.getElementById('customWelcome').innerText = savedWelcome;
-        
-        // Auth buttons
-        document.getElementById('signInBtn').addEventListener('click', signIn);
-        document.getElementById('signOutBtn').addEventListener('click', signOutUser);
-        
-        // Chat buttons
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        document.getElementById('messageInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
-        
-        // Settings
-        document.getElementById('settingsIcon').addEventListener('click', openSettings);
-        document.getElementById('closeSettings').addEventListener('click', closeSettings);
-        document.getElementById('saveSettings').addEventListener('click', saveSettings);
-        
-        // Bot maker
-        document.getElementById('botMakerBtn').addEventListener('click', openBotMaker);
-        document.getElementById('closeBotMaker').addEventListener('click', closeBotMaker);
-        document.getElementById('saveBotCode').addEventListener('click', saveBotCode);
-        
-        // Clear chat
-        document.getElementById('clearChatBtn').addEventListener('click', clearLocalChat);
-        
-        // Avatar upload
-        setupAvatarUpload();
-        
-        // Close modals on overlay click
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.remove('active');
-            });
-        });
-    });
+    // Expose global for admin callbacks
+    window.openAdminPanel = openAdminPanel;
+    window.deleteCategory = deleteCategory;
+    window.deleteBot = deleteBot;
 </script>
 </body>
 </html>
