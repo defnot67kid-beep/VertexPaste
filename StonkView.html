@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stonks Sever · Custom Bot Studio with Embeds</title>
+    <title>Stonks Sever · Working Custom Bots with Embeds</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
@@ -93,22 +93,24 @@
         }
         .message-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .message-content { background: #1e293b; padding: 10px 16px; border-radius: 18px; }
-        .message-author { font-weight: 600; font-size: 0.8rem; display: flex; gap: 8px; align-items: baseline; }
-        .message-time { font-size: 0.65rem; color: #94a3b8; }
+        .message-author { font-weight: 600; font-size: 0.8rem; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+        .message-time { font-size: 0.65rem; color: #94a3b8; font-weight: normal; }
         .message-text { font-size: 0.9rem; margin-top: 4px; line-height: 1.5; white-space: pre-wrap; }
         .system-message { background: linear-gradient(135deg, #1e293b, #1a1f2e); border-left: 3px solid #fbbf24; }
-        .bot-tag { background: #8b5cf6; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; }
+        .bot-tag { background: #8b5cf6; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin-left: 8px; }
         .embed-card {
             background: #0f172a;
             border-radius: 12px;
             padding: 12px 16px;
             margin-top: 6px;
-            border-left: 4px solid #fbbf24;
+            border-left: 4px solid;
         }
-        .embed-title { font-weight: bold; color: #fbbf24; margin-bottom: 8px; font-size: 1rem; }
-        .embed-field { margin: 6px 0; font-size: 0.85rem; }
-        .embed-field strong { color: #fbbf24; }
-        .embed-description { color: #cbd5e1; margin: 8px 0; }
+        .embed-title { font-weight: bold; margin-bottom: 8px; font-size: 1rem; }
+        .embed-description { color: #cbd5e1; margin: 8px 0; line-height: 1.4; }
+        .embed-field { margin: 6px 0; font-size: 0.85rem; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .embed-field-name { font-weight: bold; min-width: 80px; }
+        .embed-field-value { color: #cbd5e1; }
+        .embed-footer { margin-top: 8px; font-size: 0.7rem; color: #6b7280; border-top: 1px solid #1f2937; padding-top: 6px; }
         .input-area {
             padding: 16px 20px;
             border-top: 1px solid #1e293b;
@@ -151,7 +153,7 @@
             border-radius: 24px;
             padding: 28px;
             width: 90%;
-            max-width: 800px;
+            max-width: 850px;
             max-height: 85vh;
             overflow-y: auto;
             border: 1px solid #fbbf24;
@@ -203,7 +205,7 @@
             margin-bottom: 10px;
             border-left: 3px solid #8b5cf6;
         }
-        .CodeMirror { height: 300px; border-radius: 12px; margin: 10px 0; }
+        .CodeMirror { height: 350px; border-radius: 12px; margin: 10px 0; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .channel-select-grid {
             display: flex;
@@ -221,6 +223,7 @@
             font-size: 0.8rem;
         }
         .channel-checkbox.selected { background: #fbbf24; color: #000; }
+        pre { margin: 0; white-space: pre-wrap; font-family: inherit; }
     </style>
 </head>
 <body>
@@ -245,7 +248,7 @@
         </div>
         <div class="messages-container" id="messagesContainer"></div>
         <div class="input-area">
-            <input type="text" id="messageInput" placeholder="Try /stonks, /help, or create custom bots!">
+            <input type="text" id="messageInput" placeholder="Try: /stonks, /moon, /help, /whoami, /ping">
             <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
         </div>
     </div>
@@ -263,13 +266,13 @@
 <div id="adminModal" class="modal">
     <div class="modal-content">
         <h2><i class="fas fa-crown"></i> Admin Studio</h2>
-        <div style="display: flex; gap: 10px; margin: 20px 0;">
+        <div style="display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap;">
             <button class="btn-gold" id="tabBotsBtn">🤖 Custom Bots (JS)</button>
             <button class="btn-purple" id="tabCategoriesBtn">📁 Categories</button>
         </div>
         
         <div id="botsTab">
-            <h3>Bot Scripts with Embed Support</h3>
+            <h3>Bot Scripts - Return EMBEDS or STRINGS</h3>
             <div id="botsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;"></div>
             <button class="btn-purple" id="createBotBtn">+ Create New Bot</button>
         </div>
@@ -290,36 +293,77 @@
 <!-- Bot Editor Modal -->
 <div id="botEditorModal" class="modal">
     <div class="modal-content">
-        <h3><i class="fas fa-code"></i> Create Custom Bot (JavaScript)</h3>
-        <input type="text" id="botName" placeholder="Bot Name">
+        <h3><i class="fas fa-code"></i> Create Custom Bot</h3>
+        <input type="text" id="botName" placeholder="Bot Name (e.g., Stonks Trader)">
         <label>Target Channels (empty = ALL channels):</label>
         <div id="channelSelector" class="channel-select-grid"></div>
-        <label>Bot Script - Return rich embed objects or strings:</label>
-        <textarea id="botScript" rows="10">// Example: Rich Stock Bot with Embed
+        <label>Bot Script - Return STRING or EMBED object:</label>
+        <textarea id="botScript" rows="12">// Example: Working Bot with Embeds!
 function onMessage(msg, author, userId, channelId) {
+    // STONKS command - returns a beautiful embed
     if (msg === '/stonks') {
         return {
             embed: {
-                title: "📈 STONKS MARKET",
+                title: "📈 STONKS MARKET LIVE",
+                description: "Real-time market data",
                 color: "#fbbf24",
                 fields: [
-                    { name: "STNK", value: "$142.50 🟢", inline: true },
-                    { name: "CRPT", value: "$87.30 🔴", inline: true },
-                    { name: "MOON", value: "$315.20 🟢", inline: true }
+                    { name: "🚀 STNK", value: "$142.50 (+12%)", inline: true },
+                    { name: "📉 CRPT", value: "$87.30 (-5%)", inline: true },
+                    { name: "🌙 MOON", value: "$315.20 (+8%)", inline: true },
+                    { name: "🐕 DOGE", value: "$0.52 (+25%)", inline: true },
+                    { name: "🎮 GME", value: "$28.40 (+3%)", inline: true }
                 ],
-                footer: "Market updates every 30s"
+                footer: "Prices update every 30 seconds"
             }
         };
     }
+    
+    // WHOAMI command
+    if (msg === '/whoami') {
+        return {
+            embed: {
+                title: "👤 User Profile",
+                color: "#8b5cf6",
+                fields: [
+                    { name: "Username", value: author, inline: true },
+                    { name: "User ID", value: userId, inline: true },
+                    { name: "Channel", value: channelId, inline: true }
+                ]
+            }
+        };
+    }
+    
+    // Simple text response
+    if (msg === '/ping') {
+        return "🏓 Pong! Bot is alive and responding!";
+    }
+    
+    // Help command
     if (msg === '/help') {
         return {
             embed: {
-                title: "🤖 Bot Commands",
-                description: "Available commands: /stonks, /moon, /portfolio",
-                color: "#8b5cf6"
+                title: "🤖 Available Commands",
+                description: "Here are all the commands you can use:",
+                color: "#fbbf24",
+                fields: [
+                    { name: "/stonks", value: "View live stock market", inline: true },
+                    { name: "/moon", value: "Moon prediction", inline: true },
+                    { name: "/whoami", value: "Your user info", inline: true },
+                    { name: "/ping", value: "Test bot response", inline: true },
+                    { name: "/help", value: "Show this menu", inline: true }
+                ]
             }
         };
     }
+    
+    // Moon command
+    if (msg === '/moon') {
+        const predictions = ["🌕 TO THE MOON! 🚀", "📈 Bullish pattern detected!", "🐻 Bear market, wait for dip", "💎 DIAMOND HANDS!"];
+        const random = predictions[Math.floor(Math.random() * predictions.length)];
+        return random;
+    }
+    
     return null;
 }</textarea>
         <div class="modal-buttons">
@@ -347,27 +391,49 @@ function onMessage(msg, author, userId, channelId) {
     
     const ADMIN_EMAIL = "defnot67kid@gmail.com";
     let currentUser = null, isAdmin = false, currentChannelId = "general", unsubscribeMessages = null;
-    let activeBots = []; // Store loaded bots
+    let activeBots = [];
     
-    function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+    function escapeHtml(s) { if(!s) return ''; return String(s).replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     function formatTime(ts) { if(!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
     function showToast(msg) { const t=document.getElementById('toastMsg'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
     
-    // Render embed from bot response
-    function renderEmbedResponse(response) {
-        if (typeof response === 'string') return response;
+    // CRITICAL FIX: Properly render embed responses
+    function renderBotResponse(response) {
+        if (!response) return null;
+        
+        // If it's a string, return as-is
+        if (typeof response === 'string') {
+            return response;
+        }
+        
+        // If it has an embed property
         if (response.embed) {
-            let html = `<div class="embed-card"><div class="embed-title">${escapeHtml(response.embed.title || '')}</div>`;
-            if (response.embed.description) html += `<div class="embed-description">${escapeHtml(response.embed.description)}</div>`;
-            if (response.embed.fields) {
-                for (const field of response.embed.fields) {
-                    html += `<div class="embed-field"><strong>${escapeHtml(field.name)}:</strong> ${escapeHtml(field.value)}</div>`;
+            const e = response.embed;
+            const borderColor = e.color || "#fbbf24";
+            let html = `<div class="embed-card" style="border-left-color: ${borderColor};">`;
+            
+            if (e.title) {
+                html += `<div class="embed-title" style="color: ${borderColor};">${escapeHtml(e.title)}</div>`;
+            }
+            if (e.description) {
+                html += `<div class="embed-description">${escapeHtml(e.description)}</div>`;
+            }
+            if (e.fields && e.fields.length) {
+                for (const field of e.fields) {
+                    html += `<div class="embed-field">
+                        <span class="embed-field-name" style="color: ${borderColor};">${escapeHtml(field.name)}:</span>
+                        <span class="embed-field-value">${escapeHtml(field.value)}</span>
+                    </div>`;
                 }
             }
-            if (response.embed.footer) html += `<div class="embed-field" style="margin-top:8px;font-size:0.7rem;">${escapeHtml(response.embed.footer)}</div>`;
+            if (e.footer) {
+                html += `<div class="embed-footer">${escapeHtml(e.footer)}</div>`;
+            }
             html += `</div>`;
             return html;
         }
+        
+        // Fallback
         return String(response);
     }
     
@@ -375,13 +441,20 @@ function onMessage(msg, author, userId, channelId) {
     async function executeBotScript(bot, msg, author, userId, channelId) {
         if (!bot.script) return null;
         try {
-            // Create a safe execution environment
-            const scriptFunc = new Function('msg', 'author', 'userId', 'channelId', bot.script + '; return typeof onMessage === "function" ? onMessage(msg, author, userId, channelId) : null;');
+            // Create function from script
+            const scriptFunc = new Function('msg', 'author', 'userId', 'channelId', 
+                bot.script + '\n return typeof onMessage === "function" ? onMessage(msg, author, userId, channelId) : null;');
             const result = await scriptFunc(msg, author, userId, channelId);
-            return result;
+            
+            if (result) {
+                // Convert to displayable format
+                const displayText = renderBotResponse(result);
+                return { text: displayText, isEmbed: typeof result !== 'string' };
+            }
+            return null;
         } catch(e) {
             console.error("Bot error:", e);
-            return { text: `❌ Bot error: ${e.message}` };
+            return { text: `❌ Bot error: ${e.message}`, isEmbed: false };
         }
     }
     
@@ -395,7 +468,7 @@ function onMessage(msg, author, userId, channelId) {
         console.log("Loaded bots:", activeBots.length);
     }
     
-    // Process message through all command bots
+    // Process message through all bots
     async function processBotCommands(msg, author, userId, channelId) {
         if (!msg.startsWith('/')) return null;
         
@@ -405,22 +478,21 @@ function onMessage(msg, author, userId, channelId) {
             
             const response = await executeBotScript(bot, msg, author, userId, channelId);
             if (response) {
-                const formattedResponse = renderEmbedResponse(response);
-                return { text: formattedResponse, displayName: bot.name };
+                return { text: response.text, displayName: bot.name, isEmbed: response.isEmbed };
             }
         }
         return null;
     }
     
     // Send message to channel
-    async function sendToChannel(channelId, text, displayName, isBot = true) {
+    async function sendToChannel(channelId, text, displayName, isEmbed = false) {
         await db.collection("channels").doc(channelId).collection("messages").add({
             text: text,
             displayName: displayName,
             photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             isBot: true,
-            isEmbed: text.includes('embed-card')
+            isEmbed: isEmbed
         });
     }
     
@@ -434,7 +506,7 @@ function onMessage(msg, author, userId, channelId) {
         // Check bot commands first
         const botResponse = await processBotCommands(msg, currentUser.displayName, currentUser.uid, currentChannelId);
         if (botResponse) {
-            await sendToChannel(currentChannelId, botResponse.text, botResponse.displayName, true);
+            await sendToChannel(currentChannelId, botResponse.text, botResponse.displayName, botResponse.isEmbed);
             input.value = '';
             return;
         }
@@ -514,7 +586,6 @@ function onMessage(msg, author, userId, channelId) {
         const modal = document.getElementById('adminModal');
         const struct = await loadChannels();
         
-        // Render categories
         const catsDiv = document.getElementById('categoriesListAdmin');
         catsDiv.innerHTML = '';
         struct.categories.forEach((cat, idx) => {
@@ -524,12 +595,11 @@ function onMessage(msg, author, userId, channelId) {
         catSelect.innerHTML = '';
         struct.categories.forEach((cat, idx) => { catSelect.innerHTML += `<option value="${idx}">${escapeHtml(cat.name)}</option>`; });
         
-        // Render bots list
         await loadBots();
         const botsDiv = document.getElementById('botsList');
         botsDiv.innerHTML = '';
         activeBots.forEach(bot => {
-            botsDiv.innerHTML += `<div class="bot-card"><div class="flex-between"><div><strong>🤖 ${escapeHtml(bot.name)}</strong><br><small>Channels: ${bot.channels?.join(', ') || 'ALL'}</small></div><button class="btn-danger" onclick="deleteBot('${bot.id}')">Delete</button></div><div style="font-size:0.7rem;color:#8b5cf6;">Custom JS Bot</div></div>`;
+            botsDiv.innerHTML += `<div class="bot-card"><div class="flex-between"><div><strong>🤖 ${escapeHtml(bot.name)}</strong><br><small>Channels: ${bot.channels?.length ? bot.channels.join(', ') : 'ALL'}</small></div><button class="btn-danger" onclick="deleteBot('${bot.id}')">Delete</button></div></div>`;
         });
         
         modal.classList.add('active');
@@ -580,24 +650,37 @@ function onMessage(msg, author, userId, channelId) {
     
     document.getElementById('createBotBtn')?.addEventListener('click', async () => {
         document.getElementById('botName').value = '';
-        document.getElementById('botScript').value = `// Example: Rich Embed Bot
+        document.getElementById('botScript').value = `// Example: Working Bot with Embeds!
 function onMessage(msg, author, userId, channelId) {
-    if (msg === '/hello') {
+    if (msg === '/stonks') {
         return {
             embed: {
-                title: "👋 Hello!",
-                description: \`Welcome \${author}!\`,
+                title: "📈 STONKS MARKET LIVE",
+                description: "Real-time market data",
                 color: "#fbbf24",
                 fields: [
-                    { name: "Status", value: "Online", inline: true },
-                    { name: "Role", value: "Trader", inline: true }
+                    { name: "🚀 STNK", value: "$142.50 (+12%)", inline: true },
+                    { name: "📉 CRPT", value: "$87.30 (-5%)", inline: true },
+                    { name: "🌙 MOON", value: "$315.20 (+8%)", inline: true }
+                ],
+                footer: "Prices update every 30 seconds"
+            }
+        };
+    }
+    if (msg === '/whoami') {
+        return {
+            embed: {
+                title: "👤 User Profile",
+                color: "#8b5cf6",
+                fields: [
+                    { name: "Username", value: author, inline: true },
+                    { name: "User ID", value: userId, inline: true }
                 ]
             }
         };
     }
-    if (msg === '/about') {
-        return "This is a custom bot response!";
-    }
+    if (msg === '/ping') return "🏓 Pong!";
+    if (msg === '/help') return "Commands: /stonks, /whoami, /ping, /moon";
     return null;
 }`;
         await populateChannelSelector([]);
@@ -615,7 +698,8 @@ function onMessage(msg, author, userId, channelId) {
         
         // Test the script
         try {
-            const testFunc = new Function('msg', 'author', 'userId', 'channelId', script + '; return typeof onMessage === "function" ? onMessage("/test", "Tester", "test", "general") : null;');
+            const testFunc = new Function('msg', 'author', 'userId', 'channelId', 
+                script + '\n return typeof onMessage === "function" ? onMessage("/ping", "Test", "test", "general") : null;');
             await testFunc();
         } catch(e) {
             showToast("Script error: " + e.message);
@@ -632,7 +716,7 @@ function onMessage(msg, author, userId, channelId) {
         await loadBots();
         document.getElementById('botEditorModal').classList.remove('active');
         openAdminPanel();
-        showToast(`Bot "${name}" created!`);
+        showToast(`Bot "${name}" created! Try /stonks`);
     });
     
     // Tab switching
@@ -678,13 +762,60 @@ function onMessage(msg, author, userId, channelId) {
     
     auth.onAuthStateChanged(user => { currentUser = user; updateUI(user); });
     
-    // Pre-populate with example bot
+    // Auto-create default bot if none exists
     setTimeout(async () => {
         const botsSnap = await db.collection("bots").get();
         if (botsSnap.empty && isAdmin) {
             await db.collection("bots").add({
-                name: "Stonks Bot",
+                name: "Stonks Trader",
                 script: `function onMessage(msg, author, userId, channelId) {
     if (msg === '/stonks') {
         return {
-            embed:
+            embed: {
+                title: "📈 STONKS MARKET",
+                description: "Live market data",
+                color: "#fbbf24",
+                fields: [
+                    { name: "STNK", value: "$142.50 🟢", inline: true },
+                    { name: "CRPT", value: "$87.30 🔴", inline: true },
+                    { name: "MOON", value: "$315.20 🟢", inline: true },
+                    { name: "DOGE", value: "$0.52 🟢", inline: true }
+                ],
+                footer: "Prices update every 30s"
+            }
+        };
+    }
+    if (msg === '/whoami') {
+        return {
+            embed: {
+                title: "👤 User Info",
+                color: "#8b5cf6",
+                fields: [
+                    { name: "Username", value: author, inline: true },
+                    { name: "User ID", value: userId, inline: true }
+                ]
+            }
+        };
+    }
+    if (msg === '/ping') return "🏓 Pong! Bot is working!";
+    if (msg === '/help') {
+        return {
+            embed: {
+                title: "🤖 Commands",
+                description: "Try: /stonks, /whoami, /ping",
+                color: "#fbbf24"
+            }
+        };
+    }
+    return null;
+}`,
+                channels: [],
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            await loadBots();
+            showToast("Default bot created! Try /stonks");
+        }
+    }, 2000);
+</script>
+</body>
+</html>
