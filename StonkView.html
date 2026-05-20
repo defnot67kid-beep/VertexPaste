@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stonks Sever · Advanced Bot Studio</title>
+    <title>Stonks Sever · Custom Bot Studio with Embeds</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
@@ -13,7 +13,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -86,14 +85,30 @@
             flex-direction: column;
             gap: 12px;
         }
-        .message { display: flex; gap: 12px; max-width: 85%; }
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 90%;
+            animation: fadeIn 0.2s ease;
+        }
         .message-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .message-content { background: #1e293b; padding: 8px 14px; border-radius: 18px; }
+        .message-content { background: #1e293b; padding: 10px 16px; border-radius: 18px; }
         .message-author { font-weight: 600; font-size: 0.8rem; display: flex; gap: 8px; align-items: baseline; }
         .message-time { font-size: 0.65rem; color: #94a3b8; }
-        .message-text { font-size: 0.9rem; margin-top: 4px; }
-        .system-message { background: rgba(245, 158, 11, 0.2); border-left: 3px solid #fbbf24; }
+        .message-text { font-size: 0.9rem; margin-top: 4px; line-height: 1.5; white-space: pre-wrap; }
+        .system-message { background: linear-gradient(135deg, #1e293b, #1a1f2e); border-left: 3px solid #fbbf24; }
         .bot-tag { background: #8b5cf6; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; }
+        .embed-card {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 6px;
+            border-left: 4px solid #fbbf24;
+        }
+        .embed-title { font-weight: bold; color: #fbbf24; margin-bottom: 8px; font-size: 1rem; }
+        .embed-field { margin: 6px 0; font-size: 0.85rem; }
+        .embed-field strong { color: #fbbf24; }
+        .embed-description { color: #cbd5e1; margin: 8px 0; }
         .input-area {
             padding: 16px 20px;
             border-top: 1px solid #1e293b;
@@ -154,7 +169,6 @@
         .btn-gold { background: #fbbf24; color: black; border: none; padding: 8px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         .btn-danger { background: #ef4444; color: white; }
         .btn-purple { background: #8b5cf6; color: white; }
-        .hidden { display: none; }
         .toast {
             position: fixed;
             bottom: 30px;
@@ -189,11 +203,8 @@
             margin-bottom: 10px;
             border-left: 3px solid #8b5cf6;
         }
-        .CodeMirror {
-            height: 250px;
-            border-radius: 12px;
-            margin: 10px 0;
-        }
+        .CodeMirror { height: 300px; border-radius: 12px; margin: 10px 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .channel-select-grid {
             display: flex;
             flex-wrap: wrap;
@@ -234,7 +245,7 @@
         </div>
         <div class="messages-container" id="messagesContainer"></div>
         <div class="input-area">
-            <input type="text" id="messageInput" placeholder="Type a message...">
+            <input type="text" id="messageInput" placeholder="Try /stonks, /help, or create custom bots!">
             <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
         </div>
     </div>
@@ -248,76 +259,71 @@
     </div>
 </div>
 
-<!-- Advanced Admin Modal -->
+<!-- Admin Modal -->
 <div id="adminModal" class="modal">
     <div class="modal-content">
-        <h2><i class="fas fa-crown"></i> Advanced Admin Studio</h2>
-        <div style="display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap;">
-            <button class="btn-gold" id="tabCategoriesBtn">📁 Categories & Channels</button>
-            <button class="btn-purple" id="tabBotsBtn">🤖 Advanced Bots</button>
-            <button class="btn-gold" id="tabModerationBtn">🛡️ Auto-Moderation</button>
+        <h2><i class="fas fa-crown"></i> Admin Studio</h2>
+        <div style="display: flex; gap: 10px; margin: 20px 0;">
+            <button class="btn-gold" id="tabBotsBtn">🤖 Custom Bots (JS)</button>
+            <button class="btn-purple" id="tabCategoriesBtn">📁 Categories</button>
         </div>
         
-        <!-- Tab 1: Categories -->
-        <div id="categoriesTab">
-            <h3>Manage Categories</h3>
-            <div id="categoriesListAdmin" style="margin: 10px 0;"></div>
-            <div class="flex-between"><input type="text" id="newCategoryName" placeholder="New category name" style="flex:1; margin-right:10px;"><button class="btn-gold" id="addCategoryBtn">+ Add</button></div>
-            <hr style="margin: 20px 0;">
-            <h3>Add Channel</h3>
-            <select id="categorySelect" style="width:100%"></select>
-            <input type="text" id="newChannelName" placeholder="Channel name"><button class="btn-gold" id="addChannelBtn" style="margin-top:10px;">+ Add Channel</button>
-        </div>
-        
-        <!-- Tab 2: Advanced Bots (JS/Python) -->
-        <div id="botsTab" style="display:none;">
-            <h3><i class="fas fa-robot"></i> Bot Studio (JS/Python)</h3>
+        <div id="botsTab">
+            <h3>Bot Scripts with Embed Support</h3>
             <div id="botsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;"></div>
             <button class="btn-purple" id="createBotBtn">+ Create New Bot</button>
         </div>
         
-        <!-- Tab 3: Auto-Moderation -->
-        <div id="moderationTab" style="display:none;">
-            <h3><i class="fas fa-shield-alt"></i> Auto-Moderation Rules</h3>
-            <div id="modRulesList"></div>
-            <div class="flex-between" style="margin-top: 20px;">
-                <input type="text" id="newBadWord" placeholder="Bad word to filter" style="flex:1;">
-                <button id="addBadWordBtn" class="btn-gold">Add Filter</button>
-            </div>
-            <button id="enableModerationBtn" class="btn-purple" style="margin-top:15px;">Enable Auto-Mod (Flag bad words)</button>
+        <div id="categoriesTab" style="display:none;">
+            <h3>Manage Categories & Channels</h3>
+            <div id="categoriesListAdmin"></div>
+            <div class="flex-between"><input type="text" id="newCategoryName" placeholder="New category"><button class="btn-gold" id="addCategoryBtn">+ Add</button></div>
+            <hr style="margin: 20px 0;">
+            <select id="categorySelect"></select>
+            <input type="text" id="newChannelName" placeholder="Channel name"><button class="btn-gold" id="addChannelBtn">+ Add Channel</button>
         </div>
         
         <div class="modal-buttons"><button id="closeAdminBtn" class="btn-danger">Close</button></div>
     </div>
 </div>
 
-<!-- Create/Edit Bot Modal -->
+<!-- Bot Editor Modal -->
 <div id="botEditorModal" class="modal">
     <div class="modal-content">
-        <h3><i class="fas fa-code"></i> Bot Configuration</h3>
+        <h3><i class="fas fa-code"></i> Create Custom Bot (JavaScript)</h3>
         <input type="text" id="botName" placeholder="Bot Name">
-        <select id="botLang">
-            <option value="javascript">JavaScript (Node-like)</option>
-            <option value="python">Python (via eval simulation)</option>
-        </select>
-        <label>Bot Type:</label>
-        <select id="botType">
-            <option value="command">Command Bot (responds to /cmd)</option>
-            <option value="auto">Auto Message (interval)</option>
-            <option value="mod">Moderation Bot (auto actions)</option>
-        </select>
-        <label>Target Channels (leave empty for ALL channels):</label>
+        <label>Target Channels (empty = ALL channels):</label>
         <div id="channelSelector" class="channel-select-grid"></div>
-        <label>Bot Script (JS or Python):</label>
-        <textarea id="botScript" rows="6" placeholder='// JavaScript example:
-// function onMessage(msg, author, channelId) { 
-//   if (msg === "/ping") return "Pong!";
-//   return null;
-// }
-// For auto type, use setInterval logic.'></textarea>
-        <input type="number" id="botInterval" placeholder="Interval (minutes) for auto type" value="5">
+        <label>Bot Script - Return rich embed objects or strings:</label>
+        <textarea id="botScript" rows="10">// Example: Rich Stock Bot with Embed
+function onMessage(msg, author, userId, channelId) {
+    if (msg === '/stonks') {
+        return {
+            embed: {
+                title: "📈 STONKS MARKET",
+                color: "#fbbf24",
+                fields: [
+                    { name: "STNK", value: "$142.50 🟢", inline: true },
+                    { name: "CRPT", value: "$87.30 🔴", inline: true },
+                    { name: "MOON", value: "$315.20 🟢", inline: true }
+                ],
+                footer: "Market updates every 30s"
+            }
+        };
+    }
+    if (msg === '/help') {
+        return {
+            embed: {
+                title: "🤖 Bot Commands",
+                description: "Available commands: /stonks, /moon, /portfolio",
+                color: "#8b5cf6"
+            }
+        };
+    }
+    return null;
+}</textarea>
         <div class="modal-buttons">
-            <button id="saveBotAdvancedBtn" class="btn-gold">Save Bot</button>
+            <button id="saveBotBtn" class="btn-gold">Save Bot</button>
             <button id="closeBotEditorBtn" class="btn-danger">Cancel</button>
         </div>
     </div>
@@ -326,6 +332,7 @@
 <div id="toastMsg" class="toast"></div>
 
 <script>
+    // Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
         authDomain: "vertexpaste.firebaseapp.com",
@@ -340,281 +347,344 @@
     
     const ADMIN_EMAIL = "defnot67kid@gmail.com";
     let currentUser = null, isAdmin = false, currentChannelId = "general", unsubscribeMessages = null;
-    let botIntervals = [], activeBots = [];
+    let activeBots = []; // Store loaded bots
     
     function escapeHtml(s) { if(!s) return ''; return s.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     function formatTime(ts) { if(!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
-    function showToast(msg, type="info") { const t=document.getElementById('toastMsg'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+    function showToast(msg) { const t=document.getElementById('toastMsg'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
     
+    // Render embed from bot response
+    function renderEmbedResponse(response) {
+        if (typeof response === 'string') return response;
+        if (response.embed) {
+            let html = `<div class="embed-card"><div class="embed-title">${escapeHtml(response.embed.title || '')}</div>`;
+            if (response.embed.description) html += `<div class="embed-description">${escapeHtml(response.embed.description)}</div>`;
+            if (response.embed.fields) {
+                for (const field of response.embed.fields) {
+                    html += `<div class="embed-field"><strong>${escapeHtml(field.name)}:</strong> ${escapeHtml(field.value)}</div>`;
+                }
+            }
+            if (response.embed.footer) html += `<div class="embed-field" style="margin-top:8px;font-size:0.7rem;">${escapeHtml(response.embed.footer)}</div>`;
+            html += `</div>`;
+            return html;
+        }
+        return String(response);
+    }
+    
+    // Execute bot script safely
+    async function executeBotScript(bot, msg, author, userId, channelId) {
+        if (!bot.script) return null;
+        try {
+            // Create a safe execution environment
+            const scriptFunc = new Function('msg', 'author', 'userId', 'channelId', bot.script + '; return typeof onMessage === "function" ? onMessage(msg, author, userId, channelId) : null;');
+            const result = await scriptFunc(msg, author, userId, channelId);
+            return result;
+        } catch(e) {
+            console.error("Bot error:", e);
+            return { text: `❌ Bot error: ${e.message}` };
+        }
+    }
+    
+    // Load bots from Firestore
+    async function loadBots() {
+        const botsSnap = await db.collection("bots").get();
+        activeBots = [];
+        botsSnap.forEach(doc => {
+            activeBots.push({ id: doc.id, ...doc.data() });
+        });
+        console.log("Loaded bots:", activeBots.length);
+    }
+    
+    // Process message through all command bots
+    async function processBotCommands(msg, author, userId, channelId) {
+        if (!msg.startsWith('/')) return null;
+        
+        for (const bot of activeBots) {
+            const targetChannels = bot.channels || [];
+            if (targetChannels.length > 0 && !targetChannels.includes(channelId)) continue;
+            
+            const response = await executeBotScript(bot, msg, author, userId, channelId);
+            if (response) {
+                const formattedResponse = renderEmbedResponse(response);
+                return { text: formattedResponse, displayName: bot.name };
+            }
+        }
+        return null;
+    }
+    
+    // Send message to channel
+    async function sendToChannel(channelId, text, displayName, isBot = true) {
+        await db.collection("channels").doc(channelId).collection("messages").add({
+            text: text,
+            displayName: displayName,
+            photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            isBot: true,
+            isEmbed: text.includes('embed-card')
+        });
+    }
+    
+    // User send message handler
+    async function sendUserMessage() {
+        if (!currentUser) return;
+        const input = document.getElementById('messageInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        
+        // Check bot commands first
+        const botResponse = await processBotCommands(msg, currentUser.displayName, currentUser.uid, currentChannelId);
+        if (botResponse) {
+            await sendToChannel(currentChannelId, botResponse.text, botResponse.displayName, true);
+            input.value = '';
+            return;
+        }
+        
+        // Normal message
+        await db.collection("channels").doc(currentChannelId).collection("messages").add({
+            text: msg,
+            uid: currentUser.uid,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=6366f1&color=fff`,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            isBot: false
+        });
+        input.value = '';
+    }
+    
+    // Channel management
     async function loadChannels() {
         const docRef = db.collection("server").doc("structure");
         const docSnap = await docRef.get();
-        if(docSnap.exists) return docSnap.data();
-        const def={categories:[{name:"TEXT CHANNELS",channels:[{id:"general",name:"general"},{id:"announcements",name:"announcements"}]},{name:"TRADING",channels:[{id:"stonks",name:"stonks"}]}]};
-        await docRef.set(def); return def;
+        if (docSnap.exists) return docSnap.data();
+        const def = { categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }] }] };
+        await docRef.set(def);
+        return def;
     }
+    
     async function saveChannels(data) { await db.collection("server").doc("structure").set(data); }
     
     async function renderSidebar() {
-        const struct=await loadChannels();
-        const container=document.getElementById('channelsList');
-        let html='';
-        for(const cat of struct.categories){
-            html+=`<div class="category-group"><div class="category-title">${escapeHtml(cat.name)}${isAdmin?' <span class="add-channel" onclick="openAdminPanel()"> <i class="fas fa-plus"></i></span>':''}</div>`;
-            for(const ch of cat.channels){
-                html+=`<div class="channel-item ${currentChannelId===ch.id?'active':''}" data-channel-id="${ch.id}" data-channel-name="${ch.name}"><i class="fas fa-hashtag"></i> ${escapeHtml(ch.name)}</div>`;
+        const struct = await loadChannels();
+        const container = document.getElementById('channelsList');
+        let html = '';
+        for (const cat of struct.categories) {
+            html += `<div class="category-group"><div class="category-title">${escapeHtml(cat.name)}</div>`;
+            for (const ch of cat.channels) {
+                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}" data-channel-id="${ch.id}" data-channel-name="${ch.name}"><i class="fas fa-hashtag"></i> ${escapeHtml(ch.name)}</div>`;
             }
-            html+=`</div>`;
+            html += `</div>`;
         }
-        container.innerHTML=html;
-        document.querySelectorAll('.channel-item').forEach(el=>{el.addEventListener('click',()=>{switchChannel(el.dataset.channelId, el.dataset.channelName);});});
-    }
-    function switchChannel(id,name){ if(unsubscribeMessages) unsubscribeMessages(); currentChannelId=id; document.getElementById('currentChannelName').innerText=name; loadMessagesForChannel(id); renderSidebar(); }
-    
-    function loadMessagesForChannel(channelId){
-        const container=document.getElementById('messagesContainer');
-        unsubscribeMessages=db.collection("channels").doc(channelId).collection("messages").orderBy("createdAt","asc").onSnapshot(snapshot=>{
-            let html='';
-            snapshot.forEach(doc=>{const d=doc.data(); html+=`<div class="message ${d.isBot?'system-message':''}"><img src="${d.photoURL||'https://ui-avatars.com/api/?name=User'}" class="message-avatar"><div class="message-content"><div class="message-author">${escapeHtml(d.displayName)}${d.isBot?'<span class="bot-tag">BOT</span>':''}<span class="message-time">${formatTime(d.createdAt)}</span></div><div class="message-text">${escapeHtml(d.text)}</div></div></div>`;});
-            if(!html) html='<div class="empty-chat">✨ No messages yet</div>';
-            container.innerHTML=html; container.scrollTop=container.scrollHeight;
+        container.innerHTML = html;
+        document.querySelectorAll('.channel-item').forEach(el => {
+            el.addEventListener('click', () => switchChannel(el.dataset.channelId, el.dataset.channelName));
         });
     }
     
-    async function sendMessage(){
-        if(!currentUser) return;
-        const input=document.getElementById('messageInput'), text=input.value.trim();
-        if(!text) return;
-        await db.collection("channels").doc(currentChannelId).collection("messages").add({text,uid:currentUser.uid,displayName:currentUser.displayName,photoURL:currentUser.photoURL,createdAt:firebase.firestore.FieldValue.serverTimestamp(),isBot:false});
-        input.value='';
-        // Trigger moderation
-        await checkModeration(text, currentUser.displayName, currentChannelId);
+    function switchChannel(id, name) {
+        if (unsubscribeMessages) unsubscribeMessages();
+        currentChannelId = id;
+        document.getElementById('currentChannelName').innerText = name;
+        loadMessagesForChannel(id);
+        renderSidebar();
     }
     
-    // Advanced Bot Execution & Moderation
-    async function executeBotScript(bot, msg, author, channelId){
-        if(!bot.script) return null;
-        try{
-            if(bot.language==='javascript'){
-                const func = new Function('msg', 'author', 'channelId', 'db', bot.script + '; if(typeof onMessage==="function") return onMessage(msg, author, channelId);');
-                return await func(msg, author, channelId, db);
-            } else if(bot.language==='python'){
-                // Simulated Python eval - basic string operations
-                const pyMatch = bot.script.match(/def on_message\(msg\):\s*return\s*["'](.+?)["']/);
-                if(pyMatch) return pyMatch[1];
-                return null;
-            }
-        } catch(e){ console.error("Bot error",e); return null; }
+    function loadMessagesForChannel(channelId) {
+        const container = document.getElementById('messagesContainer');
+        unsubscribeMessages = db.collection("channels").doc(channelId).collection("messages").orderBy("createdAt", "asc").onSnapshot(snapshot => {
+            let html = '';
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                html += `<div class="message ${d.isBot ? 'system-message' : ''}">
+                    <img src="${d.photoURL || 'https://ui-avatars.com/api/?name=User'}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User'">
+                    <div class="message-content">
+                        <div class="message-author">${escapeHtml(d.displayName)}${d.isBot ? '<span class="bot-tag">BOT</span>' : ''}<span class="message-time">${formatTime(d.createdAt)}</span></div>
+                        <div class="message-text">${d.isEmbed ? d.text : escapeHtml(d.text)}</div>
+                    </div>
+                </div>`;
+            });
+            if (!html) html = '<div style="text-align:center;padding:40px;color:#6b7280;">✨ No messages yet. Try /help!</div>';
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        });
     }
     
-    async function checkModeration(text, author, channelId){
-        const modDoc = await db.collection("config").doc("moderation").get();
-        if(modDoc.exists && modDoc.data().enabled){
-            const badWords = modDoc.data().badWords || [];
-            for(const word of badWords){
-                if(text.toLowerCase().includes(word.toLowerCase())){
-                    await db.collection("channels").doc(channelId).collection("messages").add({
-                        text: `⚠️ Auto-Mod: "${word}" is not allowed, ${author}.`,
-                        displayName: "ModBot",
-                        photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        isBot: true
-                    });
-                    break;
-                }
-            }
-        }
-    }
-    
-    async function initBots(){
-        botIntervals.forEach(clearInterval);
-        const botsSnap = await db.collection("bots").get();
-        for(const docSnap of botsSnap.docs){
-            const bot=docSnap.data();
-            if(bot.type==='auto' && bot.active!==false){
-                const intervalId = setInterval(async()=>{
-                    let targetChannels = bot.channels || [];
-                    const struct = await loadChannels();
-                    let allChannels = [];
-                    for(const cat of struct.categories){
-                        for(const ch of cat.channels) allChannels.push(ch.id);
-                    }
-                    const channelsToSend = targetChannels.length ? targetChannels : allChannels;
-                    for(const chId of channelsToSend){
-                        await db.collection("channels").doc(chId).collection("messages").add({
-                            text: `🤖 **${bot.name}**: ${bot.autoMessage || "Automated message"}`,
-                            displayName: bot.name,
-                            photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            isBot: true
-                        });
-                    }
-                }, (bot.interval||5)*60*1000);
-                botIntervals.push(intervalId);
-            }
-            // Command bots are handled on message send
-        }
-        activeBots = botsSnap.docs.map(d=>({id:d.id,...d.data()}));
-    }
-    
-    async function onNewMessageForCommands(msg, author, authorId, channelId){
-        if(!msg.startsWith('/')) return;
-        for(const bot of activeBots){
-            if(bot.type==='command'){
-                const targetCh = bot.channels || [];
-                if(targetCh.length && !targetCh.includes(channelId)) continue;
-                const response = await executeBotScript(bot, msg, author, channelId);
-                if(response){
-                    await db.collection("channels").doc(channelId).collection("messages").add({
-                        text: `🤖 **${bot.name}**: ${response}`,
-                        displayName: bot.name,
-                        photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        isBot: true
-                    });
-                    break;
-                }
-            }
-        }
-    }
-    
-    // UI Admin Functions
-    async function openAdminPanel(){
-        if(!isAdmin) return;
-        const modal=document.getElementById('adminModal');
-        const struct=await loadChannels();
-        const catsDiv=document.getElementById('categoriesListAdmin');
-        catsDiv.innerHTML='';
-        struct.categories.forEach((cat,idx)=>{catsDiv.innerHTML+=`<div class="flex-between" style="background:#0f172a; padding:8px; margin:5px 0; border-radius:8px;"><span><i class="fas fa-folder"></i> ${escapeHtml(cat.name)}</span><button class="btn-danger" onclick="deleteCategory(${idx})">Delete</button></div>`;});
-        const catSelect=document.getElementById('categorySelect');
-        catSelect.innerHTML='';
-        struct.categories.forEach((cat,idx)=>{catSelect.innerHTML+=`<option value="${idx}">${escapeHtml(cat.name)}</option>`;});
+    // Admin Panel Functions
+    async function openAdminPanel() {
+        if (!isAdmin) { showToast("Admin only"); return; }
+        const modal = document.getElementById('adminModal');
+        const struct = await loadChannels();
         
-        const botsSnap=await db.collection("bots").get();
-        const botsDiv=document.getElementById('botsList');
-        botsDiv.innerHTML='';
-        botsSnap.forEach(doc=>{const b=doc.data(); botsDiv.innerHTML+=`<div class="bot-card"><div class="flex-between"><div><strong>${escapeHtml(b.name)}</strong><br><small>${b.language||'js'} | ${b.type}</small></div><button class="btn-danger" onclick="deleteBot('${doc.id}')">Delete</button></div><div style="font-size:0.75rem;">Channels: ${b.channels?.join(', ')||'ALL'}</div></div>`;});
+        // Render categories
+        const catsDiv = document.getElementById('categoriesListAdmin');
+        catsDiv.innerHTML = '';
+        struct.categories.forEach((cat, idx) => {
+            catsDiv.innerHTML += `<div class="flex-between" style="background:#0f172a; padding:8px; margin:5px 0; border-radius:8px;"><span>📁 ${escapeHtml(cat.name)}</span><button class="btn-danger" onclick="deleteCategory(${idx})">Delete</button></div>`;
+        });
+        const catSelect = document.getElementById('categorySelect');
+        catSelect.innerHTML = '';
+        struct.categories.forEach((cat, idx) => { catSelect.innerHTML += `<option value="${idx}">${escapeHtml(cat.name)}</option>`; });
         
-        const modDoc=await db.collection("config").doc("moderation").get();
-        const modDiv=document.getElementById('modRulesList');
-        if(modDoc.exists){
-            modDiv.innerHTML=`<p>🔒 Moderation Enabled: ${modDoc.data().enabled?'Yes':'No'}</p><p>Bad words: ${(modDoc.data().badWords||[]).join(', ')||'none'}</p>`;
-        } else { modDiv.innerHTML='<p>No moderation rules</p>'; }
+        // Render bots list
+        await loadBots();
+        const botsDiv = document.getElementById('botsList');
+        botsDiv.innerHTML = '';
+        activeBots.forEach(bot => {
+            botsDiv.innerHTML += `<div class="bot-card"><div class="flex-between"><div><strong>🤖 ${escapeHtml(bot.name)}</strong><br><small>Channels: ${bot.channels?.join(', ') || 'ALL'}</small></div><button class="btn-danger" onclick="deleteBot('${bot.id}')">Delete</button></div><div style="font-size:0.7rem;color:#8b5cf6;">Custom JS Bot</div></div>`;
+        });
         
         modal.classList.add('active');
     }
-    window.deleteCategory=async(idx)=>{const struct=await loadChannels(); struct.categories.splice(idx,1); await saveChannels(struct); await renderSidebar(); openAdminPanel(); showToast("Deleted","info");};
-    window.deleteBot=async(botId)=>{await db.collection("bots").doc(botId).delete(); await initBots(); openAdminPanel(); showToast("Bot deleted","info");};
     
-    document.getElementById('addCategoryBtn')?.addEventListener('click',async()=>{const name=document.getElementById('newCategoryName').value.trim(); if(!name) return; const struct=await loadChannels(); struct.categories.push({name:name.toUpperCase(),channels:[]}); await saveChannels(struct); await renderSidebar(); openAdminPanel(); document.getElementById('newCategoryName').value=''; showToast("Category added","success");});
-    document.getElementById('addChannelBtn')?.addEventListener('click',async()=>{const catIdx=parseInt(document.getElementById('categorySelect').value); const chName=document.getElementById('newChannelName').value.trim(); if(!chName) return; const struct=await loadChannels(); const newId=chName.toLowerCase().replace(/\s/g,'_')+Date.now(); struct.categories[catIdx].channels.push({id:newId,name:chName}); await saveChannels(struct); await renderSidebar(); openAdminPanel(); document.getElementById('newChannelName').value=''; showToast("Channel added","success");});
+    window.deleteCategory = async (idx) => { const struct = await loadChannels(); struct.categories.splice(idx,1); await saveChannels(struct); await renderSidebar(); openAdminPanel(); showToast("Deleted"); };
+    window.deleteBot = async (botId) => { await db.collection("bots").doc(botId).delete(); await loadBots(); openAdminPanel(); showToast("Bot deleted"); };
     
-    // Bot Editor with channel targeting
-    let editingBotId=null;
-    async function populateChannelSelector(selectedChannels=[]){
-        const struct=await loadChannels();
-        const container=document.getElementById('channelSelector');
-        let allChannels=[];
-        for(const cat of struct.categories){
-            for(const ch of cat.channels) allChannels.push(ch);
+    document.getElementById('addCategoryBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('newCategoryName').value.trim();
+        if(!name) return;
+        const struct = await loadChannels();
+        struct.categories.push({ name: name.toUpperCase(), channels: [] });
+        await saveChannels(struct);
+        await renderSidebar();
+        openAdminPanel();
+        document.getElementById('newCategoryName').value = '';
+        showToast("Category added");
+    });
+    
+    document.getElementById('addChannelBtn')?.addEventListener('click', async () => {
+        const catIdx = parseInt(document.getElementById('categorySelect').value);
+        const chName = document.getElementById('newChannelName').value.trim();
+        if(!chName) return;
+        const struct = await loadChannels();
+        const newId = chName.toLowerCase().replace(/\s/g,'_') + Date.now();
+        struct.categories[catIdx].channels.push({ id: newId, name: chName });
+        await saveChannels(struct);
+        await renderSidebar();
+        openAdminPanel();
+        document.getElementById('newChannelName').value = '';
+        showToast("Channel added");
+    });
+    
+    // Bot Editor
+    async function populateChannelSelector(selectedChannels = []) {
+        const struct = await loadChannels();
+        const container = document.getElementById('channelSelector');
+        let allChannels = [];
+        for (const cat of struct.categories) {
+            for (const ch of cat.channels) allChannels.push(ch);
         }
-        container.innerHTML=allChannels.map(ch=>`<div class="channel-checkbox ${selectedChannels.includes(ch.id)?'selected':''}" data-channel-id="${ch.id}">#${escapeHtml(ch.name)}</div>`).join('');
-        container.querySelectorAll('.channel-checkbox').forEach(el=>{
-            el.addEventListener('click',()=>{el.classList.toggle('selected');});
+        container.innerHTML = allChannels.map(ch => `<div class="channel-checkbox ${selectedChannels.includes(ch.id) ? 'selected' : ''}" data-channel-id="${ch.id}">#${escapeHtml(ch.name)}</div>`).join('');
+        container.querySelectorAll('.channel-checkbox').forEach(el => {
+            el.addEventListener('click', () => el.classList.toggle('selected'));
         });
     }
-    document.getElementById('createBotBtn')?.addEventListener('click',async()=>{
-        editingBotId=null;
-        document.getElementById('botName').value=''; document.getElementById('botScript').value='// function onMessage(msg, author, channelId) { if(msg==="/ping") return "Pong!"; }'; document.getElementById('botInterval').value='5';
+    
+    document.getElementById('createBotBtn')?.addEventListener('click', async () => {
+        document.getElementById('botName').value = '';
+        document.getElementById('botScript').value = `// Example: Rich Embed Bot
+function onMessage(msg, author, userId, channelId) {
+    if (msg === '/hello') {
+        return {
+            embed: {
+                title: "👋 Hello!",
+                description: \`Welcome \${author}!\`,
+                color: "#fbbf24",
+                fields: [
+                    { name: "Status", value: "Online", inline: true },
+                    { name: "Role", value: "Trader", inline: true }
+                ]
+            }
+        };
+    }
+    if (msg === '/about') {
+        return "This is a custom bot response!";
+    }
+    return null;
+}`;
         await populateChannelSelector([]);
         document.getElementById('botEditorModal').classList.add('active');
     });
-    document.getElementById('saveBotAdvancedBtn')?.addEventListener('click',async()=>{
-        const name=document.getElementById('botName').value.trim();
-        const lang=document.getElementById('botLang').value;
-        const type=document.getElementById('botType').value;
-        const script=document.getElementById('botScript').value;
-        const interval=parseInt(document.getElementById('botInterval').value);
-        const channelCheckboxes=document.querySelectorAll('#channelSelector .channel-checkbox.selected');
-        const channels=Array.from(channelCheckboxes).map(cb=>cb.dataset.channelId);
-        let autoMessage='';
-        if(type==='auto'){
-            const match=script.match(/return\s+["'](.+?)["']/);
-            autoMessage=match?match[1]:'Auto message';
+    
+    document.getElementById('saveBotBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('botName').value.trim();
+        const script = document.getElementById('botScript').value;
+        const channelCheckboxes = document.querySelectorAll('#channelSelector .channel-checkbox.selected');
+        const channels = Array.from(channelCheckboxes).map(cb => cb.dataset.channelId);
+        
+        if (!name) { showToast("Bot name required"); return; }
+        if (!script) { showToast("Script required"); return; }
+        
+        // Test the script
+        try {
+            const testFunc = new Function('msg', 'author', 'userId', 'channelId', script + '; return typeof onMessage === "function" ? onMessage("/test", "Tester", "test", "general") : null;');
+            await testFunc();
+        } catch(e) {
+            showToast("Script error: " + e.message);
+            return;
         }
-        if(!name){showToast("Bot name required","error"); return;}
-        const botData={name,language:lang,type,script,interval,channels,autoMessage,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
-        if(editingBotId) await db.collection("bots").doc(editingBotId).set(botData);
-        else await db.collection("bots").add(botData);
-        await initBots();
+        
+        await db.collection("bots").add({
+            name: name,
+            script: script,
+            channels: channels,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        await loadBots();
         document.getElementById('botEditorModal').classList.remove('active');
         openAdminPanel();
-        showToast(`Bot "${name}" saved`,"success");
-    });
-    
-    document.getElementById('addBadWordBtn')?.addEventListener('click',async()=>{
-        const word=document.getElementById('newBadWord').value.trim();
-        if(!word) return;
-        const modRef=db.collection("config").doc("moderation");
-        const doc=await modRef.get();
-        let words=doc.exists?doc.data().badWords:[];
-        if(!words.includes(word)) words.push(word);
-        await modRef.set({badWords:words,enabled:doc.exists?doc.data().enabled:true});
-        document.getElementById('newBadWord').value='';
-        openAdminPanel();
-        showToast("Filter added","success");
-    });
-    document.getElementById('enableModerationBtn')?.addEventListener('click',async()=>{
-        await db.collection("config").doc("moderation").set({enabled:true,badWords:[]},{merge:true});
-        showToast("Auto-moderation enabled","success");
-        openAdminPanel();
+        showToast(`Bot "${name}" created!`);
     });
     
     // Tab switching
-    const catsTab=document.getElementById('categoriesTab'), botsTab=document.getElementById('botsTab'), modTab=document.getElementById('moderationTab');
-    document.getElementById('tabCategoriesBtn')?.addEventListener('click',()=>{catsTab.style.display='block'; botsTab.style.display='none'; modTab.style.display='none';});
-    document.getElementById('tabBotsBtn')?.addEventListener('click',()=>{catsTab.style.display='none'; botsTab.style.display='block'; modTab.style.display='none';});
-    document.getElementById('tabModerationBtn')?.addEventListener('click',()=>{catsTab.style.display='none'; botsTab.style.display='none'; modTab.style.display='block';});
+    document.getElementById('tabBotsBtn')?.addEventListener('click', () => {
+        document.getElementById('botsTab').style.display = 'block';
+        document.getElementById('categoriesTab').style.display = 'none';
+    });
+    document.getElementById('tabCategoriesBtn')?.addEventListener('click', () => {
+        document.getElementById('botsTab').style.display = 'none';
+        document.getElementById('categoriesTab').style.display = 'block';
+    });
     
-    // Override message listener to trigger commands
-    const originalSend = sendMessage;
-    window.sendMessage = async function(){
-        if(!currentUser) return;
-        const input=document.getElementById('messageInput'), text=input.value.trim();
-        if(!text) return;
-        await db.collection("channels").doc(currentChannelId).collection("messages").add({text,uid:currentUser.uid,displayName:currentUser.displayName,photoURL:currentUser.photoURL,createdAt:firebase.firestore.FieldValue.serverTimestamp(),isBot:false});
-        input.value='';
-        await onNewMessageForCommands(text, currentUser.displayName, currentUser.uid, currentChannelId);
-        await checkModeration(text, currentUser.displayName, currentChannelId);
-    };
-    document.getElementById('sendBtn').onclick=()=>window.sendMessage();
-    document.getElementById('messageInput').addEventListener('keypress',(e)=>{if(e.key==='Enter') window.sendMessage();});
-    
-    function updateUI(user){
-        const overlay=document.getElementById('authOverlay'), sidebar=document.getElementById('sidebarPanel'), chat=document.getElementById('chatArea');
-        if(user){
-            overlay.style.display='none'; sidebar.style.display='flex'; chat.style.display='flex';
-            document.getElementById('sidebarName').innerText=user.displayName||user.email;
-            document.getElementById('sidebarAvatar').src=user.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'User')}`;
-            isAdmin=(user.email===ADMIN_EMAIL);
-            document.getElementById('adminIndicator').classList.toggle('hidden',!isAdmin);
-            document.getElementById('adminPanelBtn').style.display=isAdmin?'flex':'none';
-            renderSidebar(); loadMessagesForChannel(currentChannelId); initBots();
+    // Auth
+    function updateUI(user) {
+        const overlay = document.getElementById('authOverlay'), sidebar = document.getElementById('sidebarPanel'), chat = document.getElementById('chatArea');
+        if (user) {
+            overlay.style.display = 'none'; sidebar.style.display = 'flex'; chat.style.display = 'flex';
+            document.getElementById('sidebarName').innerText = user.displayName || user.email;
+            document.getElementById('sidebarAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=6366f1&color=fff`;
+            isAdmin = (user.email === ADMIN_EMAIL);
+            document.getElementById('adminIndicator').classList.toggle('hidden', !isAdmin);
+            document.getElementById('adminPanelBtn').style.display = isAdmin ? 'flex' : 'none';
+            renderSidebar();
+            loadMessagesForChannel(currentChannelId);
+            loadBots();
         } else {
-            overlay.style.display='flex'; sidebar.style.display='none'; chat.style.display='none';
-            if(unsubscribeMessages) unsubscribeMessages();
+            overlay.style.display = 'flex'; sidebar.style.display = 'none'; chat.style.display = 'none';
+            if (unsubscribeMessages) unsubscribeMessages();
         }
     }
-    async function signIn(){ const provider=new firebase.auth.GoogleAuthProvider(); try{ await auth.signInWithPopup(provider); showToast("Welcome","success");} catch(e){ showToast("Sign in failed","error");} }
-    async function signOut(){ await auth.signOut(); updateUI(null); showToast("Signed out","info");}
-    document.getElementById('signInBtn')?.addEventListener('click',signIn);
-    document.getElementById('signOutBtnNav')?.addEventListener('click',signOut);
-    document.getElementById('signOutBtnTop')?.addEventListener('click',signOut);
-    document.getElementById('closeAdminBtn')?.addEventListener('click',()=>document.getElementById('adminModal').classList.remove('active'));
-    document.getElementById('closeBotEditorBtn')?.addEventListener('click',()=>document.getElementById('botEditorModal').classList.remove('active'));
-    document.getElementById('adminPanelBtn')?.addEventListener('click',openAdminPanel);
-    auth.onAuthStateChanged(user=>{ currentUser=user; updateUI(user); });
-    window.openAdminPanel=openAdminPanel;
-</script>
-</body>
-</html>
+    
+    async function signIn() { const provider = new firebase.auth.GoogleAuthProvider(); try { await auth.signInWithPopup(provider); showToast("Welcome!"); } catch(e) { showToast("Sign in failed"); } }
+    async function signOut() { await auth.signOut(); updateUI(null); showToast("Signed out"); }
+    
+    document.getElementById('signInBtn')?.addEventListener('click', signIn);
+    document.getElementById('signOutBtnNav')?.addEventListener('click', signOut);
+    document.getElementById('signOutBtnTop')?.addEventListener('click', signOut);
+    document.getElementById('sendBtn')?.addEventListener('click', sendUserMessage);
+    document.getElementById('messageInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendUserMessage(); });
+    document.getElementById('adminPanelBtn')?.addEventListener('click', openAdminPanel);
+    document.getElementById('closeAdminBtn')?.addEventListener('click', () => document.getElementById('adminModal').classList.remove('active'));
+    document.getElementById('closeBotEditorBtn')?.addEventListener('click', () => document.getElementById('botEditorModal').classList.remove('active'));
+    
+    auth.onAuthStateChanged(user => { currentUser = user; updateUI(user); });
+    
+    // Pre-populate with example bot
+    setTimeout(async () => {
+        const botsSnap = await db.collection("bots").get();
+        if (botsSnap.empty && isAdmin) {
+            await db.collection("bots").add({
+                name: "Stonks Bot",
+                script: `function onMessage(msg, author, userId, channelId) {
+    if (msg === '/stonks') {
+        return {
+            embed:
