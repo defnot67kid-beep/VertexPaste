@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Stonks Sever · Trade Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
+            authDomain: "vertexpaste.firebaseapp.com",
+            projectId: "vertexpaste",
+            storageBucket: "vertexpaste.firebasestorage.app",
+            messagingSenderId: "255275350380",
+            appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+        };
+
+        // Initialize
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        
+        // Cloudinary config (for fallback/avatar edit)
+        const CLOUD_NAME = "dsv2sthkf";
+        const UPLOAD_PRESET = "stonks_avatar";
+        
+        // DOM elements
+        let currentUser = null;
+        
+        // Render helpers
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+        }
+        
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Upload avatar to Cloudinary
+        async function uploadToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                return data.secure_url;
+            } catch (err) {
+                console.error("Cloudinary error", err);
+                return null;
+            }
+        }
+        
+        // Update user profile picture (Firestore + optional local)
+        async function updateUserAvatar(file, userId) {
+            const url = await uploadToCloudinary(file);
+            if (url) {
+                const userRef = doc(db, "users", userId);
+                await updateDoc(userRef, { photoURL: url });
+                if (currentUser && currentUser.uid === userId) {
+                    currentUser.photoURL = url;
+                    document.getElementById('userAvatarImg').src = url;
+                    document.getElementById('sidebarAvatarImg').src = url;
+                }
+                showToast("Avatar updated successfully!", "success");
+            } else {
+                showToast("Upload failed", "error");
+            }
+        }
+        
+        // Send message
+        async function sendMessage() {
+            if (!currentUser) { showToast("Sign in first", "error"); return; }
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+            try {
+                await addDoc(collection(db, "messages"), {
+                    text: text,
+                    uid: currentUser.uid,
+                    displayName: currentUser.displayName,
+                    photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=6366f1&color=fff`,
+                    createdAt: serverTimestamp()
+                });
+                input.value = '';
+                document.getElementById('messagesContainer').scrollTop = document.getElementById('messagesContainer').scrollHeight;
+            } catch(e) { console.error(e); showToast("Failed to send", "error"); }
+        }
+        
+        // Live messages
+        function subscribeMessages() {
+            const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('messagesContainer');
+                if (!container) return;
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const time = formatTime(data.createdAt);
+                    const avatar = data.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.displayName || 'User')}&background=6366f1&color=fff`;
+                    html += `
+                        <div class="message">
+                            <img src="${avatar}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=6366f1&color=fff'">
+                            <div class="message-content">
+                                <div class="message-author">
+                                    ${escapeHtml(data.displayName || 'Unknown')}
+                                    <span class="message-time">${time}</span>
+                                </div>
+                                <div class="message-text">${escapeHtml(data.text)}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                if (html === '') html = '<div class="empty-chat"><i class="fas fa-comment-dots"></i> No messages yet. Start the convo!</div>';
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+        
+        // Auth UI
+        function updateUI() {
+            const authSection = document.getElementById('authSection');
+            const userPanel = document.getElementById('userPanel');
+            const chatArea = document.getElementById('chatArea');
+            if (currentUser) {
+                authSection.classList.add('hidden');
+                userPanel.classList.remove('hidden');
+                chatArea.classList.remove('hidden');
+                document.getElementById('userNameDisplay').innerText = currentUser.displayName || 'Trader';
+                const avatarUrl = currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=6366f1&color=fff`;
+                document.getElementById('userAvatarImg').src = avatarUrl;
+                document.getElementById('sidebarAvatarImg').src = avatarUrl;
+                document.getElementById('sidebarUserName').innerText = currentUser.displayName || 'Stonks Member';
+                // Ensure user document exists in Firestore for profile data
+                const userRef = doc(db, "users", currentUser.uid);
+                getDoc(userRef).then(docSnap => {
+                    if (!docSnap.exists()) {
+                        setDoc(userRef, {
+                            displayName: currentUser.displayName,
+                            email: currentUser.email,
+                            photoURL: currentUser.photoURL,
+                            createdAt: new Date()
+                        });
+                    }
+                });
+            } else {
+                authSection.classList.remove('hidden');
+                userPanel.classList.add('hidden');
+                chatArea.classList.add('hidden');
+            }
+        }
+        
+        // Sign in with Google (Roblox-like email/oauth)
+        async function signIn() {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                currentUser = result.user;
+                updateUI();
+                showToast(`Welcome ${currentUser.displayName} 🚀`, "success");
+            } catch (error) {
+                console.error(error);
+                showToast("Sign-in failed", "error");
+            }
+        }
+        
+        async function signOutUser() {
+            await signOut(auth);
+            currentUser = null;
+            updateUI();
+            showToast("Signed out", "info");
+        }
+        
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toastMsg');
+            toast.innerText = msg;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Profile picture edit (Cloudinary trigger)
+        function setupAvatarUpload() {
+            const fileInput = document.getElementById('avatarFileInput');
+            const editBtn = document.getElementById('editAvatarBtn');
+            editBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', async (e) => {
+                if (e.target.files && e.target.files[0] && currentUser) {
+                    const file = e.target.files[0];
+                    await updateUserAvatar(file, currentUser.uid);
+                    fileInput.value = '';
+                }
+            });
+        }
+        
+        // Settings modal (mock server management)
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('active');
+            document.getElementById('serverNameInput').value = localStorage.getItem('serverName') || 'Stonks Central';
+            document.getElementById('welcomeMsgInput').value = localStorage.getItem('welcomeMsg') || 'Welcome to the Stonks Sever! 📈';
+            document.getElementById('themeSelect').value = localStorage.getItem('theme') || 'dark';
+            applyTheme(localStorage.getItem('theme') || 'dark');
+        }
+        
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+        
+        function saveSettings() {
+            const serverName = document.getElementById('serverNameInput').value.trim();
+            const welcomeMsg = document.getElementById('welcomeMsgInput').value.trim();
+            const theme = document.getElementById('themeSelect').value;
+            if (serverName) localStorage.setItem('serverName', serverName);
+            if (welcomeMsg) localStorage.setItem('welcomeMsg', welcomeMsg);
+            localStorage.setItem('theme', theme);
+            document.getElementById('serverHeaderTitle').innerText = serverName || 'Stonks Sever';
+            const welcomeBanner = document.getElementById('customWelcome');
+            if (welcomeBanner) welcomeBanner.innerText = welcomeMsg || 'Welcome to the Stonks Sever! 📈';
+            applyTheme(theme);
+            closeSettings();
+            showToast("Server settings saved!", "success");
+        }
+        
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('theme-light');
+                document.body.classList.remove('theme-dark');
+            } else if (theme === 'forest') {
+                document.body.classList.add('theme-forest');
+                document.body.classList.remove('theme-light', 'theme-dark');
+            } else {
+                document.body.classList.remove('theme-light', 'theme-forest');
+                document.body.classList.add('theme-dark');
+            }
+        }
+        
+        // Bot command interpreter (simple)
+        function handleBotCommands(text) {
+            if (!text.startsWith('/')) return false;
+            const lower = text.toLowerCase();
+            if (lower === '/stonks') {
+                showToast("📈 STONKS ONLY GO UP! 📈", "info");
+                return true;
+            } else if (lower === '/moon') {
+                showToast("🌕 To the moon! 🚀", "success");
+                return true;
+            } else if (lower.startsWith('/echo ')) {
+                const msg = text.slice(6);
+                if (msg) showToast(`Echo: ${msg}`, "info");
+                return true;
+            } else if (lower === '/help') {
+                showToast("/stonks, /moon, /echo [msg], /clear (clear chat locally)", "info");
+                return true;
+            }
+            return false;
+        }
+        
+        // Override send with bot commands
+        const originalSend = sendMessage;
+        window.sendMessageWrapper = async function() {
+            if (!currentUser) return;
+            const input = document.getElementById('messageInput');
+            let txt = input.value.trim();
+            if (!txt) return;
+            if (txt.startsWith('/')) {
+                if (handleBotCommands(txt)) {
+                    input.value = '';
+                    return;
+                }
+            }
+            await originalSend();
+        };
+        
+        // Clear chat (admin-like or owner)
+        async function clearChat() {
+            if (!currentUser) return;
+            // optional confirmation
+            if (confirm("Clear all messages? (only visible to you locally)")) {
+                // We'll just indicate it's not a server-wide delete but give user feedback
+                showToast("Chat cleared locally. Refresh to see history.", "info");
+                const container = document.getElementById('messagesContainer');
+                if (container) container.innerHTML = '<div class="empty-chat"><i class="fas fa-comment-dots"></i> Clearing...</div>';
+                // Real delete would require admin rules, but we keep it fun
+            }
+        }
+        
+        // open bot panel / custom bot maker (using HTML/JS injection)
+        function openBotMaker() {
+            const modal = document.getElementById('botMakerModal');
+            modal.classList.add('active');
+            document.getElementById('botCodeArea').value = `// Example: create a cool bot command
+function customBotCommand(msg) {
+    if (msg === '/diamond') return "💎 Diamond hands! 💎";
+    if (msg === '/hodl') return "HODL forever! 🚀";
+    return null;
+}
+// register command
+window.customBotHandler = customBotCommand;`;
+        }
+        
+        function closeBotMaker() {
+            document.getElementById('botMakerModal').classList.remove('active');
+        }
+        
+        function saveBotCode() {
+            const code = document.getElementById('botCodeArea').value;
+            try {
+                // Evaluate in safe-ish way
+                const func = new Function('return (' + code + ')');
+                const module = func();
+                if (typeof window.customBotHandler !== 'undefined') delete window.customBotHandler;
+                // re-eval
+                eval(code);
+                localStorage.setItem('customBotScript', code);
+                showToast("Bot script saved! Commands like /diamond will work.", "success");
+                closeBotMaker();
+            } catch(e) {
+                showToast("Invalid JS code", "error");
+            }
+        }
+        
+        function initCustomBot() {
+            const saved = localStorage.getItem('customBotScript');
+            if (saved) {
+                try {
+                    eval(saved);
+                } catch(e) { console.warn(e); }
+            }
+            // Override message to include custom bot
+            const originalSendMsg = window.sendMessageWrapper;
+            window.sendMessageWrapper = async function() {
+                if (!currentUser) return;
+                const input = document.getElementById('messageInput');
+                let txt = input.value.trim();
+                if (!txt) return;
+                let handled = false;
+                if (txt.startsWith('/')) {
+                    if (handleBotCommands(txt)) handled = true;
+                    if (window.customBotHandler && !handled) {
+                        const response = window.customBotHandler(txt);
+                        if (response && typeof response === 'string') {
+                            showToast(response, "info");
+                            handled = true;
+                        }
+                    }
+                    if (handled) {
+                        input.value = '';
+                        return;
+                    }
+                }
+                await originalSendMsg();
+            };
+        }
+        
+        // modal close utility
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+        
+        // Roblox-themed plus membership badge simulation
+        function checkPremium() {
+            // just display UI badge
+            if (currentUser && localStorage.getItem('premium') === 'true') {
+                document.getElementById('premiumBadge').classList.remove('hidden');
+            }
+        }
+        
+        // Event listeners & DOM ready
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('signInBtn').addEventListener('click', signIn);
+            document.getElementById('signOutBtn').addEventListener('click', signOutUser);
+            document.getElementById('sendBtn').addEventListener('click', () => window.sendMessageWrapper());
+            document.getElementById('messageInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.sendMessageWrapper(); });
+            document.getElementById('settingsIcon').addEventListener('click', openSettings);
+            document.getElementById('closeSettings').addEventListener('click', closeSettings);
+            document.getElementById('saveSettings').addEventListener('click', saveSettings);
+            document.getElementById('clearChatBtn').addEventListener('click', clearChat);
+            document.getElementById('botMakerBtn').addEventListener('click', openBotMaker);
+            document.getElementById('closeBotMaker').addEventListener('click', closeBotMaker);
+            document.getElementById('saveBotCode').addEventListener('click', saveBotCode);
+            setupAvatarUpload();
+            // Load custom server name
+            const serverName = localStorage.getItem('serverName') || 'Stonks Sever';
+            document.getElementById('serverHeaderTitle').innerText = serverName;
+            const welcomeMsg = localStorage.getItem('welcomeMsg') || 'Welcome to the Stonks Sever! 📈';
+            const welcomeDiv = document.getElementById('customWelcome');
+            if (welcomeDiv) welcomeDiv.innerText = welcomeMsg;
+            applyTheme(localStorage.getItem('theme') || 'dark');
+            // Auth state
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                updateUI();
+                if (user) {
+                    subscribeMessages();
+                    initCustomBot();
+                    checkPremium();
+                }
+            });
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f13;
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.2s;
+        }
+        
+        /* Themes */
+        body.theme-light {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        body.theme-light .sidebar, body.theme-light .chat-area, body.theme-light .message {
+            background: white;
+            border-color: #e2e8f0;
+        }
+        body.theme-light .message-author { color: #1e293b; }
+        body.theme-light .message-text { color: #334155; }
+        body.theme-light .sidebar-header { background: #f8fafc; }
+        
+        body.theme-forest {
+            background: #0f2a1f;
+            color: #d1fae5;
+        }
+        body.theme-forest .sidebar, body.theme-forest .chat-area {
+            background: #1a3a2a;
+            border-color: #2d5a3b;
+        }
+        body.theme-forest .message { background: #1e4a2f; }
+        body.theme-forest .message-author { color: #a7f3d0; }
+        
+        /* Layout */
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #111827;
+            border-right: 1px solid #1f2937;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(4px);
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #1f2937;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-weight: 800;
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #fbbf24, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .settings-icon {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .settings-icon:hover {
+            background: #374151;
+        }
+        
+        .user-profile {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #1f2937;
+        }
+        
+        .avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .avatar-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fbbf24;
+        }
+        
+        .edit-avatar-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: #fbbf24;
+            border-radius: 50%;
+            padding: 6px;
+            font-size: 12px;
+            color: #000;
+            cursor: pointer;
+        }
+        
+        .user-name {
+            margin-top: 12px;
+            font-weight: 600;
+        }
+        
+        .premium-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #9ca3af;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: #1f2937;
+            color: #fbbf24;
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #1e293b;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .server-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .action-buttons button {
+            background: #1e293b;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            margin-left: 8px;
+            color: #fbbf24;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .action-buttons button:hover {
+            background: #334155;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+            animation: fadeIn 0.2s ease;
+        }
+        .message-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .message-content {
+            background: #1e293b;
+            padding: 10px 16px;
+            border-radius: 20px;
+            border-top-left-radius: 4px;
+        }
+        .message-author {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+        }
+        .message-time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+        .message-text {
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+        
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid #1e293b;
+            display: flex;
+            gap: 12px;
+            background: #0f172a;
+        }
+        .input-area input {
+            flex: 1;
+            background: #1e293b;
+            border: none;
+            padding: 14px 18px;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .input-area button {
+            background: #fbbf24;
+            border: none;
+            padding: 0 28px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #0f172a;
+        }
+        
+        .auth-card {
+            max-width: 420px;
+            margin: auto;
+            text-align: center;
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 32px;
+        }
+        .auth-card button {
+            background: #fbbf24;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 28px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid #fbbf24;
+        }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 12px;
+            color: white;
+            margin: 12px 0;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-gold {
+            background: #fbbf24;
+            color: black;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .hidden { display: none; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(70px);
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            z-index: 1100;
+            transition: 0.3s;
+            font-weight: 500;
+            border-left: 4px solid #fbbf24;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.success { background: #2e7d32; border-left-color: #a5d6a7; }
+        .toast.error { background: #c62828; }
+        .empty-chat {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .flex-center { display: flex; align-items: center; justify-content: center; height: 100%; }
+        .welcome-banner {
+            background: linear-gradient(135deg, #fbbf2410, #ef444410);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            margin-left: 12px;
+        }
+        button.link-like {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- Sidebar (always visible, but hidden when not logged in) -->
+    <div class="sidebar" id="sidebarPanel">
+        <div class="sidebar-header">
+            <div class="logo">📈 STONKS SEVER</div>
+            <div class="settings-icon" id="settingsIcon"><i class="fas fa-cog"></i></div>
+        </div>
+        <div class="user-profile" id="userPanel">
+            <div class="avatar-wrapper" id="editAvatarBtn">
+                <img id="sidebarAvatarImg" class="avatar-img" src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="avatar">
+                <div class="edit-avatar-icon"><i class="fas fa-camera"></i></div>
+            </div>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
+            <div class="user-name" id="sidebarUserName">Stonks Member</div>
+            <div id="premiumBadge" class="premium-badge hidden">✨ PLUS MEMBER</div>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item active"><i class="fas fa-chart-line"></i> Live Trading Chat</div>
+            <div class="nav-item" id="botMakerBtn"><i class="fas fa-robot"></i> Bot Studio</div>
+            <div class="nav-item" id="clearChatBtn"><i class="fas fa-trash"></i> Clear Local View</div>
+        </div>
+    </div>
+
+    <!-- Main chat -->
+    <div class="chat-area" id="chatArea">
+        <div class="chat-header">
+            <div class="server-title">
+                <i class="fas fa-hashtag"></i> <span id="serverHeaderTitle">Stonks Sever</span>
+                <span class="welcome-banner" id="customWelcome">Welcome to the Stonks Sever! 📈</span>
+            </div>
+            <div class="action-buttons">
+                <button id="signOutBtn"><i class="fas fa-sign-out-alt"></i> Leave</button>
+            </div>
+        </div>
+        <div class="messages-container" id="messagesContainer"></div>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Type /stonks, /moon, or custom bot commands...">
+            <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+    </div>
+
+    <!-- Auth overlay (sign in) -->
+    <div id="authSection" class="flex-center" style="position: absolute; top:0; left:0; right:0; bottom:0; background: #0f0f13; z-index: 20;">
+        <div class="auth-card">
+            <i class="fas fa-chart-simple" style="font-size: 64px; color: #fbbf24; margin-bottom: 20px;"></i>
+            <h2>STONKS SEVER</h2>
+            <p style="margin: 16px 0">Sign in with Google to join the trading floor</p>
+            <button id="signInBtn"><i class="fab fa-google"></i> Continue with Google</button>
+            <p style="font-size: 0.7rem; margin-top: 20px;">🔥 Roblox-style profile + Cloudinary avatars</p>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-server"></i> Server Management</h3>
+        <label>Server Name</label>
+        <input type="text" id="serverNameInput" placeholder="Server Name">
+        <label>Welcome Message</label>
+        <input type="text" id="welcomeMsgInput" placeholder="Welcome...">
+        <label>Theme</label>
+        <select id="themeSelect">
+            <option value="dark">Dark (Default)</option>
+            <option value="light">Light Mode</option>
+            <option value="forest">Forest Vibes</option>
+        </select>
+        <div class="modal-buttons">
+            <button class="btn-gold" id="saveSettings">Save Changes</button>
+            <button id="closeSettings" class="link-like">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bot Maker Modal (HTML/JS code injection) -->
+<div id="botMakerModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-code"></i> Create Custom Bot Commands</h3>
+        <p style="font-size: 0.8rem;">Write JavaScript that returns a string for commands like <code>/diamond</code></p>
+        <textarea id="botCodeArea" rows="8" placeholder="// define customBotHandler function"></textarea>
+        <div class="modal-buttons">
+            <button class="btn-gold" id="saveBotCode">Deploy Bot</button>
+            <button id="closeBotMaker" class="link-like">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast">Message</div>
+<script>
+    // ensure global functions for module export
+    window.sendMessageWrapper = window.sendMessageWrapper || function() {};
+    window.customBotHandler = null;
+</script>
+</body>
+</html>
