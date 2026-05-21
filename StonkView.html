@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#0a0a0f">
-    <title>Stonks Sever · Mobile & Desktop Chat</title>
+    <title>Stonks Sever · Mobile Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
@@ -32,7 +32,7 @@
             width: 100%;
         }
 
-        /* Mobile-first responsive layout */
+        /* Main layout */
         .app {
             display: flex;
             height: 100%;
@@ -40,7 +40,7 @@
             position: relative;
         }
 
-        /* Sidebar - transforms to slide-out on mobile */
+        /* Sidebar - slide out on mobile */
         .sidebar {
             width: 280px;
             background: #111827;
@@ -48,11 +48,11 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
-            z-index: 50;
+            z-index: 1000;
             position: relative;
         }
 
-        /* Mobile sidebar hidden by default, shown via menu */
+        /* Mobile styles */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -60,15 +60,15 @@
                 top: 0;
                 height: 100%;
                 transform: translateX(-100%);
-                z-index: 1000;
+                z-index: 1001;
                 box-shadow: 2px 0 20px rgba(0,0,0,0.5);
-                width: 280px;
             }
             .sidebar.mobile-open {
                 transform: translateX(0);
             }
             .chat-area {
                 width: 100%;
+                display: flex !important;
             }
             .mobile-menu-btn {
                 display: flex !important;
@@ -90,20 +90,13 @@
             .embed-card {
                 font-size: 0.85rem;
             }
-            .embed-field {
-                flex-direction: column;
-                gap: 4px;
-            }
-            .embed-field-name {
-                min-width: auto;
-            }
             .input-area {
                 padding: 12px !important;
                 gap: 8px !important;
             }
             .input-area input {
-                padding: 10px 14px !important;
-                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 12px 14px !important;
+                font-size: 16px !important;
             }
             .input-area button {
                 padding: 0 18px !important;
@@ -116,19 +109,20 @@
                 width: 60px !important;
                 height: 60px !important;
             }
-            .sidebar-header {
-                padding: 16px !important;
-            }
-            .logo {
-                font-size: 1.2rem !important;
-            }
             .messages-container {
                 padding: 16px !important;
+                padding-bottom: 80px !important;
+            }
+            .close-sidebar-mobile {
+                display: block !important;
             }
         }
 
         @media (min-width: 769px) {
             .mobile-menu-btn {
+                display: none !important;
+            }
+            .close-sidebar-mobile {
                 display: none !important;
             }
         }
@@ -138,13 +132,22 @@
             border: none;
             color: #fbbf24;
             font-size: 1.2rem;
-            padding: 8px;
+            padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
             margin-right: 12px;
             display: none;
             align-items: center;
             justify-content: center;
+        }
+
+        .close-sidebar-mobile {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
         }
 
         .sidebar-header {
@@ -162,20 +165,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-        }
-
-        .close-sidebar-mobile {
-            display: none;
-            background: none;
-            border: none;
-            color: #9ca3af;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-        @media (max-width: 768px) {
-            .close-sidebar-mobile {
-                display: block;
-            }
         }
 
         .admin-badge {
@@ -225,6 +214,7 @@
             color: #fbbf24;
         }
 
+        /* Chat Area - Always visible when logged in */
         .chat-area {
             flex: 1;
             display: flex;
@@ -324,7 +314,7 @@
             margin-left: 8px;
         }
 
-        /* Rich Embed Card - Mobile friendly */
+        /* Rich Embed Card */
         .embed-card {
             background: #0f172a;
             border-radius: 12px;
@@ -373,6 +363,7 @@
             padding-top: 6px;
         }
 
+        /* Input Area - Always visible */
         .input-area {
             padding: 16px 20px;
             border-top: 1px solid #1e293b;
@@ -393,6 +384,11 @@
             font-size: 0.95rem;
         }
 
+        .input-area input:focus {
+            outline: none;
+            border: 1px solid #fbbf24;
+        }
+
         .input-area button {
             background: #fbbf24;
             border: none;
@@ -404,7 +400,7 @@
             white-space: nowrap;
         }
 
-        /* Auth Overlay - Mobile Responsive */
+        /* Auth Overlay */
         .auth-overlay {
             position: fixed;
             top: 0;
@@ -428,6 +424,17 @@
             text-align: center;
         }
 
+        .auth-card button {
+            background: #fbbf24;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
         /* Modals */
         .modal {
             display: none;
@@ -438,7 +445,7 @@
             height: 100%;
             background: rgba(0,0,0,0.85);
             backdrop-filter: blur(8px);
-            z-index: 1000;
+            z-index: 2000;
             align-items: center;
             justify-content: center;
         }
@@ -499,7 +506,7 @@
 
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%) translateY(70px);
             background: #1e293b;
@@ -508,11 +515,10 @@
             z-index: 1100;
             transition: 0.3s;
             border-left: 3px solid #fbbf24;
-            white-space: nowrap;
             max-width: 90%;
-            white-space: normal;
             text-align: center;
             font-size: 14px;
+            pointer-events: none;
         }
 
         .toast.show {
@@ -597,7 +603,6 @@
             color: #000;
         }
 
-        /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -631,7 +636,7 @@
         <div class="nav-item" id="signOutBtnNav"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
 
-    <!-- Main Chat Area -->
+    <!-- Main Chat Area - Always visible when logged in -->
     <div class="chat-area" id="chatArea">
         <div class="chat-header">
             <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
@@ -641,7 +646,9 @@
             </div>
             <button id="signOutBtnTop" style="background:#1e293b; border:none; padding:6px 16px; border-radius:20px; color:#fbbf24; cursor:pointer; font-size:0.9rem;">Exit</button>
         </div>
-        <div class="messages-container" id="messagesContainer"></div>
+        <div class="messages-container" id="messagesContainer">
+            <div style="text-align:center;padding:40px;color:#6b7280;">✨ Sign in to start chatting!</div>
+        </div>
         <div class="input-area">
             <input type="text" id="messageInput" placeholder="Type /stonks, /help, or a message...">
             <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
@@ -653,7 +660,7 @@
         <div class="auth-card">
             <i class="fas fa-chart-line" style="font-size: 64px; color: #fbbf24; margin-bottom: 20px;"></i>
             <h2>STONKS SEVER</h2>
-            <p style="margin: 16px 0">Sign in with Google to join</p>
+            <p style="margin: 16px 0">Sign in with Google to join the chat</p>
             <button id="signInBtn"><i class="fab fa-google"></i> Continue with Google</button>
         </div>
     </div>
@@ -752,12 +759,10 @@ function onMessage(msg, author, userId, channelId) {
     let currentUser = null, isAdmin = false, currentChannelId = "general", unsubscribeMessages = null;
     let activeBots = [];
     
-    // Helper functions
     function escapeHtml(s) { if(!s) return ''; return String(s).replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     function formatTime(ts) { if(!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
     function showToast(msg) { const t=document.getElementById('toastMsg'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
     
-    // Render embed responses
     function renderBotResponse(response) {
         if (!response) return null;
         if (typeof response === 'string') return response;
@@ -820,16 +825,18 @@ function onMessage(msg, author, userId, channelId) {
     }
     
     async function sendUserMessage() {
-        if (!currentUser) return;
+        if (!currentUser) { showToast("Please sign in first"); return; }
         const input = document.getElementById('messageInput');
         const msg = input.value.trim();
         if (!msg) return;
+        
         const botResponse = await processBotCommands(msg, currentUser.displayName, currentUser.uid, currentChannelId);
         if (botResponse) {
             await sendToChannel(currentChannelId, botResponse.text, botResponse.displayName, botResponse.isEmbed);
             input.value = '';
             return;
         }
+        
         await db.collection("channels").doc(currentChannelId).collection("messages").add({
             text: msg, uid: currentUser.uid, displayName: currentUser.displayName,
             photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=6366f1&color=fff`,
@@ -838,7 +845,6 @@ function onMessage(msg, author, userId, channelId) {
         input.value = '';
     }
     
-    // Channel management
     async function loadChannels() {
         const docRef = db.collection("server").doc("structure");
         const docSnap = await docRef.get();
@@ -888,17 +894,15 @@ function onMessage(msg, author, userId, channelId) {
                     </div>
                 </div>`;
             });
-            if (!html) html = '<div style="text-align:center;padding:40px;color:#6b7280;">✨ No messages yet. Try /help!</div>';
+            if (!html) html = '<div style="text-align:center;padding:40px;color:#6b7280;">✨ No messages yet. Try /help or /stonks!</div>';
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
         });
     }
     
-    // Mobile sidebar controls
     function openMobileSidebar() { document.getElementById('sidebarPanel').classList.add('mobile-open'); }
     function closeMobileSidebar() { document.getElementById('sidebarPanel').classList.remove('mobile-open'); }
     
-    // Admin Panel (simplified for space, keeps core functions)
     async function openAdminPanel() {
         if (!isAdmin) { showToast("Admin only"); return; }
         const modal = document.getElementById('adminModal');
@@ -962,13 +966,14 @@ function onMessage(msg, author, userId, channelId) {
                 title: "📈 STONKS MARKET",
                 color: "#fbbf24",
                 fields: [
-                    { name: "STNK", value: "$142.50 🟢", inline: true },
-                    { name: "CRPT", value: "$87.30 🔴", inline: true }
+                    { name: "STNK", value: "$142.50 🟢" },
+                    { name: "CRPT", value: "$87.30 🔴" }
                 ]
             }
         };
     }
     if (msg === '/ping') return "🏓 Pong!";
+    if (msg === '/help') return "Commands: /stonks, /ping";
     return null;
 }`;
         await populateChannelSelector([]);
@@ -994,27 +999,43 @@ function onMessage(msg, author, userId, channelId) {
     document.getElementById('tabBotsBtn')?.addEventListener('click', () => { document.getElementById('botsTab').style.display = 'block'; document.getElementById('categoriesTab').style.display = 'none'; });
     document.getElementById('tabCategoriesBtn')?.addEventListener('click', () => { document.getElementById('botsTab').style.display = 'none'; document.getElementById('categoriesTab').style.display = 'block'; });
     
-    // Auth
     function updateUI(user) {
-        const overlay = document.getElementById('authOverlay'), sidebar = document.getElementById('sidebarPanel'), chat = document.getElementById('chatArea');
+        const overlay = document.getElementById('authOverlay');
+        const sidebar = document.getElementById('sidebarPanel');
+        const chatArea = document.getElementById('chatArea');
+        
         if (user) {
-            overlay.style.display = 'none'; sidebar.style.display = 'flex'; chat.style.display = 'flex';
+            overlay.style.display = 'none';
+            sidebar.style.display = 'flex';
+            chatArea.style.display = 'flex';
             document.getElementById('sidebarName').innerText = user.displayName || user.email;
             document.getElementById('sidebarAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=6366f1&color=fff`;
             isAdmin = (user.email === ADMIN_EMAIL);
             document.getElementById('adminIndicator').classList.toggle('hidden', !isAdmin);
             document.getElementById('adminPanelBtn').style.display = isAdmin ? 'flex' : 'none';
-            renderSidebar(); loadMessagesForChannel(currentChannelId); loadBots();
+            renderSidebar();
+            loadMessagesForChannel(currentChannelId);
+            loadBots();
         } else {
-            overlay.style.display = 'flex'; sidebar.style.display = 'none'; chat.style.display = 'none';
+            overlay.style.display = 'flex';
+            sidebar.style.display = 'none';
+            chatArea.style.display = 'flex';
             if (unsubscribeMessages) unsubscribeMessages();
+            document.getElementById('messagesContainer').innerHTML = '<div style="text-align:center;padding:40px;color:#6b7280;">✨ Sign in to start chatting!</div>';
         }
     }
     
-    async function signIn() { const provider = new firebase.auth.GoogleAuthProvider(); try { await auth.signInWithPopup(provider); showToast("Welcome!"); } catch(e) { showToast("Sign in failed"); } }
+    async function signIn() { 
+        const provider = new firebase.auth.GoogleAuthProvider(); 
+        try { 
+            await auth.signInWithPopup(provider); 
+            showToast("Welcome to Stonks Sever!"); 
+        } catch(e) { 
+            showToast("Sign in failed: " + e.message); 
+        } 
+    }
     async function signOut() { await auth.signOut(); updateUI(null); showToast("Signed out"); }
     
-    // Event listeners
     document.getElementById('signInBtn')?.addEventListener('click', signIn);
     document.getElementById('signOutBtnNav')?.addEventListener('click', signOut);
     document.getElementById('signOutBtnTop')?.addEventListener('click', signOut);
@@ -1029,24 +1050,28 @@ function onMessage(msg, author, userId, channelId) {
     
     auth.onAuthStateChanged(user => { currentUser = user; updateUI(user); });
     
-    // Auto-create default bot
     setTimeout(async () => {
         const botsSnap = await db.collection("bots").get();
-        if (botsSnap.empty && isAdmin) {
-            await db.collection("bots").add({
-                name: "Stonks Trader",
-                script: `function onMessage(msg, author, userId, channelId) {
+        if (botsSnap.empty) {
+            const testAdmin = auth.currentUser;
+            if (testAdmin && testAdmin.email === ADMIN_EMAIL) {
+                await db.collection("bots").add({
+                    name: "Stonks Trader",
+                    script: `function onMessage(msg, author, userId, channelId) {
     if (msg === '/stonks') return { embed: { title: "📈 STONKS MARKET", color: "#fbbf24", fields: [{ name: "STNK", value: "$142.50 🟢" }, { name: "CRPT", value: "$87.30 🔴" }] } };
     if (msg === '/ping') return "🏓 Pong!";
-    if (msg === '/help') return "Commands: /stonks, /ping";
+    if (msg === '/help') return "Commands: /stonks, /ping, /whoami";
+    if (msg === '/whoami') return { embed: { title: "👤 User", fields: [{ name: "Name", value: author }] } };
     return null;
 }`,
-                channels: [],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            await loadBots();
+                    channels: [],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                await loadBots();
+                showToast("Default bot created! Try /stonks");
+            }
         }
-    }, 2000);
+    }, 3000);
 </script>
 </body>
 </html>
