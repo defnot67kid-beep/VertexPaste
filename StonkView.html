@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Stonks Sever · Custom Bot Studio</title>
+    <title>Stonks Sever · Admin Bot Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Monaco Editor -->
     <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -23,7 +22,6 @@
         }
         .app { display: flex; height: 100%; width: 100%; }
         
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: #111827;
@@ -52,7 +50,7 @@
         .admin-badge { background: linear-gradient(135deg, #ef4444, #f59e0b); padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; display: inline-block; margin-left: 6px; }
         .hidden { display: none; }
         
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin: 4px 12px; border-radius: 12px; cursor: pointer; color: #9ca3af; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin: 4px 12px; border-radius: 12px; cursor: pointer; color: #9ca3af; transition: 0.2s; }
         .nav-item:hover { background: #1f2937; color: #fbbf24; }
         
         .category-group { margin: 10px 0; }
@@ -60,7 +58,6 @@
         .channel-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 28px; border-radius: 8px; cursor: pointer; color: #9ca3af; font-size: 0.85rem; }
         .channel-item.active { background: #1f2937; color: #fbbf24; }
         
-        /* Chat Area */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #0f172a; width: 100%; overflow: hidden; }
         .chat-header { padding: 12px 16px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; background: #0f172a; }
         .mobile-menu-btn { background: #1e293b; border: none; color: #fbbf24; padding: 8px 12px; border-radius: 10px; cursor: pointer; margin-right: 12px; display: flex; }
@@ -68,8 +65,8 @@
         
         .channel-info { flex: 1; display: flex; align-items: center; gap: 8px; }
         .channel-name { font-size: 1.1rem; font-weight: 600; }
+        .sign-out-btn { background: #1e293b; border: none; padding: 6px 14px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.8rem; }
         
-        /* Messages */
         .messages-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
         .message { display: flex; gap: 10px; max-width: 90%; animation: fadeIn 0.2s ease; position: relative; transition: 0.1s; }
         .message-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -77,12 +74,25 @@
         .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
         .message-time { font-size: 0.6rem; color: #94a3b8; }
         .message-text { font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
+        .message-text .reply-quote { background: #334155; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; margin-bottom: 6px; border-left: 3px solid #fbbf24; }
         .system-message { background: linear-gradient(135deg, #1e293b, #1a1f2e); border-left: 3px solid #fbbf24; }
         .bot-tag { background: #8b5cf6; padding: 2px 6px; border-radius: 10px; font-size: 0.6rem; margin-left: 6px; }
         
-        .input-area { padding: 12px; border-top: 1px solid #1e293b; display: flex; gap: 10px; background: #0f172a; align-items: center; flex-wrap: wrap; }
-        .input-area input { flex: 1; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; font-size: 16px; min-width: 120px; }
+        .reply-indicator { background: #334155; padding: 6px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 0.7rem; color: #fbbf24; border-left: 3px solid #fbbf24; display: flex; align-items: center; gap: 8px; }
+        .replying-to { font-size: 0.65rem; color: #94a3b8; margin-bottom: 6px; }
+        
+        .message-actions { position: absolute; right: 5px; top: 5px; display: flex; gap: 6px; background: #1e293b; padding: 4px 8px; border-radius: 20px; border: 1px solid #fbbf24; z-index: 10; backdrop-filter: blur(4px); }
+        .action-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 6px; border-radius: 6px; font-size: 0.7rem; transition: 0.1s; }
+        .action-btn:hover { background: #334155; color: #fbbf24; }
+        .action-btn.delete { color: #ef4444; }
+        .action-btn.delete:hover { background: #7f1d1d; color: white; }
+        
+        .input-area { padding: 12px; border-top: 1px solid #1e293b; display: flex; flex-direction: column; gap: 8px; background: #0f172a; }
+        .input-row { display: flex; gap: 10px; align-items: center; }
+        .input-area input { flex: 1; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
         .input-area button { background: #fbbf24; border: none; padding: 0 20px; border-radius: 30px; font-weight: bold; cursor: pointer; color: #0f172a; height: 44px; }
+        .cancel-reply { background: #334155; border: none; padding: 6px 12px; border-radius: 20px; color: white; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; }
+        
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(70px); background: #1e293b; padding: 8px 16px; border-radius: 30px; z-index: 1100; transition: 0.3s; border-left: 3px solid #fbbf24; font-size: 13px; white-space: nowrap; }
         .toast.show { transform: translateX(-50%) translateY(0); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -97,12 +107,11 @@
         .lang-select { background: #1e293b; padding: 6px 12px; border-radius: 24px; color: #fbbf24; border: none; }
         .cmd-list { background: #1e293b; padding: 12px; border-radius: 16px; max-height: 200px; overflow-y: auto; font-size: 0.8rem; }
         .preview-embed { background: #0f172a; border-radius: 16px; padding: 12px; border-left: 4px solid #fbbf24; margin-top: 8px; }
-        .test-console { background: #0a0a0f; border-radius: 14px; padding: 12px; height: 180px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; }
+        .test-console { background: #0a0a0f; border-radius: 14px; padding: 12px; height: 180px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; }
         .test-input { display: flex; gap: 6px; margin-top: 8px; }
         .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 8px 18px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 30px; cursor: pointer; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .status-badge { background: #059669; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .empty-chat { text-align: center; padding: 40px; color: #6b7280; }
     </style>
@@ -121,11 +130,18 @@
         <div class="chat-header">
             <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
             <div class="channel-info"><i class="fas fa-hashtag"></i><span class="channel-name" id="currentChannelName">general</span></div>
+            <button class="sign-out-btn" id="signOutTopBtn">Exit</button>
         </div>
         <div class="messages-container" id="messagesContainer"></div>
         <div class="input-area" id="inputArea">
-            <input type="text" id="messageInput" placeholder="Type message... use commands like /help, /stonks">
-            <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
+            <div id="replyPreview" style="display:none;" class="reply-indicator">
+                <i class="fas fa-reply"></i> <span id="replyingToText"></span>
+                <button class="cancel-reply" id="cancelReplyBtn">✖ Cancel</button>
+            </div>
+            <div class="input-row">
+                <input type="text" id="messageInput" placeholder="Type a message... Shift+Click any message to reply/delete">
+                <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
+            </div>
         </div>
     </div>
 
@@ -139,26 +155,25 @@
     </div>
 </div>
 
-<!-- Bot Studio Modal (Admin only) -->
 <div id="studioModal" class="modal"><div class="modal-content">
     <div class="modal-header"><h2><i class="fas fa-code"></i> Custom Bot Studio</h2><button id="closeStudioBtn" class="btn-outline">✕ Close</button></div>
     <div class="studio-grid">
         <div class="editor-panel">
-            <div class="flex-between"><span><i class="fas fa-terminal"></i> Code Editor (JS/Python/HTML preview)</span><select id="botLangSelect" class="lang-select"><option value="javascript">JavaScript</option><option value="python">Python (simulated)</option><option value="html">HTML Embed</option></select></div>
+            <div class="flex-between"><span><i class="fas fa-terminal"></i> Code Editor (JS)</span><select id="botLangSelect" class="lang-select"><option value="javascript">JavaScript (Full Control)</option><option value="html">HTML Embed Widget</option></select></div>
             <div id="monacoContainer" class="monaco-editor-holder"></div>
             <div class="flex-between" style="margin-top: 12px;"><button id="saveBotBtn" class="btn-gold"><i class="fas fa-save"></i> Save Bot</button><button id="testBotBtn" class="btn-outline"><i class="fas fa-vial"></i> Run Test</button></div>
-            <div class="cmd-list"><strong>📋 Registered Commands:</strong> <span id="botCommandsList">/ping, /stonks, /help</span><br><small>Your bot can define commands like: { "ping": "Pong!" } or advanced functions</small></div>
+            <div class="cmd-list"><strong>📋 Bot Commands:</strong> <span id="botCommandsList">Define commands via botCommands object</span><br><small>Example: const botCommands = { "/ping": "Pong!", "/status": "Online" };</small></div>
         </div>
         <div class="preview-panel">
             <h4><i class="fas fa-eye"></i> Live Preview (HTML Embed)</h4>
-            <div id="embedPreviewArea" style="background:#0f172a; border-radius: 16px; padding: 12px; min-height: 200px; border:1px solid #334155;">✨ HTML preview will appear here for embed bots</div>
-            <h4>🤖 Bot Behavior Preview</h4>
+            <div id="embedPreviewArea" style="background:#0f172a; border-radius: 16px; padding: 12px; min-height: 200px; border:1px solid #334155;">✨ HTML preview will appear here</div>
+            <h4>🤖 Bot Behavior</h4>
             <div id="botBehaviorPreview" style="font-size:0.85rem; color:#94a3b8;">Click "Run Test" to see command outputs</div>
         </div>
         <div class="test-panel">
             <h4><i class="fas fa-flask"></i> Testing Console</h4>
             <div id="testConsole" class="test-console">> Bot tester ready. Type a command below:</div>
-            <div class="test-input"><input type="text" id="testCommandInput" placeholder="/mycommand or text" style="flex:1; background:#1e293b; border:none; padding:8px 12px; border-radius:30px; color:white;"><button id="execTestCmd" class="btn-gold" style="padding:6px 14px;">Test</button></div>
+            <div class="test-input"><input type="text" id="testCommandInput" placeholder="/ping or /mycommand" style="flex:1; background:#1e293b; border:none; padding:8px 12px; border-radius:30px; color:white;"><button id="execTestCmd" class="btn-gold" style="padding:6px 14px;">Test</button></div>
             <button id="resetDefaultBot" class="btn-outline" style="margin-top:8px;"><i class="fas fa-undo-alt"></i> Load Default Bot</button>
         </div>
     </div>
@@ -175,69 +190,79 @@
     
     const OWNER_EMAIL = "defnot67kid@gmail.com";
     let currentUser = null, isAdmin = false, isOwner = false, currentChannelId = "general", unsubscribeMessages = null;
-    let customBotCode = { js: `// Custom JavaScript Bot\n// Define commands as object or function\nconst botCommands = {\n  "/ping": "🏓 Pong! I'm a custom bot",\n  "/status": "✅ Bot is active",\n  "/embed": { embed: true, html: '<div class=\"embed-card\" style=\"border-left-color:#fbbf24;\"><b>📊 Market Update</b><br>STONKS: +5%</div>' }\n};\n\nfunction handleCommand(cmd, args, username) {\n  if(botCommands[cmd]) return botCommands[cmd];\n  return null;\n}`, py: `# Python-like bot (simulated)\n# Define dictionary\ncommands = {\n    "/ping": "Pong from Py!",\n    "/calc": lambda x: f"Result: {eval(x)}"\n}\ndef handle(cmd, args, user):\n    if cmd in commands:\n        return commands[cmd]` , html: `<div style="background: linear-gradient(145deg,#1f2937,#0f172a); padding:16px; border-radius:20px; text-align:center;">\n  <i class="fas fa-chart-line" style="font-size:32px; color:#fbbf24;"></i>\n  <h3>Stonks Live Ticker</h3>\n  <p>STNK: $156.20 ▲ +2.4%</p>\n  <button onclick="alert('To the moon!')">🚀 HODL</button>\n</div>` };
-    
-    let activeBot = { type: "javascript", code: customBotCode.js, commandsMap: { "/ping": "🏓 Pong! I'm a custom bot", "/status": "✅ Bot is active", "/embed": { embed: true, html: '<div class=\"embed-card\"><b>📊 Market</b><br>STONKS: +5%</div>' } } };
-    let botDeletePermission = false;
+    let currentReplyTo = null;
+    let activeBotCode = `// === CUSTOM STONKS BOT ===
+// Define your commands here:
+const botCommands = {
+    "/ping": "🏓 Pong! Custom bot is alive!",
+    "/status": "✅ Bot is online and ready",
+    "/stonks": { embed: true, html: '<div class="embed-card" style="border-left-color:#fbbf24;"><b>📈 STONKS LIVE</b><br>STNK: $156.20 ▲ +2.4%<br>CRPT: $92.45 🟢</div>' },
+    "/hello": (args, user) => \`Hello @\${user}, welcome to Stonks Sever!\`
+};
+
+// Optional: advanced handler
+function handleCommand(cmd, args, username) {
+    if (botCommands[cmd]) {
+        const res = botCommands[cmd];
+        if (typeof res === 'function') return res(args, username);
+        return res;
+    }
+    return null;
+}`;
+    let botType = "javascript";
     let monacoEditor = null;
     
     function showToast(msg) { const t=document.getElementById('toastMsg'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
     function escapeHtml(s) { if(!s) return ''; return String(s).replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     function formatTime(ts) { if(!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
     
-    // Bot command resolver (custom JS bot)
+    // Execute custom bot without redeclaration errors
     function executeCustomBot(commandText, username) {
+        if (botType !== "javascript") return null;
         try {
-            if (!activeBot || activeBot.type === "javascript") {
-                // dynamic evaluation with safe sandbox
-                const cmdLower = commandText.split(' ')[0];
-                let codeToRun = activeBot?.code || customBotCode.js;
-                const botObj = { commands: {} };
-                const funcBody = `const botCommands = {}; ${codeToRun}\n return { botCommands, handleCommand };`;
-                const AsyncFn = new Function(funcBody);
-                const context = AsyncFn();
-                const commands = context.botCommands || {};
-                if (commands[cmdLower]) {
-                    let response = commands[cmdLower];
-                    if (typeof response === 'function') response = response(commandText.slice(cmdLower.length).trim(), username);
-                    if (response && response.embed) return { embed: true, html: response.html };
-                    if (typeof response === 'string') return { text: response };
-                    return { text: String(response) };
-                }
-                if (context.handleCommand && typeof context.handleCommand === 'function') {
-                    const res = context.handleCommand(cmdLower, commandText.slice(cmdLower.length).trim(), username);
-                    if (res) {
-                        if (res.embed) return { embed: true, html: res.html };
-                        return { text: String(res) };
-                    }
-                }
+            const codeToRun = activeBotCode;
+            const sandbox = {};
+            const wrappedCode = `(function() { ${codeToRun}; return { botCommands, handleCommand }; })()`;
+            const func = new Function(wrappedCode);
+            const context = func();
+            const commands = context.botCommands || {};
+            const handler = context.handleCommand;
+            const cmdName = commandText.split(' ')[0];
+            const args = commandText.slice(cmdName.length).trim();
+            
+            if (commands[cmdName]) {
+                let response = commands[cmdName];
+                if (typeof response === 'function') response = response(args, username);
+                if (response && typeof response === 'object' && response.embed) return { embed: true, html: response.html };
+                return { text: String(response) };
             }
-            if (activeBot.type === "html") {
-                return { embed: true, html: activeBot.code };
+            if (handler && typeof handler === 'function') {
+                const res = handler(cmdName, args, username);
+                if (res) {
+                    if (res.embed) return { embed: true, html: res.html };
+                    return { text: String(res) };
+                }
             }
         } catch(e) { console.warn(e); return { text: "🤖 Bot error: " + e.message }; }
         return null;
     }
     
-    // Default fallback commands (stonks, help, ping)
-    function getDefaultBotResponse(command, username) {
-        const low = command.toLowerCase();
-        if (low === '/stonks') return { embed: true, html: `<div class="embed-card" style="border-left-color:#fbbf24;"><div>📈 STONKS MARKET</div><div>STNK: $142.50 🟢</div><div>CRPT: $87.30 🔴</div></div>` };
-        if (low === '/help') return { text: "🤖 Commands: /stonks, /ping, /status, and custom bot commands from admin" };
-        if (low === '/ping') return { text: "🏓 Pong!" };
-        if (low === '/status') return { text: "✅ Bot system active" };
+    // Default fallback
+    function getDefaultResponse(cmd) {
+        const low = cmd.toLowerCase();
+        if (low === '/help') return { text: "📋 Commands: /ping, /stonks, /status, /hello, plus your custom bot commands!" };
+        if (low === '/ping') return { text: "🏓 Pong from core bot!" };
+        if (low === '/stonks') return { embed: true, html: '<div class="embed-card" style="border-left-color:#fbbf24;"><b>📈 STONKS</b><br>$STONK: $142.50 🟢<br>$MOON: $315.20 🚀</div>' };
         return null;
     }
     
-    async function handlePossibleBotCommand(msgText, authorName, isBotMessage=false) {
-        if (isBotMessage) return null;
-        if (!msgText.startsWith('/')) return null;
-        const cmd = msgText.split(' ')[0];
+    async function handleBotTrigger(msgText, authorName) {
+        if (!msgText.startsWith('/')) return false;
         let response = executeCustomBot(msgText, authorName);
-        if (!response) response = getDefaultBotResponse(msgText, authorName);
+        if (!response) response = getDefaultResponse(msgText);
         if (response) {
             await db.collection("channels").doc(currentChannelId).collection("messages").add({
-                text: response.embed ? (response.html || "✨ Embed") : response.text,
+                text: response.embed ? (response.html || "✨") : response.text,
                 uid: "bot_system",
                 displayName: "CustomBot 🤖",
                 photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
@@ -250,22 +275,50 @@
         return false;
     }
     
+    async function deleteMessage(channelId, messageId) {
+        if (!currentUser) return;
+        const msgRef = db.collection("channels").doc(channelId).collection("messages").doc(messageId);
+        const doc = await msgRef.get();
+        if (!doc.exists) return;
+        const data = doc.data();
+        const canDel = (isOwner || isAdmin || data.uid === currentUser.uid);
+        if (!canDel) { showToast("❌ No permission"); return; }
+        await msgRef.delete();
+        showToast("🗑️ Message deleted");
+    }
+    
+    function setReplyTo(messageId, author, text) {
+        currentReplyTo = { messageId, author, text };
+        document.getElementById('replyingToText').innerText = `Replying to @${author}: ${text.substring(0, 60)}${text.length > 60 ? '...' : ''}`;
+        document.getElementById('replyPreview').style.display = 'flex';
+        document.getElementById('messageInput').focus();
+    }
+    
+    function cancelReply() { currentReplyTo = null; document.getElementById('replyPreview').style.display = 'none'; }
+    
     async function sendMessage() {
         if (!currentUser) { showToast("Sign in first"); return; }
         const input = document.getElementById('messageInput');
         let text = input.value.trim();
         if (!text) return;
+        let finalText = text;
+        let replyData = null;
+        if (currentReplyTo) {
+            replyData = { messageId: currentReplyTo.messageId, author: currentReplyTo.author, text: currentReplyTo.text };
+            finalText = text;
+            cancelReply();
+        }
         await db.collection("channels").doc(currentChannelId).collection("messages").add({
-            text: text,
+            text: finalText,
             uid: currentUser.uid,
             displayName: currentUser.displayName,
             photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}`,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             isBot: false,
+            replyTo: replyData || null
         });
         input.value = '';
-        // trigger bot response after human message
-        setTimeout(() => handlePossibleBotCommand(text, currentUser.displayName), 100);
+        setTimeout(() => handleBotTrigger(text, currentUser.displayName), 80);
     }
     
     async function loadChannels() {
@@ -308,12 +361,17 @@
             let html = '';
             snapshot.forEach(doc => {
                 const d = doc.data();
-                const isSystem = d.isBot;
+                const msgId = doc.id;
+                let replyHtml = '';
+                if (d.replyTo) {
+                    replyHtml = `<div class="replying-to"><i class="fas fa-reply"></i> Replying to @${escapeHtml(d.replyTo.author)}: ${escapeHtml(d.replyTo.text.substring(0, 60))}</div>`;
+                }
                 let contentHtml = d.isEmbed ? d.text : escapeHtml(d.text);
-                html += `<div class="message ${isSystem ? 'system-message' : ''}">
+                html += `<div class="message ${d.isBot ? 'system-message' : ''}" data-msg-id="${msgId}" data-msg-author="${escapeHtml(d.displayName)}" data-msg-text="${escapeHtml(d.text).replace(/"/g, '&quot;')}">
                     <img src="${d.photoURL || 'https://ui-avatars.com/api/?name=User'}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User'">
                     <div class="message-content">
                         <div class="message-author">${escapeHtml(d.displayName)}${d.isBot ? '<span class="bot-tag">BOT</span>' : ''}<span class="message-time">${formatTime(d.createdAt)}</span></div>
+                        ${replyHtml}
                         <div class="message-text">${contentHtml}</div>
                     </div>
                 </div>`;
@@ -321,16 +379,52 @@
             if (!html) html = '<div class="empty-chat">✨ No messages. Try /help</div>';
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
+            
+            // Shift+Click actions
+            document.querySelectorAll('.message').forEach(msgDiv => {
+                msgDiv.addEventListener('click', async (e) => {
+                    if (e.shiftKey) {
+                        e.stopPropagation();
+                        const msgId = msgDiv.dataset.msgId;
+                        const author = msgDiv.dataset.msgAuthor;
+                        const text = msgDiv.dataset.msgText;
+                        const docSnap = await db.collection("channels").doc(channelId).collection("messages").doc(msgId).get();
+                        if (!docSnap.exists) return;
+                        const msgData = docSnap.data();
+                        const canDel = (isOwner || isAdmin || (msgData.uid === currentUser?.uid));
+                        const existingMenu = msgDiv.querySelector('.message-actions');
+                        if (existingMenu) existingMenu.remove();
+                        const actionMenu = document.createElement('div');
+                        actionMenu.className = 'message-actions';
+                        actionMenu.innerHTML = `<button class="action-btn reply" title="Reply"><i class="fas fa-reply"></i> Reply</button>
+                            ${canDel ? `<button class="action-btn delete" title="Delete"><i class="fas fa-trash"></i> Delete</button>` : ''}`;
+                        msgDiv.style.position = 'relative';
+                        msgDiv.appendChild(actionMenu);
+                        actionMenu.querySelector('.reply')?.addEventListener('click', (e2) => {
+                            e2.stopPropagation();
+                            setReplyTo(msgId, author, text);
+                            actionMenu.remove();
+                        });
+                        actionMenu.querySelector('.delete')?.addEventListener('click', async (e2) => {
+                            e2.stopPropagation();
+                            await deleteMessage(channelId, msgId);
+                            actionMenu.remove();
+                        });
+                        setTimeout(() => { if(actionMenu.parentNode) actionMenu.remove(); }, 4000);
+                        const removeOnClick = (e3) => { if (!actionMenu.contains(e3.target)) actionMenu.remove(); document.removeEventListener('click', removeOnClick); };
+                        document.addEventListener('click', removeOnClick);
+                    }
+                });
+            });
         });
     }
     
-    // Bot Studio Monaco Initialization
-    let editorInstance = null;
-    async function initMonaco() {
+    // Monaco & Bot Studio
+    function initMonaco() {
         require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
         require(['vs/editor/editor.main'], function() {
-            editorInstance = monaco.editor.create(document.getElementById('monacoContainer'), {
-                value: activeBot.code,
+            monacoEditor = monaco.editor.create(document.getElementById('monacoContainer'), {
+                value: activeBotCode,
                 language: 'javascript',
                 theme: 'vs-dark',
                 automaticLayout: true,
@@ -340,65 +434,58 @@
         });
     }
     
-    function updatePreviewAndCommands() {
-        const lang = document.getElementById('botLangSelect').value;
-        let code = editorInstance ? editorInstance.getValue() : activeBot.code;
-        if (lang === 'html') {
-            document.getElementById('embedPreviewArea').innerHTML = code;
-            document.getElementById('botCommandsList').innerHTML = "HTML embed (no commands, displays visual)";
-        } else {
-            try {
-                const fakeFn = new Function(`"use strict"; ${code}; return typeof botCommands !== 'undefined' ? Object.keys(botCommands).join(', ') : 'commands defined in handleCommand'`);
-                const cmdKeys = fakeFn();
-                document.getElementById('botCommandsList').innerHTML = cmdKeys || '/ping, /help (custom dynamic)';
-                document.getElementById('embedPreviewArea').innerHTML = '<span class="status-badge">⚡ JS/Python logic active</span><br><small>Preview shows only HTML embed bots</small>';
-            } catch(e) { document.getElementById('botCommandsList').innerHTML = "Error parsing commands"; }
-        }
-    }
-    
     function saveBot() {
-        if (!isAdmin && !isOwner) { showToast("Admin only"); return; }
+        if (!isAdmin && !isOwner) { showToast("Admin/Owner only"); return; }
         const lang = document.getElementById('botLangSelect').value;
-        let code = editorInstance ? editorInstance.getValue() : customBotCode.js;
-        activeBot = { type: lang, code: code };
-        if (lang !== 'html') {
-            try { new Function(code); showToast("Bot saved (JS valid)"); } catch(e) { showToast("Invalid JS code but saved"); }
-        } else { showToast("HTML embed bot saved"); updatePreviewAndCommands(); }
+        let code = monacoEditor ? monacoEditor.getValue() : activeBotCode;
+        if (lang === 'html') {
+            botType = 'html';
+            activeBotCode = code;
+            showToast("HTML embed bot saved!");
+        } else {
+            botType = 'javascript';
+            try { new Function(code); activeBotCode = code; showToast("✅ JS Bot saved"); } 
+            catch(e) { showToast("JS Error: " + e.message); return; }
+        }
         document.getElementById('studioModal').classList.remove('active');
-        showToast("✅ Custom bot deployed!");
     }
     
     function testBotCommand() {
         const testInput = document.getElementById('testCommandInput').value;
         if (!testInput) return;
         const consoleDiv = document.getElementById('testConsole');
-        let result = executeCustomBot(testInput, "Tester");
-        if (!result) result = getDefaultBotResponse(testInput, "Tester");
-        const output = result ? (result.embed ? "[EMBED] " + result.html.substring(0,80) : result.text) : "No response from bot";
+        let result = null;
+        if (botType === 'javascript') result = executeCustomBot(testInput, "Tester");
+        if (!result) result = getDefaultResponse(testInput);
+        const output = result ? (result.embed ? "[EMBED] " + (result.html || "").substring(0,100) : result.text) : "⚠️ No response";
         consoleDiv.innerHTML += `\n> ${escapeHtml(testInput)}\n< ${escapeHtml(output)}`;
         consoleDiv.scrollTop = consoleDiv.scrollHeight;
-        if (result && result.embed) document.getElementById('embedPreviewArea').innerHTML = result.html;
+        if (result && result.embed && botType !== 'html') document.getElementById('embedPreviewArea').innerHTML = result.html || "Preview";
         document.getElementById('testCommandInput').value = '';
     }
     
     function resetDefault() {
         if (!isAdmin && !isOwner) return;
-        activeBot = { type: "javascript", code: customBotCode.js };
-        if (editorInstance) editorInstance.setValue(customBotCode.js);
+        activeBotCode = `// === CUSTOM STONKS BOT ===
+const botCommands = {
+    "/ping": "🏓 Pong! Custom bot is alive!",
+    "/status": "✅ Bot is online and ready",
+    "/stonks": { embed: true, html: '<div class="embed-card" style="border-left-color:#fbbf24;"><b>📈 STONKS LIVE</b><br>STNK: $156.20 ▲ +2.4%</div>' },
+    "/hello": (args, user) => \`Hello @\${user}!\`
+};`;
+        botType = "javascript";
+        if (monacoEditor) monacoEditor.setValue(activeBotCode);
         document.getElementById('botLangSelect').value = "javascript";
-        updatePreviewAndCommands();
         showToast("Default bot restored");
     }
     
     function openStudio() {
         if (!isAdmin && !isOwner) { showToast("Admin/Owner only"); return; }
-        if (editorInstance) editorInstance.setValue(activeBot.code);
-        document.getElementById('botLangSelect').value = activeBot.type || "javascript";
-        updatePreviewAndCommands();
+        if (monacoEditor) monacoEditor.setValue(activeBotCode);
+        document.getElementById('botLangSelect').value = botType;
         document.getElementById('studioModal').classList.add('active');
     }
     
-    // auth & UI
     function updateUI(user) {
         const authOverlay = document.querySelector('#authOverlay');
         if (user) {
@@ -417,8 +504,9 @@
         }
     }
     
-    auth.onAuthStateChanged(user => { currentUser = user; updateUI(user); });
+    // Event bindings
     document.getElementById('signInBtn')?.addEventListener('click', () => { const provider = new firebase.auth.GoogleAuthProvider(); auth.signInWithPopup(provider); });
+    document.getElementById('signOutTopBtn')?.addEventListener('click', () => auth.signOut());
     document.getElementById('signOutSidebarBtn')?.addEventListener('click', () => auth.signOut());
     document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
     document.getElementById('messageInput')?.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
@@ -430,15 +518,23 @@
     document.getElementById('testBotBtn')?.addEventListener('click', testBotCommand);
     document.getElementById('execTestCmd')?.addEventListener('click', testBotCommand);
     document.getElementById('resetDefaultBot')?.addEventListener('click', resetDefault);
+    document.getElementById('cancelReplyBtn')?.addEventListener('click', cancelReply);
     document.getElementById('botLangSelect')?.addEventListener('change', () => {
         const lang = document.getElementById('botLangSelect').value;
-        let demoCode = customBotCode[lang] || customBotCode.js;
-        if (editorInstance) editorInstance.setValue(demoCode);
-        if (lang === 'html') document.getElementById('embedPreviewArea').innerHTML = demoCode;
-        else document.getElementById('embedPreviewArea').innerHTML = '<span class="status-badge">🤖 Code editor active — send commands in chat to test</span>';
+        if (lang === 'html') {
+            if (monacoEditor) monacoEditor.setValue(`<div style="background:#1f2937; padding:16px; border-radius:20px; text-align:center;">
+  <i class="fas fa-chart-line" style="font-size:32px; color:#fbbf24;"></i>
+  <h3>Stonks Widget</h3>
+  <p>STNK: $178.20 🚀</p>
+</div>`);
+        } else {
+            if (monacoEditor) monacoEditor.setValue(activeBotCode);
+        }
     });
+    
+    auth.onAuthStateChanged(user => { currentUser = user; updateUI(user); });
     initMonaco();
-    setTimeout(() => { if(editorInstance && customBotCode.js) editorInstance.setValue(customBotCode.js); }, 800);
+    setTimeout(() => { if(monacoEditor && activeBotCode) monacoEditor.setValue(activeBotCode); }, 500);
 </script>
 </body>
 </html>
