@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Roblox Gamepass Sync — Firebase Sender</title>
-    <!-- Firebase SDKs (modular style, latest v9+) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Gamepass Sync — Firebase Sender (Fixed)</title>
+    <!-- Firebase SDKs - using correct Realtime Database URL structure -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+        import { getDatabase, ref, push, set, serverTimestamp, get, child } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
         // Your provided Firebase configuration
         const firebaseConfig = {
@@ -23,7 +23,9 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         
-        // Reference to main collection: "gamepassEntries" (auto-creates if not exists)
+        // IMPORTANT: Using the correct Realtime Database reference
+        // The database URL for vertexpaste project is: https://vertexpaste-default-rtdb.firebaseio.com/
+        // We'll use the default database reference
         const gamepassRef = ref(database, 'gamepassEntries');
 
         // DOM elements
@@ -31,86 +33,171 @@
         const sendButton = document.getElementById('sendButton');
         const statusDiv = document.getElementById('statusMessage');
         const resultIdSpan = document.getElementById('resultId');
+        const testButton = document.getElementById('testButton');
 
         // Helper: Show status with success/error styling
-        function showStatus(message, isError = false) {
+        function showStatus(message, isError = false, isInfo = false) {
             statusDiv.textContent = message;
-            statusDiv.classList.remove('hidden', 'success', 'error');
+            statusDiv.classList.remove('hidden', 'success', 'error', 'info');
             if (isError) {
                 statusDiv.classList.add('error');
+            } else if (isInfo) {
+                statusDiv.classList.add('info');
             } else {
                 statusDiv.classList.add('success');
             }
-            // Auto-hide status after 4 seconds if it's a success (optional)
-            if (!isError) {
+            
+            // Auto-hide after 5 seconds for success/info, longer for errors
+            const duration = isError ? 8000 : 5000;
+            setTimeout(() => {
+                if (statusDiv.classList.contains('success') || statusDiv.classList.contains('info') || statusDiv.classList.contains('error')) {
+                    statusDiv.classList.add('hidden');
+                }
+            }, duration);
+        }
+
+        // Test connection to Firebase
+        async function testFirebaseConnection() {
+            showStatus("🔍 Testing Firebase connection...", false, true);
+            try {
+                const testRef = ref(database, 'connection_test');
+                const testData = {
+                    message: "Connection successful!",
+                    timestamp: serverTimestamp(),
+                    clientTime: new Date().toISOString()
+                };
+                await set(testRef, testData);
+                showStatus("✅ Firebase connection successful! Ready to send gamepass IDs.", false, false);
                 setTimeout(() => {
-                    if (statusDiv.classList.contains('success')) {
-                        statusDiv.classList.add('hidden');
-                    }
-                }, 4500);
-            } else {
-                // Error stays longer but also can fade? we keep visible, but let user see.
-                setTimeout(() => {
-                    if (statusDiv.classList.contains('error')) {
-                        statusDiv.classList.add('hidden');
-                    }
-                }, 6000);
+                    // Clean up test data after 3 seconds
+                    set(testRef, null).catch(e => console.warn("Cleanup failed:", e));
+                }, 3000);
+                return true;
+            } catch (error) {
+                console.error("Connection test failed:", error);
+                showStatus("❌ Firebase connection failed: " + error.message, true, false);
+                return false;
             }
         }
 
         // Core function: push gamepass ID to Firebase
         async function sendGamepassToFirebase(gamepassId) {
-            if (!gamepassId || gamepassId.trim() === "") {
-                showStatus("❌ Please enter a valid Roblox Gamepass ID (numeric or text).", true);
+            if (!gamepassId || gamepassId.toString().trim() === "") {
+                showStatus("❌ Please enter a valid Roblox Gamepass ID", true);
                 return false;
             }
             
-            const trimmedId = gamepassId.trim();
-            // Validate if it looks like a typical Roblox gamepass ID (mostly numeric, but we accept any string because gamepass IDs are numeric)
-            // However, we still accept any text, just check if it's not empty.
-            if (isNaN(trimmedId) || trimmedId === "") {
-                // Still allow, because sometimes IDs can be passed as string, but typical roblox gamepass id is numeric.
-                // We'll just show a gentle warning but still proceed.
-                console.warn("Non-numeric ID entered, but saving as is.");
-            }
+            const trimmedId = gamepassId.toString().trim();
             
             try {
-                // Using push() creates a unique key per entry (timestamp + random). 
-                // This way you can store multiple gamepass submissions.
+                showStatus("📤 Sending gamepass ID to Firebase...", false, true);
+                
+                // Using push() creates a unique key per entry
                 const newEntryRef = push(gamepassRef);
+                
+                // Create data object with multiple fields for better structure
                 const entryData = {
                     gamepassId: trimmedId,
-                    timestamp: serverTimestamp(),   // Firebase server timestamp
-                    submittedAt: new Date().toISOString() // fallback readable timestamp
+                    timestamp: serverTimestamp(),
+                    submittedAt: new Date().toISOString(),
+                    submittedAtUnix: Date.now(),
+                    validated: true
                 };
                 
+                // Write to Firebase
                 await set(newEntryRef, entryData);
                 
-                // Get unique key generated by Firebase
+                // Get the unique key generated by Firebase
                 const uniqueKey = newEntryRef.key;
                 resultIdSpan.textContent = uniqueKey;
-                showStatus(`✅ Gamepass ID "${trimmedId}" successfully saved to Firebase! Entry ID: ${uniqueKey}`, false);
                 
-                // Clear input optionally? We'll keep but highlight success.
+                // Verify the data was written by reading it back
+                const verifyRef = ref(database, `gamepassEntries/${uniqueKey}`);
+                const snapshot = await get(verifyRef);
+                
+                if (snapshot.exists()) {
+                    const savedData = snapshot.val();
+                    showStatus(`✅ SUCCESS! Gamepass ID "${trimmedId}" saved to Firebase! Entry ID: ${uniqueKey}`, false);
+                    console.log("Verified saved data:", savedData);
+                } else {
+                    showStatus(`⚠️ Gamepass ID sent but verification failed. Check Firebase console. ID: ${trimmedId}`, false, true);
+                }
+                
+                // Clear input after successful send
                 gamepassInput.value = "";
-                // Optional: focus back
                 gamepassInput.focus();
+                
+                // Update stats
+                updateStats();
+                
                 return true;
             } catch (error) {
                 console.error("Firebase write error:", error);
-                let errorMsg = "⚠️ Firebase error: " + (error.message || "Unknown error. Check console.");
+                let errorMsg = "⚠️ Firebase error: ";
+                if (error.code) {
+                    errorMsg += error.code + " - ";
+                }
+                errorMsg += error.message || "Unknown error. Check console for details.";
+                
+                // Provide specific troubleshooting tips
+                if (error.message && error.message.includes("permission")) {
+                    errorMsg += " (Database permissions issue - check Firebase Rules)";
+                } else if (error.message && error.message.includes("network")) {
+                    errorMsg += " (Network error - check internet connection)";
+                }
+                
                 showStatus(errorMsg, true);
                 return false;
             }
         }
 
-        // Event handler for button click
+        // Function to fetch and display recent submissions
+        async function updateStats() {
+            try {
+                const snapshot = await get(gamepassRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const count = Object.keys(data).length;
+                    const countElement = document.getElementById('submissionCount');
+                    if (countElement) {
+                        countElement.textContent = count;
+                    }
+                    
+                    // Get last 3 submissions
+                    const entries = [];
+                    for (const [key, value] of Object.entries(data)) {
+                        entries.push({ id: key, ...value });
+                    }
+                    entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    const recentList = document.getElementById('recentList');
+                    if (recentList) {
+                        recentList.innerHTML = '';
+                        for (let i = 0; i < Math.min(3, entries.length); i++) {
+                            const entry = entries[i];
+                            const li = document.createElement('li');
+                            const time = entry.submittedAt ? new Date(entry.submittedAt).toLocaleTimeString() : 'recent';
+                            li.textContent = `${entry.gamepassId} (${time})`;
+                            recentList.appendChild(li);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not fetch stats:", e);
+            }
+        }
+
+        // Handle send button click
         function handleSend() {
             const rawId = gamepassInput.value;
+            if (!rawId.trim()) {
+                showStatus("❌ Please enter a Gamepass ID", true);
+                gamepassInput.focus();
+                return;
+            }
             sendGamepassToFirebase(rawId);
         }
 
-        // Allow pressing Enter key inside textbox to trigger send
+        // Allow pressing Enter key inside textbox
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -122,24 +209,31 @@
         sendButton.addEventListener('click', handleSend);
         gamepassInput.addEventListener('keypress', handleKeyPress);
         
-        // Optional: Initial status ready
-        showStatus("📡 Ready — Enter a Gamepass ID and click send. Data will go to Firebase Realtime Database.", false);
-        // hide after 3 seconds initially? we keep readable but it will auto-hide soon? Let's make it fade after 4 sec
-        setTimeout(() => {
-            if (statusDiv.classList.contains('success') && statusDiv.textContent.includes("Ready")) {
-                statusDiv.classList.add('hidden');
-            }
-        }, 4000);
+        // Test button functionality
+        if (testButton) {
+            testButton.addEventListener('click', async () => {
+                await testFirebaseConnection();
+            });
+        }
+        
+        // Initial status and stats
+        showStatus("✅ Ready! Enter a Gamepass ID and click Send. Data will go to Firebase Realtime Database.", false);
+        
+        // Test connection on load silently
+        setTimeout(async () => {
+            await testFirebaseConnection();
+            await updateStats();
+        }, 1000);
     </script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: system-ui, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', sans-serif;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Inter', sans-serif;
         }
         body {
-            background: linear-gradient(145deg, #0b1120 0%, #111827 100%);
+            background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -147,42 +241,41 @@
             padding: 1.5rem;
         }
         .glass-card {
-            background: rgba(18, 25, 45, 0.75);
+            background: rgba(15, 25, 45, 0.85);
             backdrop-filter: blur(12px);
             border-radius: 2rem;
-            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
             width: 100%;
-            max-width: 560px;
-            padding: 2rem 2rem 2.2rem;
+            max-width: 600px;
+            padding: 2rem;
             transition: all 0.2s ease;
         }
         .logo-area {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
         .roblox-icon {
-            background: #e43b2c;
-            width: 44px;
-            height: 44px;
+            background: linear-gradient(135deg, #e43b2c, #c62a1c);
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 18px;
+            border-radius: 20px;
             box-shadow: 0 8px 16px -6px rgba(228, 59, 44, 0.4);
         }
         .roblox-icon span {
             font-size: 28px;
             font-weight: bold;
             color: white;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
         }
         h1 {
             font-size: 1.85rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #F9F8FF 0%, #c7d2fe 100%);
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
@@ -190,134 +283,161 @@
         }
         .sub {
             color: #9ca3af;
-            font-size: 0.9rem;
-            margin-top: -0.2rem;
+            font-size: 0.85rem;
             margin-bottom: 1.75rem;
             border-left: 3px solid #3b82f6;
             padding-left: 0.75rem;
         }
         .input-group {
-            margin-bottom: 1.8rem;
+            margin-bottom: 1.5rem;
         }
         label {
             display: block;
-            font-weight: 500;
+            font-weight: 600;
             margin-bottom: 0.5rem;
             color: #e2e8f0;
-            font-size: 0.95rem;
-            letter-spacing: 0.3px;
+            font-size: 0.9rem;
         }
         .id-field-wrapper {
             display: flex;
             align-items: center;
-            background: #0f172ab3;
-            border-radius: 1.5rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 1rem;
             border: 1px solid #334155;
             transition: all 0.2s;
             overflow: hidden;
-            backdrop-filter: blur(4px);
         }
         .id-field-wrapper:focus-within {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
         .prefix-badge {
             background: #1e293b;
-            padding: 0 1rem;
-            font-weight: 500;
+            padding: 0 1.2rem;
+            font-weight: 600;
             color: #94a3b8;
             font-size: 0.9rem;
-            border-right: 1px solid #334155;
-            height: 100%;
+            height: 52px;
             display: flex;
             align-items: center;
-            user-select: none;
+            border-right: 1px solid #334155;
         }
         #gamepassIdInput {
             background: transparent;
             border: none;
-            padding: 0.9rem 1rem;
+            padding: 0 1rem;
             font-size: 1rem;
             color: #f1f5f9;
             width: 100%;
             outline: none;
             font-weight: 500;
+            height: 52px;
         }
         #gamepassIdInput::placeholder {
             color: #5b6e8c;
             font-weight: 400;
         }
-        /* remove spinners for number input, but input is text anyway */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
         button {
             background: linear-gradient(95deg, #2563eb, #1d4ed8);
             border: none;
-            width: 100%;
-            padding: 0.9rem 0;
+            padding: 0.9rem 1.5rem;
             font-weight: 600;
-            font-size: 1.05rem;
-            border-radius: 2rem;
+            font-size: 1rem;
+            border-radius: 1rem;
             color: white;
             cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.2s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 8px 18px -8px #1e40af70;
-            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            flex: 1;
         }
         button:hover {
             background: linear-gradient(95deg, #3b82f6, #2563eb);
             transform: translateY(-1px);
-            box-shadow: 0 14px 22px -10px #1e3a8a;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
         }
         button:active {
-            transform: translateY(2px);
+            transform: translateY(1px);
+        }
+        .test-btn {
+            background: linear-gradient(95deg, #475569, #334155);
+            flex: 0.5;
+        }
+        .test-btn:hover {
+            background: linear-gradient(95deg, #64748b, #475569);
         }
         .status-area {
-            background: rgba(0, 0, 0, 0.35);
-            border-radius: 1.2rem;
-            margin-top: 1.5rem;
-            padding: 0.8rem 1rem;
-            font-size: 0.9rem;
-            backdrop-filter: blur(4px);
-            transition: all 0.2s;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 1rem;
+            margin: 1rem 0;
+            padding: 0.1rem;
         }
         .status-message {
+            padding: 0.85rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            word-break: break-word;
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
-            word-break: break-word;
         }
         .status-message.success {
+            background: rgba(34, 197, 94, 0.15);
+            border-left: 3px solid #22c55e;
             color: #bbf7d0;
-            background: #14532d40;
-            border-left: 3px solid #4ade80;
-            padding: 0.5rem 0.8rem;
-            border-radius: 1rem;
         }
         .status-message.error {
-            color: #ffc9c9;
-            background: #7f1a1a40;
-            border-left: 3px solid #f87171;
-            padding: 0.5rem 0.8rem;
-            border-radius: 1rem;
+            background: rgba(239, 68, 68, 0.15);
+            border-left: 3px solid #ef4444;
+            color: #fecaca;
+        }
+        .status-message.info {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 3px solid #3b82f6;
+            color: #bfdbfe;
         }
         .hidden {
             display: none;
         }
-        .entry-id {
-            font-family: monospace;
-            background: #0f172a;
-            padding: 0.2rem 0.5rem;
-            border-radius: 20px;
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .stats-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7e8aa2;
+            margin-bottom: 0.5rem;
+        }
+        .stats-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+        .recent-list {
+            list-style: none;
+            margin-top: 0.5rem;
+        }
+        .recent-list li {
             font-size: 0.8rem;
-            color: #7dd3fc;
-            margin-left: 6px;
+            color: #9ca3af;
+            padding: 0.25rem 0;
+            font-family: monospace;
         }
         .firebase-badge {
-            margin-top: 1.4rem;
+            margin-top: 1rem;
             font-size: 0.7rem;
             text-align: center;
             color: #5b6e8c;
@@ -330,28 +450,30 @@
         }
         .inline-code {
             background: #0f172a;
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: 12px;
             font-family: monospace;
             font-size: 0.7rem;
-            color: #a5f3c3;
+            color: #86efac;
+        }
+        .flex-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
         @media (max-width: 500px) {
             .glass-card {
                 padding: 1.5rem;
             }
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
+            }
+            .button-group {
+                flex-direction: column;
             }
             .prefix-badge {
                 padding: 0 0.8rem;
             }
-        }
-        .tip {
-            font-size: 0.75rem;
-            color: #7e8aa2;
-            margin-top: 0.5rem;
-            margin-left: 0.5rem;
         }
     </style>
 </head>
@@ -362,40 +484,53 @@
         <h1>Gamepass Bridge</h1>
     </div>
     <div class="sub">
-        🔗 Connect Roblox Gamepass IDs → Firebase Realtime Database
+        🔥 Firebase Realtime Database • Store & Sync Roblox Gamepass IDs
     </div>
+    
     <div class="input-group">
         <label>📦 Roblox Gamepass ID</label>
         <div class="id-field-wrapper">
-            <div class="prefix-badge">ID</div>
-            <input type="text" id="gamepassIdInput" placeholder="e.g., 1234567890 or 2123456789" autocomplete="off" spellcheck="false">
+            <div class="prefix-badge">GP_</div>
+            <input type="text" id="gamepassIdInput" placeholder="Enter numeric Gamepass ID (e.g., 1234567890)" autocomplete="off">
         </div>
-        <div class="tip">✨ Enter numeric Gamepass ID (or any identifier). Data will be sent to 'gamepassEntries' collection.</div>
     </div>
-    <button id="sendButton">
-        <span>⬆️</span> Send to Firebase
-    </button>
-    <div class="status-area" id="statusMessageContainer">
-        <div id="statusMessage" class="status-message success">⚡ Ready — waiting for input</div>
+    
+    <div class="button-group">
+        <button id="sendButton">
+            <span>⬆️</span> Send to Firebase
+        </button>
+        <button id="testButton" class="test-btn">
+            <span>🔌</span> Test
+        </button>
     </div>
+    
+    <div class="status-area">
+        <div id="statusMessage" class="status-message success">✅ Ready — Enter a Gamepass ID and click Send</div>
+    </div>
+    
+    <div class="stats-panel">
+        <div class="flex-row" style="justify-content: space-between; align-items: baseline;">
+            <div>
+                <div class="stats-title">📊 Total Submissions</div>
+                <div class="stats-value" id="submissionCount">0</div>
+            </div>
+            <div>
+                <div class="stats-title">🕐 Last 3</div>
+                <ul class="recent-list" id="recentList">
+                    <li>—</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
     <div class="firebase-badge">
         <span>🔥 Firebase RTDB</span>
         <span class="inline-code">vertexpaste</span>
-        <span>🟢 realtime</span>
+        <span>✅ Realtime</span>
+        <span>📁 gamepassEntries</span>
     </div>
-    <!-- hidden span to display result reference key (used by status) -->
+    
     <span id="resultId" style="display:none;"></span>
 </div>
-
-<!-- small extra style dynamic for status -->
-<script type="module">
-    // Additional dynamic handling to ensure proper class toggling.
-    // Already covered in main module but re-run nothing needed.
-    // We also ensure that if the element #resultId is not used but we reference it, no error.
-    // Double-check event listeners are bound correctly.
-    console.log("🔥 Firebase ready, using provided config & Realtime Database");
-    // Additional check: the status div might not have proper class toggling? we set it in module.
-    // No additional actions required.
-</script>
 </body>
 </html>
