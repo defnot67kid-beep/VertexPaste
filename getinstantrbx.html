@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Pluxos Admin Panel - Gamepass Manager</title>
+    <title>Pluxos Complete Admin Panel</title>
     <!-- Firebase SDK v9+ with FIRESTORE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -25,26 +25,34 @@
         
         // Collections
         const gamepassCollection = collection(db, "gamepasses");
+        const pumpDumpCollection = collection(db, "pump_dump_config");
         const gamesCollection = collection(db, "games");
 
-        // Current editing state
+        // Current editing states
         let editingGamepassId = null;
-        let editingGameId = null;
+        let editingPumpDumpId = null;
         let currentTab = "gamepass";
 
-        // DOM Elements
+        // DOM Elements - Gamepass
         const gameIdInput = document.getElementById('gameIdInput');
         const gamepassIdInput = document.getElementById('gamepassIdInput');
-        const sendButton = document.getElementById('sendButton');
+        const saveGamepassBtn = document.getElementById('saveGamepassBtn');
+        
+        // DOM Elements - Pump/Dump
+        const placeIdInput = document.getElementById('placeIdInput');
+        const savePumpDumpBtn = document.getElementById('savePumpDumpBtn');
+        
+        // Status
         const statusDiv = document.getElementById('statusMessage');
         const testButton = document.getElementById('testConnectionBtn');
-        const submissionCountSpan = document.getElementById('submissionCount');
-        const recentListUl = document.getElementById('recentList');
-        const gamesListDiv = document.getElementById('gamesList');
-        const pumpCountSpan = document.getElementById('pumpCount');
-        const dumpCountSpan = document.getElementById('dumpCount');
-        const pumpListDiv = document.getElementById('pumpList');
-        const dumpListDiv = document.getElementById('dumpList');
+        
+        // Stats
+        const totalGamepassesSpan = document.getElementById('totalGamepasses');
+        const pumpGamepassCountSpan = document.getElementById('pumpGamepassCount');
+        const dumpGamepassCountSpan = document.getElementById('dumpGamepassCount');
+        const totalPumpDumpSpan = document.getElementById('totalPumpDump');
+        const activePumpSpan = document.getElementById('activePump');
+        const activeDumpSpan = document.getElementById('activeDump');
 
         // Helper: Display status messages
         function showStatus(message, type = 'success') {
@@ -64,11 +72,11 @@
             }, 4000);
         }
 
-        // ==================== PUMP/DUMP TOGGLE ====================
+        // ==================== GAMEPASS TOGGLES ====================
         
-        window.togglePump = function() {
-            const pumpBtn = document.getElementById('pumpToggle');
-            const dumpBtn = document.getElementById('dumpToggle');
+        window.toggleGamepassPump = function() {
+            const pumpBtn = document.getElementById('gamepassPumpToggle');
+            const dumpBtn = document.getElementById('gamepassDumpToggle');
             
             pumpBtn.classList.toggle('active');
             if (pumpBtn.classList.contains('active')) {
@@ -83,9 +91,43 @@
             }
         };
         
-        window.toggleDump = function() {
-            const pumpBtn = document.getElementById('pumpToggle');
-            const dumpBtn = document.getElementById('dumpToggle');
+        window.toggleGamepassDump = function() {
+            const pumpBtn = document.getElementById('gamepassPumpToggle');
+            const dumpBtn = document.getElementById('gamepassDumpToggle');
+            
+            dumpBtn.classList.toggle('active');
+            if (dumpBtn.classList.contains('active')) {
+                dumpBtn.style.background = '#ff4444';
+                dumpBtn.style.color = '#fff';
+                pumpBtn.classList.remove('active');
+                pumpBtn.style.background = '#333';
+                pumpBtn.style.color = '#fff';
+            } else {
+                dumpBtn.style.background = '#333';
+                dumpBtn.style.color = '#fff';
+            }
+        };
+        
+        window.togglePumpDumpPump = function() {
+            const pumpBtn = document.getElementById('pumpDumpPumpToggle');
+            const dumpBtn = document.getElementById('pumpDumpDumpToggle');
+            
+            pumpBtn.classList.toggle('active');
+            if (pumpBtn.classList.contains('active')) {
+                pumpBtn.style.background = '#00ff88';
+                pumpBtn.style.color = '#000';
+                dumpBtn.classList.remove('active');
+                dumpBtn.style.background = '#333';
+                dumpBtn.style.color = '#fff';
+            } else {
+                pumpBtn.style.background = '#333';
+                pumpBtn.style.color = '#fff';
+            }
+        };
+        
+        window.togglePumpDumpDump = function() {
+            const pumpBtn = document.getElementById('pumpDumpPumpToggle');
+            const dumpBtn = document.getElementById('pumpDumpDumpToggle');
             
             dumpBtn.classList.toggle('active');
             if (dumpBtn.classList.contains('active')) {
@@ -102,77 +144,71 @@
 
         // ==================== GAMEPASS MANAGEMENT ====================
         
-        // Add/Update Gamepass
         window.saveGamepass = async function() {
             const gameId = gameIdInput.value.trim();
             const gamepassId = gamepassIdInput.value.trim();
-            const pumpToggle = document.getElementById('pumpToggle').classList.contains('active');
-            const dumpToggle = document.getElementById('dumpToggle').classList.contains('active');
+            const pumpActive = document.getElementById('gamepassPumpToggle').classList.contains('active');
+            const dumpActive = document.getElementById('gamepassDumpToggle').classList.contains('active');
             
             if (!gameId || !gamepassId) {
                 showStatus("❌ Please enter both Game ID and Gamepass ID!", true);
                 return;
             }
             
-            if (pumpToggle && dumpToggle) {
-                showStatus("❌ Cannot have both Pump and Dump active at the same time!", true);
+            if (pumpActive && dumpActive) {
+                showStatus("❌ Cannot have both Pump and Dump active!", true);
                 return;
             }
             
             try {
                 if (editingGamepassId) {
-                    // Update existing gamepass
                     const gamepassRef = doc(db, "gamepasses", editingGamepassId);
                     await updateDoc(gamepassRef, {
                         gameId: gameId,
                         gamepassId: gamepassId,
-                        pump: pumpToggle,
-                        dump: dumpToggle,
+                        pump: pumpActive,
+                        dump: dumpActive,
                         updatedAt: serverTimestamp()
                     });
-                    showStatus(`✅ Gamepass updated successfully!`, false);
+                    showStatus(`✅ Gamepass updated!`, false);
                     editingGamepassId = null;
-                    sendButton.textContent = '➕ Add Gamepass';
+                    saveGamepassBtn.textContent = '➕ Add Gamepass';
                 } else {
-                    // Add new gamepass
                     await addDoc(gamepassCollection, {
                         gameId: gameId,
                         gamepassId: gamepassId,
-                        pump: pumpToggle,
-                        dump: dumpToggle,
+                        pump: pumpActive,
+                        dump: dumpActive,
                         createdAt: serverTimestamp(),
                         updatedAt: serverTimestamp()
                     });
-                    showStatus(`✅ Gamepass "${gamepassId}" added for Game ID "${gameId}"!`, false);
+                    showStatus(`✅ Gamepass "${gamepassId}" added!`, false);
                 }
                 
-                // Clear inputs
+                // Clear form
                 gameIdInput.value = '';
                 gamepassIdInput.value = '';
-                document.getElementById('pumpToggle').classList.remove('active');
-                document.getElementById('dumpToggle').classList.remove('active');
-                document.getElementById('pumpToggle').style.background = '#333';
-                document.getElementById('dumpToggle').style.background = '#333';
+                document.getElementById('gamepassPumpToggle').classList.remove('active');
+                document.getElementById('gamepassDumpToggle').classList.remove('active');
+                document.getElementById('gamepassPumpToggle').style.background = '#333';
+                document.getElementById('gamepassDumpToggle').style.background = '#333';
+                saveGamepassBtn.textContent = '➕ Add Gamepass';
                 
-                // Refresh lists
                 refreshAll();
                 
             } catch (error) {
-                console.error("Error saving gamepass:", error);
                 showStatus("❌ Error: " + error.message, true);
             }
         };
         
-        // Edit Gamepass
         window.editGamepass = function(id, gameId, gamepassId, pump, dump) {
             editingGamepassId = id;
             gameIdInput.value = gameId;
             gamepassIdInput.value = gamepassId;
-            sendButton.textContent = '✏️ Update Gamepass';
+            saveGamepassBtn.textContent = '✏️ Update Gamepass';
             
-            // Set toggle states
-            const pumpBtn = document.getElementById('pumpToggle');
-            const dumpBtn = document.getElementById('dumpToggle');
+            const pumpBtn = document.getElementById('gamepassPumpToggle');
+            const dumpBtn = document.getElementById('gamepassDumpToggle');
             
             pumpBtn.classList.remove('active');
             dumpBtn.classList.remove('active');
@@ -190,24 +226,20 @@
                 dumpBtn.style.color = '#fff';
             }
             
-            showStatus(`✏️ Editing gamepass: ${gamepassId}`, false, true);
+            showStatus(`✏️ Editing: ${gamepassId}`, false, true);
         };
         
-        // Delete Gamepass
         window.deleteGamepass = async function(id, gamepassId) {
-            if (!confirm(`⚠️ Are you sure you want to delete gamepass "${gamepassId}"?`)) return;
-            
+            if (!confirm(`⚠️ Delete gamepass "${gamepassId}"?`)) return;
             try {
                 await deleteDoc(doc(db, "gamepasses", id));
-                showStatus(`✅ Gamepass "${gamepassId}" deleted!`, false);
+                showStatus(`✅ Gamepass deleted!`, false);
                 refreshAll();
             } catch (error) {
-                console.error("Error deleting gamepass:", error);
-                showStatus("❌ Error deleting gamepass", true);
+                showStatus("❌ Error deleting", true);
             }
         };
         
-        // Load all gamepasses
         async function loadGamepasses() {
             try {
                 const q = query(gamepassCollection, orderBy("createdAt", "desc"));
@@ -217,21 +249,22 @@
                 
                 if (snapshot.empty) {
                     gamepassList.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">📭 No gamepasses found. Add some!</td></tr>';
-                    submissionCountSpan.textContent = '0';
+                    totalGamepassesSpan.textContent = '0';
+                    pumpGamepassCountSpan.textContent = '0';
+                    dumpGamepassCountSpan.textContent = '0';
                     return;
                 }
                 
-                let totalPump = 0;
-                let totalDump = 0;
+                let pumpCount = 0;
+                let dumpCount = 0;
                 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.pump) totalPump++;
-                    if (data.dump) totalDump++;
+                    if (data.pump) pumpCount++;
+                    if (data.dump) dumpCount++;
                     
                     const row = document.createElement('tr');
                     row.style.borderBottom = '1px solid #2a2a3a';
-                    
                     row.innerHTML = `
                         <td style="padding: 8px; color: #fff;">${escapeHtml(data.gameId) || 'N/A'}</td>
                         <td style="padding: 8px; color: #00ff88; font-family: monospace;">${escapeHtml(data.gamepassId) || 'N/A'}</td>
@@ -241,202 +274,312 @@
                             ${!data.pump && !data.dump ? '<span style="background: #555; color: #aaa; padding: 2px 8px; border-radius: 12px; font-size: 11px;">⚪ NONE</span>' : ''}
                         </td>
                         <td style="padding: 8px; font-size: 11px; color: #888;">${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString() : 'Just now'}</td>
-                        <td style="padding: 8px;">
-                            <button class="action-btn edit" onclick="editGamepass('${doc.id}', '${escapeHtml(data.gameId)}', '${escapeHtml(data.gamepassId)}', ${data.pump || false}, ${data.dump || false})">✏️ Edit</button>
-                        </td>
-                        <td style="padding: 8px;">
-                            <button class="action-btn delete" onclick="deleteGamepass('${doc.id}', '${escapeHtml(data.gamepassId)}')">🗑️ Delete</button>
-                        </td>
+                        <td style="padding: 8px;"><button class="action-btn edit" onclick="editGamepass('${doc.id}', '${escapeHtml(data.gameId)}', '${escapeHtml(data.gamepassId)}', ${data.pump || false}, ${data.dump || false})">✏️ Edit</button></td>
+                        <td style="padding: 8px;"><button class="action-btn delete" onclick="deleteGamepass('${doc.id}', '${escapeHtml(data.gamepassId)}')">🗑️ Delete</button></td>
                     `;
                     gamepassList.appendChild(row);
                 });
                 
-                submissionCountSpan.textContent = snapshot.size;
-                pumpCountSpan.textContent = totalPump;
-                dumpCountSpan.textContent = totalDump;
+                totalGamepassesSpan.textContent = snapshot.size;
+                pumpGamepassCountSpan.textContent = pumpCount;
+                dumpGamepassCountSpan.textContent = dumpCount;
                 
             } catch (error) {
                 console.error("Error loading gamepasses:", error);
-                showStatus("❌ Error loading gamepasses", true);
+            }
+        }
+        
+        // ==================== PUMP/DUMP MANAGEMENT ====================
+        
+        window.savePumpDump = async function() {
+            const placeId = placeIdInput.value.trim();
+            const pumpActive = document.getElementById('pumpDumpPumpToggle').classList.contains('active');
+            const dumpActive = document.getElementById('pumpDumpDumpToggle').classList.contains('active');
+            
+            if (!placeId) {
+                showStatus("❌ Please enter a Place ID!", true);
+                return;
+            }
+            
+            if (!pumpActive && !dumpActive) {
+                showStatus("❌ Select either PUMP or DUMP mode!", true);
+                return;
+            }
+            
+            try {
+                if (editingPumpDumpId) {
+                    const configRef = doc(db, "pump_dump_config", editingPumpDumpId);
+                    await updateDoc(configRef, {
+                        placeId: placeId,
+                        pumpActive: pumpActive,
+                        dumpActive: dumpActive,
+                        updatedAt: serverTimestamp()
+                    });
+                    showStatus(`✅ Config updated!`, false);
+                    editingPumpDumpId = null;
+                    savePumpDumpBtn.textContent = '➕ Add Config';
+                } else {
+                    const q = query(pumpDumpCollection, where("placeId", "==", placeId));
+                    const snapshot = await getDocs(q);
+                    if (!snapshot.empty) {
+                        showStatus(`⚠️ Place ID "${placeId}" already exists!`, true);
+                        return;
+                    }
+                    await addDoc(pumpDumpCollection, {
+                        placeId: placeId,
+                        pumpActive: pumpActive,
+                        dumpActive: dumpActive,
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    });
+                    showStatus(`✅ Config for "${placeId}" added!`, false);
+                }
+                
+                placeIdInput.value = '';
+                document.getElementById('pumpDumpPumpToggle').classList.remove('active');
+                document.getElementById('pumpDumpDumpToggle').classList.remove('active');
+                document.getElementById('pumpDumpPumpToggle').style.background = '#333';
+                document.getElementById('pumpDumpDumpToggle').style.background = '#333';
+                savePumpDumpBtn.textContent = '➕ Add Config';
+                
+                refreshAll();
+                
+            } catch (error) {
+                showStatus("❌ Error: " + error.message, true);
+            }
+        };
+        
+        window.editPumpDump = function(id, placeId, pumpActive, dumpActive) {
+            editingPumpDumpId = id;
+            placeIdInput.value = placeId;
+            savePumpDumpBtn.textContent = '✏️ Update Config';
+            
+            const pumpBtn = document.getElementById('pumpDumpPumpToggle');
+            const dumpBtn = document.getElementById('pumpDumpDumpToggle');
+            
+            pumpBtn.classList.remove('active');
+            dumpBtn.classList.remove('active');
+            pumpBtn.style.background = '#333';
+            dumpBtn.style.background = '#333';
+            
+            if (pumpActive) {
+                pumpBtn.classList.add('active');
+                pumpBtn.style.background = '#00ff88';
+                pumpBtn.style.color = '#000';
+            }
+            if (dumpActive) {
+                dumpBtn.classList.add('active');
+                dumpBtn.style.background = '#ff4444';
+                dumpBtn.style.color = '#fff';
+            }
+            
+            showStatus(`✏️ Editing: ${placeId}`, false, true);
+        };
+        
+        window.deletePumpDump = async function(id, placeId) {
+            if (!confirm(`⚠️ Delete config for "${placeId}"?`)) return;
+            try {
+                await deleteDoc(doc(db, "pump_dump_config", id));
+                showStatus(`✅ Config deleted!`, false);
+                refreshAll();
+            } catch (error) {
+                showStatus("❌ Error deleting", true);
+            }
+        };
+        
+        window.togglePumpActive = async function(id, currentState, placeId) {
+            try {
+                const newState = !currentState;
+                const configRef = doc(db, "pump_dump_config", id);
+                await updateDoc(configRef, {
+                    pumpActive: newState,
+                    dumpActive: false,
+                    updatedAt: serverTimestamp()
+                });
+                showStatus(`${newState ? '🚀 PUMP ON' : 'PUMP OFF'} for ${placeId}`, false);
+                refreshAll();
+            } catch (error) {
+                showStatus("Error toggling", true);
+            }
+        };
+        
+        window.toggleDumpActive = async function(id, currentState, placeId) {
+            try {
+                const newState = !currentState;
+                const configRef = doc(db, "pump_dump_config", id);
+                await updateDoc(configRef, {
+                    dumpActive: newState,
+                    pumpActive: false,
+                    updatedAt: serverTimestamp()
+                });
+                showStatus(`${newState ? '📉 DUMP ON' : 'DUMP OFF'} for ${placeId}`, false);
+                refreshAll();
+            } catch (error) {
+                showStatus("Error toggling", true);
+            }
+        };
+        
+        async function loadPumpDump() {
+            try {
+                const q = query(pumpDumpCollection, orderBy("createdAt", "desc"));
+                const snapshot = await getDocs(q);
+                const configList = document.getElementById('pumpDumpList');
+                configList.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    configList.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">📭 No Pump/Dump configs. Add some!</td></tr>';
+                    totalPumpDumpSpan.textContent = '0';
+                    activePumpSpan.textContent = '0';
+                    activeDumpSpan.textContent = '0';
+                    return;
+                }
+                
+                let activePump = 0;
+                let activeDump = 0;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.pumpActive) activePump++;
+                    if (data.dumpActive) activeDump++;
+                    
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #2a2a3a';
+                    row.innerHTML = `
+                        <td style="padding: 8px; color: #00ff88; font-family: monospace;">${escapeHtml(data.placeId)}</td>
+                        <td style="padding: 8px;">
+                            <div class="toggle-switch" style="display: inline-flex; align-items: center; gap: 8px; background: ${data.pumpActive ? '#00ff88' : '#333'}; padding: 4px 12px; border-radius: 20px; cursor: pointer;" onclick="togglePumpActive('${doc.id}', ${data.pumpActive || false}, '${escapeHtml(data.placeId)}')">
+                                <span>🚀</span>
+                                <span style="font-size: 11px;">${data.pumpActive ? 'ON' : 'OFF'}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 8px;">
+                            <div class="toggle-switch" style="display: inline-flex; align-items: center; gap: 8px; background: ${data.dumpActive ? '#ff4444' : '#333'}; padding: 4px 12px; border-radius: 20px; cursor: pointer;" onclick="toggleDumpActive('${doc.id}', ${data.dumpActive || false}, '${escapeHtml(data.placeId)}')">
+                                <span>📉</span>
+                                <span style="font-size: 11px;">${data.dumpActive ? 'ON' : 'OFF'}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 8px; font-size: 11px; color: #888;">${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString() : 'Just now'}</td>
+                        <td style="padding: 8px;">
+                            <button class="action-btn edit" onclick="editPumpDump('${doc.id}', '${escapeHtml(data.placeId)}', ${data.pumpActive || false}, ${data.dumpActive || false})">✏️ Edit</button>
+                            <button class="action-btn delete" onclick="deletePumpDump('${doc.id}', '${escapeHtml(data.placeId)}')">🗑️ Delete</button>
+                        </td>
+                    `;
+                    configList.appendChild(row);
+                });
+                
+                totalPumpDumpSpan.textContent = snapshot.size;
+                activePumpSpan.textContent = activePump;
+                activeDumpSpan.textContent = activeDump;
+                
+            } catch (error) {
+                console.error("Error loading pump/dump:", error);
+            }
+        }
+        
+        async function loadActiveOperations() {
+            try {
+                const pumpSnapshot = await getDocs(query(pumpDumpCollection, where("pumpActive", "==", true)));
+                const dumpSnapshot = await getDocs(query(pumpDumpCollection, where("dumpActive", "==", true)));
+                
+                const pumpList = document.getElementById('activePumpList');
+                const dumpList = document.getElementById('activeDumpList');
+                
+                pumpList.innerHTML = '';
+                dumpList.innerHTML = '';
+                
+                if (pumpSnapshot.empty) {
+                    pumpList.innerHTML = '<div style="padding: 15px; text-align: center; color: #555;">No active PUMP operations</div>';
+                } else {
+                    pumpSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const item = document.createElement('div');
+                        item.className = 'status-item';
+                        item.innerHTML = `
+                            <span class="status-game">🎮 Place ID:</span>
+                            <span class="status-pass">${escapeHtml(data.placeId)}</span>
+                            <span class="status-badge pump">🚀 PUMP ACTIVE</span>
+                            <button class="small-btn" onclick="togglePumpActive('${doc.id}', true, '${escapeHtml(data.placeId)}')">Turn Off</button>
+                        `;
+                        pumpList.appendChild(item);
+                    });
+                }
+                
+                if (dumpSnapshot.empty) {
+                    dumpList.innerHTML = '<div style="padding: 15px; text-align: center; color: #555;">No active DUMP operations</div>';
+                } else {
+                    dumpSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const item = document.createElement('div');
+                        item.className = 'status-item';
+                        item.innerHTML = `
+                            <span class="status-game">🎮 Place ID:</span>
+                            <span class="status-pass">${escapeHtml(data.placeId)}</span>
+                            <span class="status-badge dump">📉 DUMP ACTIVE</span>
+                            <button class="small-btn" onclick="toggleDumpActive('${doc.id}', true, '${escapeHtml(data.placeId)}')">Turn Off</button>
+                        `;
+                        dumpList.appendChild(item);
+                    });
+                }
+                
+            } catch (error) {
+                console.error("Error loading active operations:", error);
             }
         }
         
         // ==================== GAME MANAGEMENT ====================
         
-        // Add Game ID
         window.addGameId = async function() {
-            const gameIdInputNew = document.getElementById('newGameIdInput');
-            const gameId = gameIdInputNew.value.trim();
-            
+            const gameId = document.getElementById('newGameIdInput').value.trim();
             if (!gameId) {
-                showStatus("❌ Please enter a Game ID!", true);
+                showStatus("❌ Enter a Game ID!", true);
                 return;
             }
-            
             try {
-                // Check if game already exists
                 const snapshot = await getDocs(gamesCollection);
                 let exists = false;
-                snapshot.forEach(doc => {
-                    if (doc.data().gameId === gameId) exists = true;
-                });
-                
+                snapshot.forEach(doc => { if (doc.data().gameId === gameId) exists = true; });
                 if (exists) {
-                    showStatus("⚠️ This Game ID already exists!", true);
+                    showStatus("⚠️ Game ID already exists!", true);
                     return;
                 }
-                
-                await addDoc(gamesCollection, {
-                    gameId: gameId,
-                    createdAt: serverTimestamp()
-                });
-                
-                gameIdInputNew.value = '';
+                await addDoc(gamesCollection, { gameId: gameId, createdAt: serverTimestamp() });
+                document.getElementById('newGameIdInput').value = '';
                 showStatus(`✅ Game ID "${gameId}" added!`, false);
                 loadGamesList();
-                
             } catch (error) {
-                console.error("Error adding game:", error);
                 showStatus("❌ Error adding game ID", true);
             }
         };
         
-        // Delete Game ID
         window.deleteGameId = async function(id, gameId) {
-            if (!confirm(`⚠️ Are you sure you want to delete Game ID "${gameId}"?`)) return;
-            
+            if (!confirm(`⚠️ Delete Game ID "${gameId}"?`)) return;
             try {
                 await deleteDoc(doc(db, "games", id));
-                showStatus(`✅ Game ID "${gameId}" deleted!`, false);
+                showStatus(`✅ Game ID deleted!`, false);
                 loadGamesList();
             } catch (error) {
-                console.error("Error deleting game:", error);
-                showStatus("❌ Error deleting game ID", true);
+                showStatus("❌ Error deleting", true);
             }
         };
         
-        // Load games list
         async function loadGamesList() {
             try {
                 const snapshot = await getDocs(gamesCollection);
-                gamesListDiv.innerHTML = '';
-                
+                const gamesList = document.getElementById('gamesList');
+                gamesList.innerHTML = '';
                 if (snapshot.empty) {
-                    gamesListDiv.innerHTML = '<div style="padding: 15px; text-align: center; color: #666;">No game IDs added yet</div>';
+                    gamesList.innerHTML = '<div style="padding: 15px; text-align: center; color: #666;">No game IDs added yet</div>';
                     return;
                 }
-                
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const chip = document.createElement('div');
                     chip.className = 'game-chip';
-                    chip.innerHTML = `
-                        <span>🎮 ${escapeHtml(data.gameId)}</span>
-                        <button class="remove-chip" onclick="deleteGameId('${doc.id}', '${escapeHtml(data.gameId)}')">✕</button>
-                    `;
-                    gamesListDiv.appendChild(chip);
+                    chip.innerHTML = `<span>🎮 ${escapeHtml(data.gameId)}</span><button class="remove-chip" onclick="deleteGameId('${doc.id}', '${escapeHtml(data.gameId)}')">✕</button>`;
+                    gamesList.appendChild(chip);
                 });
-                
             } catch (error) {
                 console.error("Error loading games:", error);
-            }
-        }
-        
-        // ==================== PUMP/DUMP STATUS VIEW ====================
-        
-        async function loadPumpDumpStatus() {
-            try {
-                const snapshot = await getDocs(gamepassCollection);
-                const pumpList = pumpListDiv;
-                const dumpList = dumpListDiv;
-                
-                pumpList.innerHTML = '';
-                dumpList.innerHTML = '';
-                
-                let pumpCount = 0;
-                let dumpCount = 0;
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.pump) {
-                        pumpCount++;
-                        const item = document.createElement('div');
-                        item.className = 'status-item';
-                        item.innerHTML = `
-                            <span class="status-game">🎮 ${escapeHtml(data.gameId)}</span>
-                            <span class="status-pass">🆔 ${escapeHtml(data.gamepassId)}</span>
-                            <span class="status-badge pump">🚀 PUMP</span>
-                        `;
-                        pumpList.appendChild(item);
-                    }
-                    if (data.dump) {
-                        dumpCount++;
-                        const item = document.createElement('div');
-                        item.className = 'status-item';
-                        item.innerHTML = `
-                            <span class="status-game">🎮 ${escapeHtml(data.gameId)}</span>
-                            <span class="status-pass">🆔 ${escapeHtml(data.gamepassId)}</span>
-                            <span class="status-badge dump">📉 DUMP</span>
-                        `;
-                        dumpList.appendChild(item);
-                    }
-                });
-                
-                if (pumpCount === 0) pumpList.innerHTML = '<div style="padding: 15px; text-align: center; color: #555;">No PUMP gamepasses</div>';
-                if (dumpCount === 0) dumpList.innerHTML = '<div style="padding: 15px; text-align: center; color: #555;">No DUMP gamepasses</div>';
-                
-            } catch (error) {
-                console.error("Error loading status:", error);
-            }
-        }
-        
-        // ==================== RECENT SUBMISSIONS ====================
-        
-        async function loadRecentSubmissions() {
-            try {
-                const q = query(gamepassCollection, orderBy("createdAt", "desc"));
-                const snapshot = await getDocs(q);
-                const allDocs = snapshot.docs;
-                
-                if (recentListUl) {
-                    recentListUl.innerHTML = "";
-                    const lastThree = allDocs.slice(0, 3);
-                    if (lastThree.length === 0) {
-                        const li = document.createElement('li');
-                        li.textContent = "— No entries yet —";
-                        recentListUl.appendChild(li);
-                    } else {
-                        for (const doc of lastThree) {
-                            const data = doc.data();
-                            const li = document.createElement('li');
-                            const timeStr = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleTimeString() : "just now";
-                            li.textContent = `${data.gamepassId} (${data.gameId}) - ${timeStr}`;
-                            recentListUl.appendChild(li);
-                        }
-                    }
-                }
-            } catch (err) {
-                console.warn("Could not fetch stats:", err);
-            }
-        }
-        
-        // ==================== TEST CONNECTION ====================
-        
-        async function testFirestoreConnection() {
-            showStatus("🔌 Testing Firestore connection...", 'info');
-            try {
-                const testRef = collection(db, "_test_connection");
-                await addDoc(testRef, {
-                    message: "Connection test",
-                    timestamp: serverTimestamp(),
-                    testedAt: new Date().toISOString()
-                });
-                showStatus("✅ Firestore connection SUCCESSFUL!", 'success');
-                return true;
-            } catch (error) {
-                console.error("Firestore connection error:", error);
-                showStatus("❌ Connection failed: " + error.message, 'error');
-                return false;
             }
         }
         
@@ -452,565 +595,156 @@
             });
         }
         
-        window.clearForm = function() {
+        window.clearGamepassForm = function() {
             gameIdInput.value = '';
             gamepassIdInput.value = '';
-            document.getElementById('pumpToggle').classList.remove('active');
-            document.getElementById('dumpToggle').classList.remove('active');
-            document.getElementById('pumpToggle').style.background = '#333';
-            document.getElementById('dumpToggle').style.background = '#333';
+            document.getElementById('gamepassPumpToggle').classList.remove('active');
+            document.getElementById('gamepassDumpToggle').classList.remove('active');
+            document.getElementById('gamepassPumpToggle').style.background = '#333';
+            document.getElementById('gamepassDumpToggle').style.background = '#333';
             editingGamepassId = null;
-            sendButton.textContent = '➕ Add Gamepass';
+            saveGamepassBtn.textContent = '➕ Add Gamepass';
             showStatus("Form cleared", false, true);
         };
         
-        window.cancelEdit = function() {
-            clearForm();
+        window.clearPumpDumpForm = function() {
+            placeIdInput.value = '';
+            document.getElementById('pumpDumpPumpToggle').classList.remove('active');
+            document.getElementById('pumpDumpDumpToggle').classList.remove('active');
+            document.getElementById('pumpDumpPumpToggle').style.background = '#333';
+            document.getElementById('pumpDumpDumpToggle').style.background = '#333';
+            editingPumpDumpId = null;
+            savePumpDumpBtn.textContent = '➕ Add Config';
+            showStatus("Form cleared", false, true);
         };
         
         window.refreshAll = function() {
             loadGamepasses();
+            loadPumpDump();
+            loadActiveOperations();
             loadGamesList();
-            loadPumpDumpStatus();
-            loadRecentSubmissions();
             showStatus("🔄 Refreshed all data!", false, true);
         };
         
-        // Tab switching
+        async function testFirestoreConnection() {
+            showStatus("🔌 Testing connection...", 'info');
+            try {
+                const testRef = collection(db, "_test_connection");
+                await addDoc(testRef, { message: "Connection test", timestamp: serverTimestamp() });
+                showStatus("✅ Connection SUCCESSFUL!", 'success');
+                return true;
+            } catch (error) {
+                showStatus("❌ Connection failed: " + error.message, 'error');
+                return false;
+            }
+        }
+        
         window.switchTab = function(tabId) {
             currentTab = tabId;
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId + 'Tab').classList.add('active');
             event.target.classList.add('active');
+            if (tabId === 'operations') loadActiveOperations();
         };
-        
-        // Send single gamepass (legacy function)
-        window.sendSingleGamepass = async function() {
-            const gamepassId = document.getElementById('singleGamepassInput').value.trim();
-            if (!gamepassId) {
-                showStatus("❌ Please enter a Gamepass ID!", true);
-                return;
-            }
-            
-            try {
-                await addDoc(gamepassCollection, {
-                    gameId: "manual",
-                    gamepassId: gamepassId,
-                    pump: false,
-                    dump: false,
-                    createdAt: serverTimestamp(),
-                    updatedAt: serverTimestamp()
-                });
-                showStatus(`✅ Gamepass "${gamepassId}" saved!`, false);
-                document.getElementById('singleGamepassInput').value = '';
-                refreshAll();
-            } catch (error) {
-                showStatus("❌ Error: " + error.message, true);
-            }
-        };
-        
-        // ==================== INITIALIZATION ====================
         
         async function init() {
-            showStatus("🔄 Initializing Firestore connection...", 'info');
+            showStatus("🔄 Initializing...", 'info');
             await testFirestoreConnection();
             await refreshAll();
         }
         
-        // Auto-refresh every 10 seconds
         setInterval(() => {
-            if (currentTab === 'gamepass') loadGamepasses();
-            if (currentTab === 'games') loadGamesList();
-            if (currentTab === 'status') loadPumpDumpStatus();
-            loadRecentSubmissions();
+            loadGamepasses();
+            loadPumpDump();
+            if (currentTab === 'operations') loadActiveOperations();
         }, 10000);
         
         init();
     </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
-        }
-        
-        body {
-            background: radial-gradient(circle at 10% 20%, #0b1120, #0f172a);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .admin-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 2rem;
-            background: linear-gradient(135deg, #00ff88, #0066ff);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            margin-bottom: 8px;
-        }
-        
-        .header p {
-            color: #888;
-            font-size: 0.85rem;
-        }
-        
-        /* Stats Bar */
-        .stats-bar {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .stat-card {
-            background: rgba(20, 25, 45, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 12px 24px;
-            text-align: center;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-        }
-        
-        .stat-card .number {
-            font-size: 28px;
-            font-weight: bold;
-            color: #00ff88;
-        }
-        
-        .stat-card .label {
-            font-size: 11px;
-            color: #888;
-            margin-top: 4px;
-        }
-        
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            background: rgba(15, 20, 35, 0.5);
-            padding: 8px;
-            border-radius: 12px;
-        }
-        
-        .tab-btn {
-            background: #1a1f2e;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .tab-btn.active {
-            background: #00ff88;
-            color: #000;
-        }
-        
-        .tab-btn:hover:not(.active) {
-            background: #2a2f3e;
-            color: #fff;
-        }
-        
-        /* Tab Content */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Form Section */
-        .form-section {
-            background: rgba(20, 25, 45, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(0, 255, 136, 0.15);
-        }
-        
-        .form-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #00ff88;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .input-group {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        
-        .input-group input {
-            flex: 1;
-            min-width: 180px;
-            background: #0f1222;
-            border: 1px solid #2a2a3a;
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s;
-        }
-        
-        .input-group input:focus {
-            border-color: #00ff88;
-            box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
-        }
-        
-        /* Toggle Buttons */
-        .toggle-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        
-        .toggle-btn {
-            background: #333;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            color: #fff;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-primary {
-            background: #00ff88;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 10px;
-            color: #000;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        
-        .btn-primary:hover {
-            transform: scale(1.02);
-        }
-        
-        .btn-secondary {
-            background: #2a2f3e;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 10px;
-            color: #fff;
-            cursor: pointer;
-        }
-        
-        /* Tables */
-        .table-container {
-            background: rgba(20, 25, 45, 0.8);
-            border-radius: 16px;
-            padding: 20px;
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th {
-            text-align: left;
-            padding: 12px 8px;
-            color: #888;
-            font-weight: 500;
-            font-size: 12px;
-            border-bottom: 1px solid #2a2a3a;
-        }
-        
-        .action-btn {
-            padding: 5px 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 500;
-        }
-        
-        .action-btn.edit {
-            background: #0066ff;
-            color: #fff;
-        }
-        
-        .action-btn.delete {
-            background: #ff4444;
-            color: #fff;
-        }
-        
-        /* Game Chips */
-        .games-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .game-chip {
-            background: #1a1f2e;
-            border-radius: 20px;
-            padding: 6px 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #fff;
-        }
-        
-        .remove-chip {
-            background: #ff4444;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        /* Status Lists */
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .status-card {
-            background: rgba(20, 25, 45, 0.8);
-            border-radius: 16px;
-            padding: 20px;
-        }
-        
-        .status-card h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        
-        .status-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .status-item {
-            background: #0f1222;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .status-game {
-            font-size: 12px;
-            color: #aaa;
-        }
-        
-        .status-pass {
-            font-family: monospace;
-            font-size: 11px;
-            color: #00ff88;
-        }
-        
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        
-        .status-badge.pump {
-            background: #00ff88;
-            color: #000;
-        }
-        
-        .status-badge.dump {
-            background: #ff4444;
-            color: #fff;
-        }
-        
-        /* Status Message */
-        .status-message {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 13px;
-            z-index: 1000;
-            animation: slideIn 0.3s;
-        }
-        
-        .status-message.success {
-            background: #00ff88;
-            color: #000;
-        }
-        
-        .status-message.error {
-            background: #ff4444;
-            color: #fff;
-        }
-        
-        .status-message.info {
-            background: #0066ff;
-            color: #fff;
-        }
-        
-        .status-message.hidden {
-            display: none;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        /* Glass Card for Single Send */
-        .glass-card {
-            background: rgba(18, 25, 45, 0.85);
-            backdrop-filter: blur(12px);
-            border-radius: 2rem;
-            box-shadow: 0 25px 40px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
-            padding: 1.5rem;
-            margin-bottom: 20px;
-        }
-        
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .roblox-icon {
-            background: linear-gradient(145deg, #e84c3c, #c42a1a);
-            width: 52px;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 22px;
-        }
-        
-        .roblox-icon span {
-            font-size: 30px;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .refresh-btn {
-            background: #2a2f3e;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-        
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .header h1 { font-size: 1.5rem; }
-            .input-group input { min-width: 100%; }
-            .toggle-group { justify-content: center; }
-            .status-grid { grid-template-columns: 1fr; }
-            th, td { font-size: 11px; }
-        }
-        
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1a1f2e;
-            border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #00ff88;
-            border-radius: 3px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Inter', system-ui, sans-serif; }
+        body { background: radial-gradient(circle at 10% 20%, #0b1120, #0f172a); min-height: 100vh; padding: 20px; }
+        .admin-container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2rem; background: linear-gradient(135deg, #00ff88, #0066ff); background-clip: text; -webkit-background-clip: text; color: transparent; margin-bottom: 8px; }
+        .header p { color: #888; font-size: 0.85rem; }
+        .stats-bar { display: flex; gap: 15px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; }
+        .stat-card { background: rgba(20, 25, 45, 0.8); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px 20px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2); }
+        .stat-card .number { font-size: 24px; font-weight: bold; color: #00ff88; }
+        .stat-card .label { font-size: 10px; color: #888; margin-top: 4px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; background: rgba(15, 20, 35, 0.5); padding: 8px; border-radius: 12px; }
+        .tab-btn { background: #1a1f2e; border: none; padding: 10px 20px; border-radius: 8px; color: #aaa; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .tab-btn.active { background: #00ff88; color: #000; }
+        .tab-btn:hover:not(.active) { background: #2a2f3e; color: #fff; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-section { background: rgba(20, 25, 45, 0.8); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; margin-bottom: 25px; border: 1px solid rgba(0, 255, 136, 0.15); }
+        .form-title { font-size: 16px; font-weight: 600; color: #00ff88; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .input-group { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; }
+        .input-group input { flex: 1; min-width: 200px; background: #0f1222; border: 1px solid #2a2a3a; padding: 12px 15px; border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
+        .input-group input:focus { border-color: #00ff88; box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
+        .toggle-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .toggle-btn { background: #333; border: none; padding: 10px 24px; border-radius: 30px; color: #fff; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-primary { background: #00ff88; border: none; padding: 10px 24px; border-radius: 10px; color: #000; font-weight: 600; cursor: pointer; }
+        .btn-secondary { background: #2a2f3e; border: none; padding: 10px 24px; border-radius: 10px; color: #fff; cursor: pointer; }
+        .btn-primary:hover, .btn-secondary:hover { transform: scale(1.02); }
+        .table-container { background: rgba(20, 25, 45, 0.8); border-radius: 16px; padding: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px 8px; color: #888; font-weight: 500; font-size: 11px; border-bottom: 1px solid #2a2a3a; }
+        .action-btn { padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: 500; margin: 2px; }
+        .action-btn.edit { background: #0066ff; color: #fff; }
+        .action-btn.delete { background: #ff4444; color: #fff; }
+        .game-chip { background: #1a1f2e; border-radius: 20px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; margin: 5px; }
+        .remove-chip { background: #ff4444; border: none; border-radius: 50%; width: 20px; height: 20px; color: #fff; cursor: pointer; font-size: 12px; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .status-card { background: rgba(20, 25, 45, 0.8); border-radius: 16px; padding: 20px; }
+        .status-card h3 { color: #fff; margin-bottom: 15px; font-size: 14px; }
+        .status-list { max-height: 350px; overflow-y: auto; }
+        .status-item { background: #0f1222; border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .status-game { font-size: 12px; color: #aaa; }
+        .status-pass { font-family: monospace; font-size: 12px; color: #00ff88; font-weight: bold; }
+        .status-badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+        .status-badge.pump { background: #00ff88; color: #000; }
+        .status-badge.dump { background: #ff4444; color: #fff; }
+        .small-btn { background: #333; border: none; padding: 4px 10px; border-radius: 6px; color: #fff; cursor: pointer; font-size: 10px; }
+        .status-message { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 1000; animation: slideIn 0.3s; }
+        .status-message.success { background: #00ff88; color: #000; }
+        .status-message.error { background: #ff4444; color: #fff; }
+        .status-message.info { background: #0066ff; color: #fff; }
+        .status-message.hidden { display: none; }
+        .refresh-btn { background: #2a2f3e; border: none; padding: 8px 16px; border-radius: 8px; color: #fff; cursor: pointer; font-size: 12px; margin-left: 10px; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @media (max-width: 768px) { body { padding: 10px; } .header h1 { font-size: 1.5rem; } .input-group input { min-width: 100%; } .status-grid { grid-template-columns: 1fr; } th, td { font-size: 10px; } }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1f2e; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #00ff88; border-radius: 3px; }
     </style>
 </head>
 <body>
 <div class="admin-container">
     <div class="header">
-        <h1>🔥 Pluxos Admin Panel</h1>
-        <p>Manage Gamepasses, Pump/Dump Settings & Game IDs</p>
+        <h1>🔥 Pluxos Complete Admin Panel</h1>
+        <p>Gamepass Manager | Pump/Dump Operations | Game IDs</p>
     </div>
     
     <div class="stats-bar">
-        <div class="stat-card">
-            <div class="number" id="submissionCount">0</div>
-            <div class="label">Total Gamepasses</div>
-        </div>
-        <div class="stat-card">
-            <div class="number" id="pumpCount">0</div>
-            <div class="label">🚀 PUMP Mode</div>
-        </div>
-        <div class="stat-card">
-            <div class="number" id="dumpCount">0</div>
-            <div class="label">📉 DUMP Mode</div>
-        </div>
-        <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh All</button>
+        <div class="stat-card"><div class="number" id="totalGamepasses">0</div><div class="label">Total Gamepasses</div></div>
+        <div class="stat-card"><div class="number" id="pumpGamepassCount">0</div><div class="label">🚀 Pump Gamepasses</div></div>
+        <div class="stat-card"><div class="number" id="dumpGamepassCount">0</div><div class="label">📉 Dump Gamepasses</div></div>
+        <div class="stat-card"><div class="number" id="totalPumpDump">0</div><div class="label">Place Configs</div></div>
+        <div class="stat-card"><div class="number" id="activePump">0</div><div class="label">Active Pump</div></div>
+        <div class="stat-card"><div class="number" id="activeDump">0</div><div class="label">Active Dump</div></div>
+        <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh</button>
     </div>
     
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('gamepass')">🎮 Gamepass Manager</button>
-        <button class="tab-btn" onclick="switchTab('games')">🎯 Game IDs</button>
-        <button class="tab-btn" onclick="switchTab('status')">📊 Pump/Dump Status</button>
-        <button class="tab-btn" onclick="switchTab('single')">📝 Quick Send</button>
+        <button class="tab-btn" onclick="switchTab('pumpdump')">⚙️ Pump/Dump Configs</button>
+        <button class="tab-btn" onclick="switchTab('operations')">🎯 Active Operations</button>
+        <button class="tab-btn" onclick="switchTab('games')">📋 Game IDs</button>
     </div>
     
     <!-- Gamepass Manager Tab -->
@@ -1022,110 +756,75 @@
                 <input type="text" id="gamepassIdInput" placeholder="🆔 Gamepass ID (e.g., 1853838787)">
             </div>
             <div class="toggle-group">
-                <span style="color: #888; font-size: 13px;">Mode:</span>
-                <button class="toggle-btn" id="pumpToggle" onclick="togglePump()">🚀 PUMP</button>
-                <button class="toggle-btn" id="dumpToggle" onclick="toggleDump()">📉 DUMP</button>
+                <span style="color: #888;">Mode:</span>
+                <button class="toggle-btn" id="gamepassPumpToggle" onclick="toggleGamepassPump()">🚀 PUMP</button>
+                <button class="toggle-btn" id="gamepassDumpToggle" onclick="toggleGamepassDump()">📉 DUMP</button>
             </div>
             <div class="action-buttons">
-                <button class="btn-primary" id="sendButton" onclick="saveGamepass()">➕ Add Gamepass</button>
-                <button class="btn-secondary" onclick="clearForm()">🗑️ Clear</button>
-                <button class="btn-secondary" onclick="cancelEdit()">❌ Cancel Edit</button>
+                <button class="btn-primary" id="saveGamepassBtn" onclick="saveGamepass()">➕ Add Gamepass</button>
+                <button class="btn-secondary" onclick="clearGamepassForm()">🗑️ Clear</button>
             </div>
         </div>
-        
         <div class="table-container">
             <h3 style="color: #fff; margin-bottom: 15px;">📋 All Gamepasses</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>GAME ID</th>
-                        <th>GAMEPASS ID</th>
-                        <th>MODE</th>
-                        <th>CREATED</th>
-                        <th>EDIT</th>
-                        <th>DELETE</th>
-                    </tr>
-                </thead>
-                <tbody id="gamepassList">
-                    <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading...</td></tr>
-                </tbody>
-            </table>
+            <table><thead><tr><th>GAME ID</th><th>GAMEPASS ID</th><th>MODE</th><th>CREATED</th><th>EDIT</th><th>DELETE</th></tr></thead><tbody id="gamepassList"><tr><td colspan="6" style="text-align: center; padding: 20px;">Loading...</td></tr></tbody></table>
+        </div>
+    </div>
+    
+    <!-- Pump/Dump Configs Tab -->
+    <div id="pumpdumpTab" class="tab-content">
+        <div class="form-section">
+            <div class="form-title">⚙️ Add / Edit Pump/Dump Config</div>
+            <div class="input-group">
+                <input type="text" id="placeIdInput" placeholder="🎮 Place ID (e.g., 7702014866)">
+            </div>
+            <div class="toggle-group">
+                <span style="color: #888;">Operation:</span>
+                <button class="toggle-btn" id="pumpDumpPumpToggle" onclick="togglePumpDumpPump()">🚀 PUMP (MarketBuyPoints)</button>
+                <button class="toggle-btn" id="pumpDumpDumpToggle" onclick="togglePumpDumpDump()">📉 DUMP (MarketSellPoints)</button>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-primary" id="savePumpDumpBtn" onclick="savePumpDump()">➕ Add Config</button>
+                <button class="btn-secondary" onclick="clearPumpDumpForm()">🗑️ Clear</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <h3 style="color: #fff; margin-bottom: 15px;">📋 Pump/Dump Configurations</h3>
+            <table><thead><tr><th>PLACE ID</th><th>PUMP</th><th>DUMP</th><th>CREATED</th><th>ACTIONS</th></tr></thead><tbody id="pumpDumpList"><tr><td colspan="5" style="text-align: center; padding: 20px;">Loading...</td></tr></tbody></table>
+        </div>
+    </div>
+    
+    <!-- Active Operations Tab -->
+    <div id="operationsTab" class="tab-content">
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>🚀 ACTIVE PUMP (MarketBuyPoints)</h3>
+                <div id="activePumpList" class="status-list">Loading...</div>
+                <div style="margin-top: 15px; padding: 10px; background: #0a0e1a; border-radius: 8px;"><code style="color: #00ff88;">MarketBuyPoints(PlaceId, 1)</code></div>
+            </div>
+            <div class="status-card">
+                <h3>📉 ACTIVE DUMP (MarketSellPoints)</h3>
+                <div id="activeDumpList" class="status-list">Loading...</div>
+                <div style="margin-top: 15px; padding: 10px; background: #0a0e1a; border-radius: 8px;"><code style="color: #ff4444;">MarketSellPoints(PlaceId, 1)</code></div>
+            </div>
         </div>
     </div>
     
     <!-- Game IDs Tab -->
     <div id="gamesTab" class="tab-content">
         <div class="form-section">
-            <div class="form-title">🎯 Add Game ID</div>
+            <div class="form-title">🎯 Add Game ID (Reference)</div>
             <div class="input-group">
                 <input type="text" id="newGameIdInput" placeholder="Enter Roblox Game ID">
                 <button class="btn-primary" onclick="addGameId()">➕ Add Game ID</button>
             </div>
         </div>
-        
         <div class="table-container">
             <h3 style="color: #fff; margin-bottom: 15px;">📋 Saved Game IDs</h3>
-            <div id="gamesList" class="games-container">
-                Loading...
-            </div>
-        </div>
-    </div>
-    
-    <!-- Pump/Dump Status Tab -->
-    <div id="statusTab" class="tab-content">
-        <div class="status-grid">
-            <div class="status-card">
-                <h3>🚀 PUMP Mode Gamepasses</h3>
-                <div id="pumpList" class="status-list">
-                    Loading...
-                </div>
-            </div>
-            <div class="status-card">
-                <h3>📉 DUMP Mode Gamepasses</h3>
-                <div id="dumpList" class="status-list">
-                    Loading...
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Quick Send Tab (Legacy) -->
-    <div id="singleTab" class="tab-content">
-        <div class="glass-card">
-            <div class="logo-area">
-                <div class="roblox-icon"><span>R</span></div>
-                <h1 style="font-size: 1.5rem;">Quick Send</h1>
-            </div>
-            <div class="sub">
-                🔥 Quickly add a single gamepass without Game ID
-            </div>
-            <div class="input-group">
-                <label>🎮 Roblox Gamepass ID</label>
-                <div class="id-field-wrapper" style="display: flex; background: #0f1222; border-radius: 10px; overflow: hidden;">
-                    <div class="prefix-badge" style="background: #1e293b; padding: 0 1rem; display: flex; align-items: center;">GP_</div>
-                    <input type="text" id="singleGamepassInput" placeholder="Enter Gamepass ID" style="flex: 1; background: transparent; border: none; padding: 0 1rem; color: #fff; height: 50px;">
-                </div>
-            </div>
-            <button class="btn-primary" style="width: 100%;" onclick="sendSingleGamepass()">⬆️ Send to Firestore</button>
-        </div>
-        
-        <div class="stats-panel" style="background: rgba(20, 25, 45, 0.8); border-radius: 16px; padding: 20px; margin-top: 20px;">
-            <div class="flex-between">
-                <div>
-                    <div class="stats-title">📊 Total Gamepasses</div>
-                    <div class="stats-value" id="submissionCount2">0</div>
-                </div>
-                <div>
-                    <div class="stats-title">🕐 Most recent</div>
-                    <ul class="recent-list" id="recentList">
-                        <li>—</li>
-                    </ul>
-                </div>
-            </div>
+            <div id="gamesList" class="games-container">Loading...</div>
         </div>
     </div>
 </div>
-
 <div id="statusMessage" class="status-message hidden"></div>
 </body>
 </html>
