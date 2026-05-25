@@ -112,6 +112,37 @@
         .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 8px 18px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 30px; cursor: pointer; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        
+        /* ===== MOBILE FIXES ===== */
+        @media (max-width: 768px) {
+            .chat-area {
+                width: 100%;
+                position: relative;
+                z-index: 1;
+            }
+            .messages-container {
+                flex: 1;
+                min-height: 60vh;
+                padding-bottom: 80px;
+            }
+            .input-area {
+                position: sticky;
+                bottom: 0;
+                background: #0f172a;
+                z-index: 5;
+            }
+            body, .app {
+                overflow: hidden;
+                height: 100vh;
+            }
+            .sidebar.mobile-open {
+                z-index: 1001;
+            }
+            .message {
+                max-width: 95%;
+            }
+        }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .empty-chat { text-align: center; padding: 40px; color: #6b7280; }
     </style>
@@ -150,7 +181,7 @@
             <i class="fas fa-chart-line" style="font-size:48px; color:#fbbf24;"></i>
             <h2 style="margin:15px 0;">STONKS SEVER</h2>
             <p>Admin Bot Creator & Chat</p>
-            <button id="signInBtn" style="background:#fbbf24; border:none; padding:12px 28px; border-radius:40px; margin-top:20px; width:100%;"><i class="fab fa-google"></i> Continue</button>
+            <button id="signInBtn" style="background:#fbbf24; border:none; padding:12px 28px; border-radius:40px; margin-top:20px; width:100%;"><i class="fab fa-google"></i> Continue with Google</button>
         </div>
     </div>
 </div>
@@ -216,12 +247,10 @@ function handleCommand(cmd, args, username) {
     function escapeHtml(s) { if(!s) return ''; return String(s).replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     function formatTime(ts) { if(!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
     
-    // Execute custom bot without redeclaration errors
     function executeCustomBot(commandText, username) {
         if (botType !== "javascript") return null;
         try {
             const codeToRun = activeBotCode;
-            const sandbox = {};
             const wrappedCode = `(function() { ${codeToRun}; return { botCommands, handleCommand }; })()`;
             const func = new Function(wrappedCode);
             const context = func();
@@ -247,7 +276,6 @@ function handleCommand(cmd, args, username) {
         return null;
     }
     
-    // Default fallback
     function getDefaultResponse(cmd) {
         const low = cmd.toLowerCase();
         if (low === '/help') return { text: "📋 Commands: /ping, /stonks, /status, /hello, plus your custom bot commands!" };
@@ -380,7 +408,6 @@ function handleCommand(cmd, args, username) {
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
             
-            // Shift+Click actions
             document.querySelectorAll('.message').forEach(msgDiv => {
                 msgDiv.addEventListener('click', async (e) => {
                     if (e.shiftKey) {
@@ -419,7 +446,6 @@ function handleCommand(cmd, args, username) {
         });
     }
     
-    // Monaco & Bot Studio
     function initMonaco() {
         require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
         require(['vs/editor/editor.main'], function() {
@@ -504,7 +530,6 @@ const botCommands = {
         }
     }
     
-    // Event bindings
     document.getElementById('signInBtn')?.addEventListener('click', () => { const provider = new firebase.auth.GoogleAuthProvider(); auth.signInWithPopup(provider); });
     document.getElementById('signOutTopBtn')?.addEventListener('click', () => auth.signOut());
     document.getElementById('signOutSidebarBtn')?.addEventListener('click', () => auth.signOut());
