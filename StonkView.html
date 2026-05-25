@@ -3,279 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Stonks Sever · Admin Bot Studio</title>
+    <title>Stonks Hub · Discord-like Servers</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.min.css">
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a0f;
-            color: #e2e8f0;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            width: 100%;
+        body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e2e8f0; height: 100vh; overflow: hidden; }
+        .app { display: flex; height: 100%; width: 100%; overflow: hidden; }
+
+        /* SERVER LIST (leftmost) */
+        .server-list {
+            width: 72px;
+            background: #0f0f14;
+            border-right: 1px solid #1f2937;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 0;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            background: #1e293b;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            color: #fbbf24;
+            font-weight: bold;
+        }
+        .server-icon.active {
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fbbf24, #ef4444);
+            color: white;
+        }
+        .server-icon:hover { border-radius: 16px; background: #334155; }
+        .add-server-btn {
+            background: #1f2937;
+            border: 2px dashed #fbbf24;
+            color: #fbbf24;
+        }
+        .server-tooltip {
+            position: absolute;
+            left: 70px;
+            background: #000c;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 100;
+            display: none;
+        }
+        .server-icon:hover .server-tooltip { display: block; }
 
-        /* ── LAYOUT ── */
-        .app { display: flex; height: 100%; height: 100dvh; width: 100%; overflow: hidden; }
-
-        /* ── SIDEBAR ── */
+        /* SIDEBAR (channels & categories) */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background: #111827;
             border-right: 1px solid #1f2937;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
             flex-shrink: 0;
+            transition: transform 0.2s;
         }
-        /* Mobile: fixed overlay */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: 0; top: 0;
-                height: 100%; height: 100dvh;
-                transform: translateX(-100%);
-                z-index: 1000;
-            }
-            .sidebar.mobile-open { transform: translateX(0); }
-        }
-
         .sidebar-header { padding: 16px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #fbbf24, #ef4444); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .close-sidebar { background: none; border: none; color: #9ca3af; font-size: 1.2rem; cursor: pointer; display: none; }
-        @media (max-width: 768px) { .close-sidebar { display: block; } }
-
-        .user-profile { padding: 16px; text-align: center; border-bottom: 1px solid #1f2937; }
-        .avatar-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; }
-        .user-name { margin-top: 8px; font-weight: 600; font-size: 0.9rem; }
-        .admin-badge { background: linear-gradient(135deg, #ef4444, #f59e0b); padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; display: inline-block; margin-left: 6px; }
-        .hidden { display: none !important; }
-
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin: 4px 12px; border-radius: 12px; cursor: pointer; color: #9ca3af; transition: 0.2s; }
-        .nav-item:hover { background: #1f2937; color: #fbbf24; }
-
-        .category-group { margin: 10px 0; }
-        .category-title { font-size: 0.65rem; text-transform: uppercase; color: #6b7280; padding: 6px 12px; }
-        .channel-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 28px; border-radius: 8px; cursor: pointer; color: #9ca3af; font-size: 0.85rem; }
+        .server-name-header { font-weight: 700; font-size: 1rem; }
+        .server-actions { display: flex; gap: 8px; }
+        .server-actions button { background: #1f2937; border: none; color: #fbbf24; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
+        .category-group { margin: 12px 0; }
+        .category-title { font-size: 0.7rem; text-transform: uppercase; color: #9ca3af; padding: 6px 16px; display: flex; justify-content: space-between; cursor: pointer; }
+        .add-channel-btn { background: none; border: none; color: #fbbf24; cursor: pointer; font-size: 12px; }
+        .channel-item { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 32px; border-radius: 8px; cursor: pointer; color: #9ca3af; font-size: 0.85rem; }
         .channel-item.active { background: #1f2937; color: #fbbf24; }
+        .channel-item:hover { background: #1f2937; }
 
-        /* ── CHAT AREA ── */
+        /* CHAT AREA */
         .chat-area {
             flex: 1;
-            min-width: 0;          /* KEY FIX: prevents flex overflow on mobile */
             display: flex;
             flex-direction: column;
             background: #0f172a;
             overflow: hidden;
-            width: 100%;
+            min-width: 0;
         }
-
-        .chat-header { padding: 12px 16px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; background: #0f172a; flex-shrink: 0; }
-        .mobile-menu-btn { background: #1e293b; border: none; color: #fbbf24; padding: 8px 12px; border-radius: 10px; cursor: pointer; margin-right: 12px; display: none; }
-        @media (max-width: 768px) { .mobile-menu-btn { display: flex; } }
-
-        .channel-info { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
-        .channel-name { font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sign-out-btn { background: #1e293b; border: none; padding: 6px 14px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.8rem; flex-shrink: 0; }
-
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            -webkit-overflow-scrolling: touch;
-            min-height: 0;         /* KEY FIX: allows flex child to scroll */
-        }
-        .message { display: flex; gap: 10px; max-width: 100%; animation: fadeIn 0.2s ease; position: relative; transition: background 0.1s; border-radius: 12px; padding: 2px 4px; }
-        .message:active { background: rgba(251,191,36,0.05); }
-        .message-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .message-content { background: #1e293b; padding: 8px 14px; border-radius: 18px; word-break: break-word; flex: 1; min-width: 0; }
-        .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+        .chat-header { padding: 12px 20px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between; background: #0f172a; }
+        .channel-info { display: flex; align-items: center; gap: 8px; }
+        .invite-btn { background: #1e293b; border: none; padding: 6px 14px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.8rem; }
+        .messages-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .message { display: flex; gap: 10px; max-width: 100%; }
+        .message-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+        .message-content { background: #1e293b; padding: 8px 14px; border-radius: 18px; word-break: break-word; flex: 1; }
+        .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; }
         .message-time { font-size: 0.6rem; color: #94a3b8; }
-        .message-text { font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
-        .system-message .message-content { background: linear-gradient(135deg, #1e293b, #1a1f2e); border-left: 3px solid #fbbf24; }
-        .bot-tag { background: #8b5cf6; padding: 2px 6px; border-radius: 10px; font-size: 0.6rem; margin-left: 6px; }
+        .message-text { font-size: 0.85rem; margin-top: 4px; }
+        .system-message .message-content { background: #1a1f2e; border-left: 3px solid #fbbf24; }
 
-        .replying-to { font-size: 0.65rem; color: #94a3b8; margin-bottom: 6px; }
+        .input-area { padding: 12px; border-top: 1px solid #1e293b; background: #0f172a; display: flex; gap: 10px; }
+        .input-area input { flex: 1; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; }
+        .input-area button { background: #fbbf24; border: none; padding: 0 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
 
-        /* Long-press action menu (replaces shift+click on mobile) */
-        .message-actions {
-            position: absolute;
-            right: 5px; top: -40px;
-            display: flex; gap: 6px;
-            background: #1e293b;
-            padding: 4px 8px;
-            border-radius: 20px;
-            border: 1px solid #fbbf24;
-            z-index: 10;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        .action-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; transition: 0.1s; white-space: nowrap; }
-        .action-btn:hover, .action-btn:active { background: #334155; color: #fbbf24; }
-        .action-btn.delete { color: #ef4444; }
-        .action-btn.delete:hover, .action-btn.delete:active { background: #7f1d1d; color: white; }
-
-        /* ── INPUT AREA ── */
-        .input-area { padding: 12px; border-top: 1px solid #1e293b; display: flex; flex-direction: column; gap: 8px; background: #0f172a; flex-shrink: 0; }
-        .input-row { display: flex; gap: 10px; align-items: center; }
-        .input-area input { flex: 1; min-width: 0; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
-        .input-area button.send-btn { background: #fbbf24; border: none; padding: 0 20px; border-radius: 30px; font-weight: bold; cursor: pointer; color: #0f172a; height: 44px; flex-shrink: 0; }
-
-        .reply-indicator { background: #334155; padding: 6px 12px; border-radius: 12px; font-size: 0.7rem; color: #fbbf24; border-left: 3px solid #fbbf24; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .cancel-reply { background: #475569; border: none; padding: 4px 10px; border-radius: 20px; color: white; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; margin-left: auto; }
-
-        /* ── TOAST ── */
-        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(70px); background: #1e293b; padding: 8px 16px; border-radius: 30px; z-index: 3000; transition: 0.3s; border-left: 3px solid #fbbf24; font-size: 13px; white-space: nowrap; pointer-events: none; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-
-        /* ── SIDEBAR OVERLAY (tap to close) ── */
-        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-        .sidebar-overlay.active { display: block; }
-
-        /* ── MODAL / BOT STUDIO ── */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-content { background: #0f172a; border-radius: 28px; padding: 24px; width: 95%; max-width: 1300px; height: 90vh; display: flex; flex-direction: column; border: 1px solid #334155; overflow: hidden; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; flex-shrink: 0; }
-        .studio-grid { display: flex; gap: 20px; flex: 1; min-height: 0; flex-wrap: wrap; overflow-y: auto; }
-        .editor-panel { flex: 2; min-width: 280px; display: flex; flex-direction: column; gap: 12px; }
-        .preview-panel { flex: 1.5; min-width: 280px; display: flex; flex-direction: column; gap: 16px; background: #111827; border-radius: 20px; padding: 16px; overflow-y: auto; }
-        .test-panel { flex: 1.2; min-width: 260px; background: #111827; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .monaco-editor-holder { height: 400px; border-radius: 16px; overflow: hidden; border: 1px solid #334155; background: #1e1e2f; }
-        .lang-select { background: #1e293b; padding: 6px 12px; border-radius: 24px; color: #fbbf24; border: none; }
-        .cmd-list { background: #1e293b; padding: 12px; border-radius: 16px; max-height: 200px; overflow-y: auto; font-size: 0.8rem; }
-        .test-console { background: #0a0a0f; border-radius: 14px; padding: 12px; height: 180px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; }
-        .test-input { display: flex; gap: 6px; margin-top: 8px; }
-        .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 8px 18px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        .modal-content { background: #0f172a; border-radius: 28px; padding: 24px; width: 90%; max-width: 450px; border: 1px solid #334155; }
+        .modal-content input, .modal-content select { background: #1e293b; border: none; padding: 10px; border-radius: 12px; color: white; width: 100%; margin: 8px 0; }
+        .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 8px 18px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 12px; }
         .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 30px; cursor: pointer; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .empty-chat { text-align: center; padding: 40px; color: #6b7280; }
-
-        /* Long-press visual feedback */
-        .message.pressing { background: rgba(251,191,36,0.08); border-radius: 12px; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; padding: 8px 20px; border-radius: 40px; z-index: 3000; border-left: 3px solid #fbbf24; }
+        .hidden { display: none; }
+        .admin-badge, .owner-badge { font-size: 0.6rem; background: #ef4444; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+        .owner-badge { background: #fbbf24; color: black; }
+        @media (max-width: 700px) { .server-list { width: 60px; } .sidebar { position: fixed; left: 0; top: 0; height: 100%; transform: translateX(-100%); z-index: 1100; } .sidebar.open { transform: translateX(0); } .overlay { position: fixed; inset: 0; background: #00000080; z-index: 1050; display: none; } .overlay.active { display: block; } }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .member-list { font-size: 12px; margin-top: 4px; color: #9ca3af; }
     </style>
 </head>
 <body>
 <div class="app">
+    <!-- SERVER LIST (leftmost bar) -->
+    <div class="server-list" id="serverListContainer"></div>
 
-    <!-- Sidebar overlay (tap outside to close on mobile) -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
+    <!-- Sidebar (channels + categories) -->
     <div class="sidebar" id="sidebarPanel">
         <div class="sidebar-header">
-            <div class="logo">⚡ STONKS BOT STUDIO</div>
-            <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+            <div class="server-name-header" id="currentServerName">Loading...</div>
+            <div class="server-actions">
+                <button id="createCategoryBtn" title="Create Category"><i class="fas fa-folder-plus"></i></button>
+                <button id="invitePeopleBtn" title="Invite"><i class="fas fa-user-plus"></i></button>
+                <button id="deleteServerBtn" title="Delete Server" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
+            </div>
         </div>
-        <div class="user-profile">
-            <img id="sidebarAvatar" class="avatar-img" src="https://ui-avatars.com/api/?name=User" alt="avatar">
-            <div class="user-name" id="sidebarName">Guest</div>
-            <div id="adminIndicator" class="admin-badge hidden">ADMIN</div>
-            <div id="ownerIndicator" class="admin-badge hidden" style="background:#fbbf24; color:#000;">👑 OWNER</div>
+        <div style="flex:1; overflow-y: auto;" id="channelsListContainer"></div>
+        <div style="padding: 12px; border-top: 1px solid #1f2937; font-size: 12px;">
+            <div><i class="fas fa-user"></i> <span id="userDisplay">Guest</span><span id="roleBadge"></span></div>
+            <button id="signOutBtn" style="background: none; border: none; color: #fbbf24; margin-top: 6px; cursor: pointer;">Sign out</button>
         </div>
-        <div style="flex:1; overflow-y:auto;" id="channelsList"></div>
-        <div class="nav-item" id="botStudioBtn"><i class="fas fa-robot"></i> 🤖 Custom Bot Studio</div>
-        <div class="nav-item" id="signOutSidebarBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
+    <div class="overlay" id="mobileOverlay"></div>
 
-    <div class="chat-area" id="chatArea">
+    <!-- CHAT AREA -->
+    <div class="chat-area">
         <div class="chat-header">
-            <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
             <div class="channel-info">
                 <i class="fas fa-hashtag"></i>
-                <span class="channel-name" id="currentChannelName">general</span>
+                <span id="currentChannelName">general</span>
             </div>
-            <button class="sign-out-btn" id="signOutTopBtn">Exit</button>
+            <button class="invite-btn" id="headerInviteBtn"><i class="fas fa-link"></i> Invite</button>
         </div>
         <div class="messages-container" id="messagesContainer"></div>
-        <div class="input-area" id="inputArea">
-            <div id="replyPreview" style="display:none;" class="reply-indicator">
-                <i class="fas fa-reply"></i>
-                <span id="replyingToText"></span>
-                <button class="cancel-reply" id="cancelReplyBtn">✖ Cancel</button>
-            </div>
-            <div class="input-row">
-                <input type="text" id="messageInput" placeholder="Type a message… hold a message to reply/delete">
-                <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Auth overlay -->
-    <div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:200;display:flex;align-items:center;justify-content:center;">
-        <div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;max-width:350px;width:90%;">
-            <i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i>
-            <h2 style="margin:15px 0;">STONKS SEVER</h2>
-            <p>Admin Bot Creator &amp; Chat</p>
-            <button id="signInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;width:100%;font-size:1rem;cursor:pointer;font-weight:600;">
-                <i class="fab fa-google"></i> Continue with Google
-            </button>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
         </div>
     </div>
 </div>
 
-<!-- Bot Studio Modal -->
-<div id="studioModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2><i class="fas fa-code"></i> Custom Bot Studio</h2>
-            <button id="closeStudioBtn" class="btn-outline">✕ Close</button>
-        </div>
-        <div class="studio-grid">
-            <div class="editor-panel">
-                <div class="flex-between">
-                    <span><i class="fas fa-terminal"></i> Code Editor (JS)</span>
-                    <select id="botLangSelect" class="lang-select">
-                        <option value="javascript">JavaScript (Full Control)</option>
-                        <option value="html">HTML Embed Widget</option>
-                    </select>
-                </div>
-                <div id="monacoContainer" class="monaco-editor-holder"></div>
-                <div class="flex-between" style="margin-top:12px;">
-                    <button id="saveBotBtn" class="btn-gold"><i class="fas fa-save"></i> Save Bot</button>
-                    <button id="testBotBtn" class="btn-outline"><i class="fas fa-vial"></i> Run Test</button>
-                </div>
-                <div class="cmd-list">
-                    <strong>📋 Bot Commands:</strong> <span id="botCommandsList">Define commands via botCommands object</span><br>
-                    <small>Example: const botCommands = { "/ping": "Pong!", "/status": "Online" };</small>
-                </div>
-            </div>
-            <div class="preview-panel">
-                <h4><i class="fas fa-eye"></i> Live Preview (HTML Embed)</h4>
-                <div id="embedPreviewArea" style="background:#0f172a;border-radius:16px;padding:12px;min-height:200px;border:1px solid #334155;">✨ HTML preview will appear here</div>
-                <h4>🤖 Bot Behavior</h4>
-                <div id="botBehaviorPreview" style="font-size:0.85rem;color:#94a3b8;">Click "Run Test" to see command outputs</div>
-            </div>
-            <div class="test-panel">
-                <h4><i class="fas fa-flask"></i> Testing Console</h4>
-                <div id="testConsole" class="test-console">&gt; Bot tester ready. Type a command below:</div>
-                <div class="test-input">
-                    <input type="text" id="testCommandInput" placeholder="/ping or /mycommand" style="flex:1;background:#1e293b;border:none;padding:8px 12px;border-radius:30px;color:white;">
-                    <button id="execTestCmd" class="btn-gold" style="padding:6px 14px;">Test</button>
-                </div>
-                <button id="resetDefaultBot" class="btn-outline" style="margin-top:8px;"><i class="fas fa-undo-alt"></i> Load Default Bot</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- MODALS -->
+<div id="createServerModal" class="modal"><div class="modal-content"><h3>Create New Server</h3><input type="text" id="newServerName" placeholder="Server name"><button id="confirmCreateServer" class="btn-gold">Create</button><button id="closeCreateModal" class="btn-outline" style="margin-top:8px;">Cancel</button></div></div>
+<div id="createCategoryModal" class="modal"><div class="modal-content"><h3>New Category</h3><input type="text" id="categoryName" placeholder="Category name (e.g., GAMING)"><button id="confirmCreateCategory" class="btn-gold">Add Category</button><button id="closeCatModal" class="btn-outline">Cancel</button></div></div>
+<div id="createChannelModal" class="modal"><div class="modal-content"><h3>New Channel</h3><input type="text" id="channelName" placeholder="Channel name"><select id="categorySelect"></select><button id="confirmCreateChannel" class="btn-gold">Create</button><button id="closeChanModal" class="btn-outline">Cancel</button></div></div>
+<div id="inviteModal" class="modal"><div class="modal-content"><h3>Invite Link</h3><p>Share this code: <strong id="inviteCodeDisplay"></strong></p><p>Anyone with the code can join!</p><button id="closeInviteModal" class="btn-gold">Close</button></div></div>
+<div id="joinServerModal" class="modal"><div class="modal-content"><h3>Join Server</h3><input type="text" id="joinCodeInput" placeholder="Paste invite code"><button id="confirmJoinServer" class="btn-gold">Join</button><button id="closeJoinModal" class="btn-outline">Cancel</button></div></div>
 
 <div id="toastMsg" class="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
-    // ── Firebase ──────────────────────────────────────────────────────────────
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
         authDomain: "vertexpaste.firebaseapp.com",
@@ -286,477 +187,331 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db   = firebase.firestore();
+    const db = firebase.firestore();
 
-    // ── State ─────────────────────────────────────────────────────────────────
     const OWNER_EMAIL = "defnot67kid@gmail.com";
-    let currentUser        = null;
-    let isAdmin            = false;
-    let isOwner            = false;
-    let currentChannelId   = "general";
+    let currentUser = null;
+    let currentServerId = null;
+    let currentChannelId = null;
     let unsubscribeMessages = null;
-    let currentReplyTo     = null;
-    let botType            = "javascript";
-    let monacoEditor       = null;
+    let isOwnerGlobal = false;
 
-    let activeBotCode = `// === CUSTOM STONKS BOT ===
-// Define your commands here:
-const botCommands = {
-    "/ping": "🏓 Pong! Custom bot is alive!",
-    "/status": "✅ Bot is online and ready",
-    "/stonks": { embed: true, html: '<div style="border-left:4px solid #fbbf24;padding:12px;background:#1e293b;border-radius:12px;"><b>📈 STONKS LIVE</b><br>STNK: $156.20 ▲ +2.4%<br>CRPT: $92.45 🟢</div>' },
-    "/hello": (args, user) => \`Hello @\${user}, welcome to Stonks Sever!\`
-};
+    // Helper
+    function showToast(msg) { const t = document.getElementById('toastMsg'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+    function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])); }
 
-// Optional: advanced handler
-function handleCommand(cmd, args, username) {
-    if (botCommands[cmd]) {
-        const res = botCommands[cmd];
-        if (typeof res === 'function') return res(args, username);
-        return res;
-    }
-    return null;
-}`;
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-    function showToast(msg) {
-        const t = document.getElementById('toastMsg');
-        t.innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    }
-
-    function escapeHtml(s) {
-        if (!s) return '';
-        return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-    }
-
-    function formatTime(ts) {
-        if (!ts) return '';
-        const d = ts.toDate ? ts.toDate() : new Date(ts);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // ── Bot engine ────────────────────────────────────────────────────────────
-    function executeCustomBot(commandText, username) {
-        if (botType !== "javascript") return null;
-        try {
-            const wrappedCode = `(function() { ${activeBotCode}; return { botCommands, handleCommand }; })()`;
-            const context = (new Function(wrappedCode))();
-            const commands = context.botCommands || {};
-            const handler  = context.handleCommand;
-            const cmdName  = commandText.split(' ')[0];
-            const args     = commandText.slice(cmdName.length).trim();
-
-            if (commands[cmdName]) {
-                let response = commands[cmdName];
-                if (typeof response === 'function') response = response(args, username);
-                if (response && typeof response === 'object' && response.embed)
-                    return { embed: true, html: response.html };
-                return { text: String(response) };
-            }
-            if (handler && typeof handler === 'function') {
-                const res = handler(cmdName, args, username);
-                if (res) {
-                    if (res.embed) return { embed: true, html: res.html };
-                    return { text: String(res) };
-                }
-            }
-        } catch(e) {
-            console.warn(e);
-            return { text: "🤖 Bot error: " + e.message };
+    // Fetch all servers user is member of OR owner (co-owner sees all)
+    async function fetchUserServers() {
+        if (!currentUser) return [];
+        if (isOwnerGlobal) {
+            const allServersSnap = await db.collection("servers").get();
+            return allServersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            const memberSnap = await db.collection("serverMembers").where("userId", "==", currentUser.uid).get();
+            const serverIds = memberSnap.docs.map(d => d.data().serverId);
+            if (serverIds.length === 0) return [];
+            const servers = await Promise.all(serverIds.map(id => db.collection("servers").doc(id).get()));
+            return servers.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
         }
-        return null;
     }
 
-    function getDefaultResponse(cmd) {
-        const low = cmd.toLowerCase();
-        if (low === '/help')   return { text: "📋 Commands: /ping, /stonks, /status, /hello, plus your custom bot commands!" };
-        if (low === '/ping')   return { text: "🏓 Pong from core bot!" };
-        if (low === '/stonks') return { embed: true, html: '<div style="border-left:4px solid #fbbf24;padding:12px;background:#1e293b;border-radius:12px;"><b>📈 STONKS</b><br>$STONK: $142.50 🟢<br>$MOON: $315.20 🚀</div>' };
-        return null;
-    }
-
-    async function handleBotTrigger(msgText, authorName) {
-        if (!msgText.startsWith('/')) return false;
-        let response = executeCustomBot(msgText, authorName);
-        if (!response) response = getDefaultResponse(msgText);
-        if (response) {
-            await db.collection("channels").doc(currentChannelId).collection("messages").add({
-                text: response.embed ? (response.html || "✨") : response.text,
-                uid: "bot_system",
-                displayName: "CustomBot 🤖",
-                photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                isBot: true,
-                isEmbed: response.embed || false
-            });
-            return true;
+    // Render server icons (left bar)
+    async function renderServerList() {
+        const servers = await fetchUserServers();
+        const container = document.getElementById('serverListContainer');
+        let html = '';
+        for (const sv of servers) {
+            html += `<div class="server-icon ${currentServerId === sv.id ? 'active' : ''}" data-server-id="${sv.id}">
+                        <span>${sv.name.charAt(0).toUpperCase()}</span>
+                        <div class="server-tooltip">${escapeHtml(sv.name)}</div>
+                    </div>`;
         }
-        return false;
-    }
-
-    // ── Message actions ───────────────────────────────────────────────────────
-    async function deleteMessage(channelId, messageId) {
-        if (!currentUser) return;
-        const msgRef = db.collection("channels").doc(channelId).collection("messages").doc(messageId);
-        const doc    = await msgRef.get();
-        if (!doc.exists) return;
-        const data   = doc.data();
-        if (!isOwner && !isAdmin && data.uid !== currentUser.uid) { showToast("❌ No permission"); return; }
-        await msgRef.delete();
-        showToast("🗑️ Message deleted");
-    }
-
-    function setReplyTo(messageId, author, text) {
-        currentReplyTo = { messageId, author, text };
-        document.getElementById('replyingToText').innerText =
-            `Replying to @${author}: ${text.substring(0, 60)}${text.length > 60 ? '…' : ''}`;
-        document.getElementById('replyPreview').style.display = 'flex';
-        document.getElementById('messageInput').focus();
-    }
-
-    function cancelReply() {
-        currentReplyTo = null;
-        document.getElementById('replyPreview').style.display = 'none';
-    }
-
-    // Show action menu on a message div
-    function showActionMenu(msgDiv, channelId, msgId, author, text, canDel) {
-        // Remove any existing menus
-        document.querySelectorAll('.message-actions').forEach(m => m.remove());
-
-        const actionMenu = document.createElement('div');
-        actionMenu.className = 'message-actions';
-        actionMenu.innerHTML = `
-            <button class="action-btn reply"><i class="fas fa-reply"></i> Reply</button>
-            ${canDel ? `<button class="action-btn delete"><i class="fas fa-trash"></i> Delete</button>` : ''}
-        `;
-        msgDiv.appendChild(actionMenu);
-
-        actionMenu.querySelector('.reply')?.addEventListener('click', e => {
-            e.stopPropagation();
-            setReplyTo(msgId, author, text);
-            actionMenu.remove();
+        html += `<div class="server-icon add-server-btn" id="addServerBtn"><i class="fas fa-plus"></i><div class="server-tooltip">Create Server</div></div>`;
+        html += `<div class="server-icon" id="joinServerBtn"><i class="fas fa-sign-in-alt"></i><div class="server-tooltip">Join Server</div></div>`;
+        container.innerHTML = html;
+        document.querySelectorAll('.server-icon[data-server-id]').forEach(el => {
+            el.addEventListener('click', () => switchServer(el.dataset.serverId));
         });
-        actionMenu.querySelector('.delete')?.addEventListener('click', async e => {
-            e.stopPropagation();
-            await deleteMessage(channelId, msgId);
-            actionMenu.remove();
-        });
-
-        // Auto-dismiss
-        const timer = setTimeout(() => actionMenu.remove(), 4000);
-        const outside = e => {
-            if (!actionMenu.contains(e.target)) {
-                actionMenu.remove();
-                clearTimeout(timer);
-                document.removeEventListener('pointerdown', outside);
-            }
-        };
-        setTimeout(() => document.addEventListener('pointerdown', outside), 0);
+        document.getElementById('addServerBtn')?.addEventListener('click', () => document.getElementById('createServerModal').classList.add('active'));
+        document.getElementById('joinServerBtn')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.add('active'));
     }
 
-    // ── Send message ──────────────────────────────────────────────────────────
-    async function sendMessage() {
-        if (!currentUser) { showToast("Sign in first"); return; }
-        const input = document.getElementById('messageInput');
-        const text  = input.value.trim();
-        if (!text) return;
+    // Switch server: load structure and default channel
+    async function switchServer(serverId) {
+        if (unsubscribeMessages) unsubscribeMessages();
+        currentServerId = serverId;
+        const serverDoc = await db.collection("servers").doc(serverId).get();
+        if (!serverDoc.exists) return;
+        const serverData = serverDoc.data();
+        document.getElementById('currentServerName').innerText = serverData.name || "Server";
+        await loadServerChannels(serverId);
+        renderServerList();
+        closeSidebarMobile();
+    }
 
-        let replyData = null;
-        if (currentReplyTo) {
-            replyData = { ...currentReplyTo };
-            cancelReply();
+    async function loadServerChannels(serverId) {
+        const structRef = db.collection("serverStructure").doc(serverId);
+        let struct = (await structRef.get()).data();
+        if (!struct) {
+            struct = { categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }] }] };
+            await structRef.set(struct);
         }
-
-        await db.collection("channels").doc(currentChannelId).collection("messages").add({
-            text,
-            uid: currentUser.uid,
-            displayName: currentUser.displayName,
-            photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}`,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            isBot: false,
-            replyTo: replyData || null
-        });
-
-        input.value = '';
-        setTimeout(() => handleBotTrigger(text, currentUser.displayName), 80);
+        if (!currentChannelId || !struct.categories.some(c => c.channels.some(ch => ch.id === currentChannelId))) {
+            currentChannelId = struct.categories[0]?.channels[0]?.id || "general";
+        }
+        renderSidebarChannels(struct);
+        loadMessagesForChannel(currentServerId, currentChannelId);
+        document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId) || currentChannelId;
     }
 
-    // ── Channels / Sidebar ────────────────────────────────────────────────────
-    async function loadChannels() {
-        const docRef  = db.collection("server").doc("structure");
-        const docSnap = await docRef.get();
-        if (docSnap.exists) return docSnap.data();
-        const def = { categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }] }] };
-        await docRef.set(def);
-        return def;
+    function getChannelNameById(struct, chId) {
+        for (const cat of struct.categories)
+            for (const ch of cat.channels)
+                if (ch.id === chId) return ch.name;
+        return chId;
     }
 
-    async function renderSidebar() {
-        const struct    = await loadChannels();
-        const container = document.getElementById('channelsList');
+    function renderSidebarChannels(struct) {
+        const container = document.getElementById('channelsListContainer');
         let html = '';
         for (const cat of struct.categories) {
-            html += `<div class="category-group"><div class="category-title">${escapeHtml(cat.name)}</div>`;
+            html += `<div class="category-group">
+                        <div class="category-title">
+                            <span>${escapeHtml(cat.name)}</span>
+                            <button class="add-channel-btn" data-category="${escapeHtml(cat.name)}"><i class="fas fa-plus-circle"></i></button>
+                        </div>`;
             for (const ch of cat.channels) {
-                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}"
-                    data-channel-id="${ch.id}" data-channel-name="${ch.name}">
-                    <i class="fas fa-hashtag"></i> ${escapeHtml(ch.name)}
-                </div>`;
+                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}" data-channel-id="${ch.id}">
+                            <i class="fas fa-hashtag"></i> ${escapeHtml(ch.name)}
+                         </div>`;
             }
             html += `</div>`;
         }
         container.innerHTML = html;
-        container.querySelectorAll('.channel-item').forEach(el => {
-            el.addEventListener('click', () => switchChannel(el.dataset.channelId, el.dataset.channelName));
+        document.querySelectorAll('.channel-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const newId = el.dataset.channelId;
+                if (currentChannelId !== newId) {
+                    currentChannelId = newId;
+                    loadMessagesForChannel(currentServerId, currentChannelId);
+                    renderSidebarChannels(struct);
+                    document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId);
+                }
+                closeSidebarMobile();
+            });
+        });
+        document.querySelectorAll('.add-channel-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const categoryName = btn.dataset.category;
+                openCreateChannelModal(categoryName);
+            });
         });
     }
 
-    function switchChannel(id, name) {
-        if (unsubscribeMessages) unsubscribeMessages();
-        currentChannelId = id;
-        document.getElementById('currentChannelName').innerText = name;
-        loadMessagesForChannel(id);
-        renderSidebar();
-        closeSidebar();
-    }
-
-    function openSidebar() {
-        document.getElementById('sidebarPanel').classList.add('mobile-open');
-        document.getElementById('sidebarOverlay').classList.add('active');
-    }
-
-    function closeSidebar() {
-        document.getElementById('sidebarPanel').classList.remove('mobile-open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    }
-
-    // ── Message rendering & long-press ────────────────────────────────────────
-    function loadMessagesForChannel(channelId) {
+    async function loadMessagesForChannel(serverId, channelId) {
         const container = document.getElementById('messagesContainer');
-
-        unsubscribeMessages = db.collection("channels")
-            .doc(channelId).collection("messages")
+        if (unsubscribeMessages) unsubscribeMessages();
+        unsubscribeMessages = db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages")
             .orderBy("createdAt", "asc")
             .onSnapshot(snapshot => {
                 let html = '';
                 snapshot.forEach(doc => {
-                    const d     = doc.data();
-                    const msgId = doc.id;
-
-                    let replyHtml = '';
-                    if (d.replyTo) {
-                        replyHtml = `<div class="replying-to">
-                            <i class="fas fa-reply"></i>
-                            Replying to @${escapeHtml(d.replyTo.author)}:
-                            ${escapeHtml(d.replyTo.text.substring(0, 60))}${d.replyTo.text.length > 60 ? '…' : ''}
-                        </div>`;
-                    }
-
-                    const contentHtml = d.isEmbed ? d.text : escapeHtml(d.text);
-
-                    html += `<div class="message ${d.isBot ? 'system-message' : ''}"
-                        data-msg-id="${msgId}"
-                        data-msg-uid="${escapeHtml(d.uid)}"
-                        data-msg-author="${escapeHtml(d.displayName)}"
-                        data-msg-text="${escapeHtml(d.text).replace(/"/g, '&quot;')}">
-                        <img src="${escapeHtml(d.photoURL || 'https://ui-avatars.com/api/?name=User')}"
-                             class="message-avatar"
-                             onerror="this.src='https://ui-avatars.com/api/?name=User'"
-                             alt="avatar">
-                        <div class="message-content">
-                            <div class="message-author">
-                                ${escapeHtml(d.displayName)}
-                                ${d.isBot ? '<span class="bot-tag">BOT</span>' : ''}
-                                <span class="message-time">${formatTime(d.createdAt)}</span>
-                            </div>
-                            ${replyHtml}
-                            <div class="message-text">${contentHtml}</div>
-                        </div>
-                    </div>`;
+                    const d = doc.data();
+                    html += `<div class="message ${d.isBot ? 'system-message' : ''}">
+                                <img src="${escapeHtml(d.photoURL || 'https://ui-avatars.com/api/?name=User')}" class="message-avatar">
+                                <div class="message-content">
+                                    <div class="message-author">${escapeHtml(d.displayName)}<span class="message-time">${d.createdAt ? new Date(d.createdAt.toDate()).toLocaleTimeString() : ''}</span></div>
+                                    <div class="message-text">${escapeHtml(d.text)}</div>
+                                </div>
+                            </div>`;
                 });
-
-                if (!html) html = '<div class="empty-chat">✨ No messages yet. Try /help</div>';
+                if (!html) html = '<div class="empty-chat" style="text-align:center;color:#6b7280;">✨ No messages. Start chatting!</div>';
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
-
-                // Attach long-press + shift-click handlers
-                container.querySelectorAll('.message').forEach(msgDiv => {
-                    attachMessageHandlers(msgDiv, channelId);
-                });
             });
     }
 
-    function attachMessageHandlers(msgDiv, channelId) {
-        let pressTimer = null;
-        const LONG_PRESS_MS = 500;
-
-        const triggerMenu = async () => {
-            const msgId  = msgDiv.dataset.msgId;
-            const author = msgDiv.dataset.msgAuthor;
-            const text   = msgDiv.dataset.msgText;
-            const msgUid = msgDiv.dataset.msgUid;
-            const canDel = isOwner || isAdmin || (currentUser && msgUid === currentUser.uid);
-            showActionMenu(msgDiv, channelId, msgId, author, text, canDel);
-        };
-
-        // Long press (touch)
-        msgDiv.addEventListener('touchstart', e => {
-            pressTimer = setTimeout(() => {
-                msgDiv.classList.add('pressing');
-                triggerMenu();
-            }, LONG_PRESS_MS);
-        }, { passive: true });
-
-        msgDiv.addEventListener('touchend',   () => { clearTimeout(pressTimer); msgDiv.classList.remove('pressing'); });
-        msgDiv.addEventListener('touchmove',  () => { clearTimeout(pressTimer); msgDiv.classList.remove('pressing'); });
-        msgDiv.addEventListener('touchcancel',() => { clearTimeout(pressTimer); msgDiv.classList.remove('pressing'); });
-
-        // Shift+click (desktop)
-        msgDiv.addEventListener('click', e => {
-            if (e.shiftKey) { e.stopPropagation(); triggerMenu(); }
+    async function sendMessage() {
+        if (!currentUser || !currentServerId || !currentChannelId) return;
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text) return;
+        await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({
+            text, uid: currentUser.uid, displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}`,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(), isBot: false
         });
+        input.value = '';
     }
 
-    // ── Bot Studio ────────────────────────────────────────────────────────────
-    function initMonaco() {
-        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
-        require(['vs/editor/editor.main'], () => {
-            monacoEditor = monaco.editor.create(document.getElementById('monacoContainer'), {
-                value: activeBotCode,
-                language: 'javascript',
-                theme: 'vs-dark',
-                automaticLayout: true,
-                fontSize: 13,
-                minimap: { enabled: false }
-            });
-        });
+    // Server creation (with automatic membership and owner)
+    async function createServer(serverName) {
+        if (!currentUser) return;
+        const serverRef = db.collection("servers").doc();
+        const serverId = serverRef.id;
+        await serverRef.set({ name: serverName, ownerId: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection("serverMembers").doc().set({ serverId, userId: currentUser.uid, role: "owner" });
+        await db.collection("serverStructure").doc(serverId).set({ categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }] }] });
+        showToast(`Server "${serverName}" created!`);
+        await switchServer(serverId);
+        renderServerList();
     }
 
-    function saveBot() {
-        if (!isAdmin && !isOwner) { showToast("Admin/Owner only"); return; }
-        const lang = document.getElementById('botLangSelect').value;
-        const code = monacoEditor ? monacoEditor.getValue() : activeBotCode;
-
-        if (lang === 'html') {
-            botType = 'html';
-            activeBotCode = code;
-            showToast("HTML embed bot saved!");
-        } else {
-            botType = 'javascript';
-            try {
-                new Function(code);
-                activeBotCode = code;
-                showToast("✅ JS Bot saved");
-            } catch(e) {
-                showToast("JS Error: " + e.message);
-                return;
-            }
+    // Delete server (only owner or global owner can delete, but STONKS HUB main server can't be deleted)
+    async function deleteCurrentServer() {
+        if (!currentServerId) return;
+        const serverDoc = await db.collection("servers").doc(currentServerId).get();
+        const serverData = serverDoc.data();
+        if (serverData.name === "Stonks Hub") { showToast("❌ Cannot delete Stonks Hub (main server)!"); return; }
+        const canDelete = isOwnerGlobal || (currentUser && serverData.ownerId === currentUser.uid);
+        if (!canDelete) { showToast("Only server owner or global admin can delete."); return; }
+        if (confirm(`Delete server "${serverData.name}" permanently?`)) {
+            const membersSnap = await db.collection("serverMembers").where("serverId", "==", currentServerId).get();
+            membersSnap.forEach(d => d.ref.delete());
+            await db.collection("servers").doc(currentServerId).delete();
+            await db.collection("serverStructure").doc(currentServerId).delete();
+            showToast("Server deleted.");
+            currentServerId = null;
+            await renderServerList();
+            // auto-select first available server
+            const servers = await fetchUserServers();
+            if (servers.length) await switchServer(servers[0].id);
+            else { document.getElementById('currentServerName').innerText = "No Server"; document.getElementById('channelsListContainer').innerHTML = ""; }
         }
-        document.getElementById('studioModal').classList.remove('active');
     }
 
-    function testBotCommand() {
-        const testInput  = document.getElementById('testCommandInput').value;
-        if (!testInput) return;
-        const consoleDiv = document.getElementById('testConsole');
-
-        let result = botType === 'javascript' ? executeCustomBot(testInput, "Tester") : null;
-        if (!result) result = getDefaultResponse(testInput);
-
-        const output = result
-            ? (result.embed ? "[EMBED] " + (result.html || "").substring(0, 100) : result.text)
-            : "⚠️ No response";
-
-        consoleDiv.innerHTML += `\n&gt; ${escapeHtml(testInput)}\n&lt; ${escapeHtml(output)}`;
-        consoleDiv.scrollTop  = consoleDiv.scrollHeight;
-
-        if (result && result.embed)
-            document.getElementById('embedPreviewArea').innerHTML = result.html || "Preview";
-
-        document.getElementById('testCommandInput').value = '';
+    // Invite system: generate code
+    async function generateInvite() {
+        if (!currentServerId) return;
+        const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+        await db.collection("invites").doc(code).set({ serverId: currentServerId, createdBy: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        document.getElementById('inviteCodeDisplay').innerText = code;
+        document.getElementById('inviteModal').classList.add('active');
     }
 
-    function resetDefault() {
-        if (!isAdmin && !isOwner) return;
-        activeBotCode = `// === CUSTOM STONKS BOT ===
-const botCommands = {
-    "/ping": "🏓 Pong! Custom bot is alive!",
-    "/status": "✅ Bot is online and ready",
-    "/stonks": { embed: true, html: '<div style="border-left:4px solid #fbbf24;padding:12px;background:#1e293b;border-radius:12px;"><b>📈 STONKS LIVE</b><br>STNK: $156.20 ▲ +2.4%</div>' },
-    "/hello": (args, user) => \`Hello @\${user}!\`
-};`;
-        botType = "javascript";
-        if (monacoEditor) monacoEditor.setValue(activeBotCode);
-        document.getElementById('botLangSelect').value = "javascript";
-        showToast("Default bot restored");
+    async function joinWithCode(code) {
+        const inviteDoc = await db.collection("invites").doc(code).get();
+        if (!inviteDoc.exists) { showToast("Invalid invite code"); return; }
+        const serverId = inviteDoc.data().serverId;
+        const existing = await db.collection("serverMembers").where("serverId", "==", serverId).where("userId", "==", currentUser.uid).get();
+        if (!existing.empty) { showToast("Already a member!"); return; }
+        await db.collection("serverMembers").add({ serverId, userId: currentUser.uid, role: "member" });
+        showToast("Joined server!");
+        await renderServerList();
+        await switchServer(serverId);
     }
 
-    function openStudio() {
-        if (!isAdmin && !isOwner) { showToast("Admin/Owner only"); return; }
-        if (monacoEditor) monacoEditor.setValue(activeBotCode);
-        document.getElementById('botLangSelect').value = botType;
-        document.getElementById('studioModal').classList.add('active');
+    async function createCategory() {
+        if (!currentServerId) return;
+        const catName = document.getElementById('categoryName').value.trim();
+        if (!catName) return;
+        const structRef = db.collection("serverStructure").doc(currentServerId);
+        const struct = (await structRef.get()).data() || { categories: [] };
+        struct.categories.push({ name: catName, channels: [] });
+        await structRef.set(struct);
+        document.getElementById('createCategoryModal').classList.remove('active');
+        document.getElementById('categoryName').value = '';
+        loadServerChannels(currentServerId);
+        showToast(`Category "${catName}" added`);
     }
 
-    // ── Auth / UI ─────────────────────────────────────────────────────────────
-    function updateUI(user) {
+    async function createChannel(categoryName, channelName) {
+        if (!currentServerId || !channelName) return;
+        const structRef = db.collection("serverStructure").doc(currentServerId);
+        const struct = (await structRef.get()).data();
+        const cat = struct.categories.find(c => c.name === categoryName);
+        if (!cat) return;
+        const newId = channelName.toLowerCase().replace(/\s/g, '-') + Date.now();
+        cat.channels.push({ id: newId, name: channelName });
+        await structRef.set(struct);
+        loadServerChannels(currentServerId);
+        showToast(`#${channelName} created`);
+    }
+
+    function openCreateChannelModal(categoryName) {
+        document.getElementById('categorySelect').innerHTML = '';
+        const select = document.getElementById('categorySelect');
+        db.collection("serverStructure").doc(currentServerId).get().then(doc => {
+            const struct = doc.data();
+            struct.categories.forEach(c => { const opt = document.createElement('option'); opt.value = c.name; opt.innerText = c.name; select.appendChild(opt); });
+            select.value = categoryName;
+        });
+        document.getElementById('createChannelModal').classList.add('active');
+    }
+
+    // sidebars mobile
+    function openSidebarMobile() { document.getElementById('sidebarPanel').classList.add('open'); document.getElementById('mobileOverlay').classList.add('active'); }
+    function closeSidebarMobile() { document.getElementById('sidebarPanel').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('active'); }
+
+    // Auth UI
+    function updateAuthUI(user) {
         const authOverlay = document.getElementById('authOverlay');
         if (user) {
-            authOverlay.style.display = 'none';
-            document.getElementById('sidebarName').innerText   = user.displayName || user.email;
-            document.getElementById('sidebarAvatar').src       = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
-            isAdmin = isOwner = (user.email === OWNER_EMAIL);
-            document.getElementById('adminIndicator').classList.toggle('hidden', !isAdmin);
-            document.getElementById('ownerIndicator').classList.toggle('hidden', !isOwner);
-            renderSidebar();
-            loadMessagesForChannel(currentChannelId);
+            if (document.getElementById('authOverlay')) document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('userDisplay').innerText = user.displayName || user.email;
+            const isOwner = (user.email === OWNER_EMAIL);
+            isOwnerGlobal = isOwner;
+            const roleSpan = document.getElementById('roleBadge');
+            if (isOwner) roleSpan.innerHTML = '<span class="owner-badge">👑 GLOBAL OWNER</span>';
+            else roleSpan.innerHTML = '';
+            renderServerList().then(async () => {
+                const servers = await fetchUserServers();
+                if (servers.length > 0 && !currentServerId) await switchServer(servers[0].id);
+                else if (servers.length === 0) { document.getElementById('currentServerName').innerText = "No servers"; }
+            });
         } else {
-            authOverlay.style.display = 'flex';
-            if (unsubscribeMessages) unsubscribeMessages();
+            if (!document.getElementById('authOverlay')) {
+                const div = document.createElement('div'); div.id = 'authOverlay'; div.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;";
+                div.innerHTML = `<div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><p>Discord-like servers, categories, invites</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;font-weight:600;">Sign in with Google</button></div>`;
+                document.body.appendChild(div);
+                document.getElementById('googleSignInBtn')?.addEventListener('click', () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()));
+            }
         }
     }
 
-    // ── Event bindings ────────────────────────────────────────────────────────
-    document.getElementById('signInBtn')?.addEventListener('click', () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider);
-    });
-    document.getElementById('signOutTopBtn')?.addEventListener('click',     () => auth.signOut());
-    document.getElementById('signOutSidebarBtn')?.addEventListener('click', () => auth.signOut());
+    // Event Listeners
     document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
     document.getElementById('messageInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
-    document.getElementById('mobileMenuBtn')?.addEventListener('click',  openSidebar);
-    document.getElementById('closeSidebarBtn')?.addEventListener('click', closeSidebar);
-    document.getElementById('sidebarOverlay')?.addEventListener('click',  closeSidebar);
-    document.getElementById('botStudioBtn')?.addEventListener('click', openStudio);
-    document.getElementById('closeStudioBtn')?.addEventListener('click', () => document.getElementById('studioModal').classList.remove('active'));
-    document.getElementById('saveBotBtn')?.addEventListener('click', saveBot);
-    document.getElementById('testBotBtn')?.addEventListener('click', testBotCommand);
-    document.getElementById('execTestCmd')?.addEventListener('click', testBotCommand);
-    document.getElementById('resetDefaultBot')?.addEventListener('click', resetDefault);
-    document.getElementById('cancelReplyBtn')?.addEventListener('click', cancelReply);
-    document.getElementById('testCommandInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') testBotCommand(); });
+    document.getElementById('signOutBtn')?.addEventListener('click', () => auth.signOut());
+    document.getElementById('createCategoryBtn')?.addEventListener('click', () => document.getElementById('createCategoryModal').classList.add('active'));
+    document.getElementById('invitePeopleBtn')?.addEventListener('click', generateInvite);
+    document.getElementById('headerInviteBtn')?.addEventListener('click', generateInvite);
+    document.getElementById('deleteServerBtn')?.addEventListener('click', deleteCurrentServer);
+    document.getElementById('confirmCreateServer')?.addEventListener('click', async () => { const name = document.getElementById('newServerName').value; if (name) await createServer(name); document.getElementById('createServerModal').classList.remove('active'); });
+    document.getElementById('closeCreateModal')?.addEventListener('click', () => document.getElementById('createServerModal').classList.remove('active'));
+    document.getElementById('confirmCreateCategory')?.addEventListener('click', createCategory);
+    document.getElementById('closeCatModal')?.addEventListener('click', () => document.getElementById('createCategoryModal').classList.remove('active'));
+    document.getElementById('confirmCreateChannel')?.addEventListener('click', async () => { const chanName = document.getElementById('channelName').value; const cat = document.getElementById('categorySelect').value; if (chanName && cat) await createChannel(cat, chanName); document.getElementById('createChannelModal').classList.remove('active'); });
+    document.getElementById('closeChanModal')?.addEventListener('click', () => document.getElementById('createChannelModal').classList.remove('active'));
+    document.getElementById('closeInviteModal')?.addEventListener('click', () => document.getElementById('inviteModal').classList.remove('active'));
+    document.getElementById('confirmJoinServer')?.addEventListener('click', async () => { const code = document.getElementById('joinCodeInput').value; if (code) await joinWithCode(code); document.getElementById('joinServerModal').classList.remove('active'); });
+    document.getElementById('closeJoinModal')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.remove('active'));
+    document.getElementById('mobileOverlay')?.addEventListener('click', closeSidebarMobile);
+    if (document.querySelector('.server-list')) document.querySelector('.server-list')?.addEventListener('click', (e) => { if (window.innerWidth <= 700 && e.target.closest('.server-icon')) closeSidebarMobile(); });
+    // Add menu for mobile open sidebar
+    const menuBtn = document.createElement('button'); menuBtn.innerHTML = '<i class="fas fa-bars"></i>'; menuBtn.style.cssText = "position:fixed;bottom:20px;left:20px;background:#fbbf24;border:none;border-radius:50%;width:48px;height:48px;z-index:1200;display:none;"; document.body.appendChild(menuBtn);
+    if (window.innerWidth <= 700) menuBtn.style.display = 'flex'; else menuBtn.style.display = 'none';
+    menuBtn.addEventListener('click', openSidebarMobile);
+    window.addEventListener('resize', () => { if (window.innerWidth <= 700) menuBtn.style.display = 'flex'; else menuBtn.style.display = 'none'; });
 
-    document.getElementById('botLangSelect')?.addEventListener('change', () => {
-        const lang = document.getElementById('botLangSelect').value;
-        if (!monacoEditor) return;
-        if (lang === 'html') {
-            monacoEditor.setValue(`<div style="background:#1f2937;padding:16px;border-radius:20px;text-align:center;">
-  <i class="fas fa-chart-line" style="font-size:32px;color:#fbbf24;"></i>
-  <h3>Stonks Widget</h3>
-  <p>STNK: $178.20 🚀</p>
-</div>`);
-        } else {
-            monacoEditor.setValue(activeBotCode);
+    auth.onAuthStateChanged(user => { currentUser = user; updateAuthUI(user); });
+    // Preload Stonks Hub default server creation if none exists
+    setTimeout(async () => {
+        const allServers = await db.collection("servers").get();
+        if (allServers.empty) {
+            const hubRef = db.collection("servers").doc();
+            await hubRef.set({ name: "Stonks Hub", ownerId: "system", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            await db.collection("serverStructure").doc(hubRef.id).set({ categories: [{ name: "GENERAL", channels: [{ id: "welcome", name: "welcome" }, { id: "general", name: "general" }] }] });
+            console.log("Stonks Hub created");
         }
-    });
-
-    // ── Boot ──────────────────────────────────────────────────────────────────
-    auth.onAuthStateChanged(user => { currentUser = user; updateUI(user); });
-    initMonaco();
+    }, 1000);
+</script>
+<div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;">
+    <div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><p>Create servers, categories, invite friends</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;font-weight:600;">Sign in with Google</button></div>
+</div>
+<script>
+    document.getElementById('googleSignInBtn')?.addEventListener('click', () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()));
 </script>
 </body>
 </html>
