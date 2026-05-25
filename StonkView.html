@@ -3,622 +3,760 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Stonks Hub · Mobile Voice & Screen Share</title>
+    <title>Stonks Sever · Admin Bot Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Inter', sans-serif;
             background: #0a0a0f;
             color: #e2e8f0;
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
-            touch-action: pan-x pan-y;
-        }
-
-        .app {
-            display: flex;
-            height: 100%;
             width: 100%;
-            overflow: hidden;
-            position: relative;
         }
 
-        /* SERVER LIST - improved touch */
-        .server-list {
-            width: 72px;
-            background: #0f0f14;
-            border-right: 1px solid #1f2937;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 0;
-            overflow-y: auto;
-            flex-shrink: 0;
-            -webkit-overflow-scrolling: touch;
-        }
+        /* ── LAYOUT ── */
+        .app { display: flex; height: 100%; height: 100dvh; width: 100%; overflow: hidden; }
 
-        .server-icon {
-            width: 52px;
-            height: 52px;
-            background: #1e293b;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            color: #fbbf24;
-            font-weight: bold;
-            font-size: 1.2rem;
-            touch-action: manipulation;
-        }
-
-        .server-icon.active {
-            border-radius: 16px;
-            background: linear-gradient(135deg, #fbbf24, #ef4444);
-            color: white;
-            transform: scale(1.02);
-        }
-
-        .add-server-btn, .join-server-btn {
-            background: #1f2937;
-            border: 2px dashed #fbbf24;
-        }
-
-        /* MOBILE BOTTOM NAV */
-        .mobile-bottom-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #0f0f14e6;
-            backdrop-filter: blur(12px);
-            border-top: 1px solid #1f2937;
-            padding: 8px 20px;
-            justify-content: space-around;
-            z-index: 1200;
-            gap: 16px;
-        }
-
-        .mobile-nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 10px 0;
-            border-radius: 32px;
-            background: #1e293b;
-            color: #94a3b8;
-            font-size: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: all 0.1s;
-            touch-action: manipulation;
-        }
-
-        .mobile-nav-item.active {
-            background: #fbbf24;
-            color: #0f172a;
-        }
-
-        /* SIDEBAR - slide out */
+        /* ── SIDEBAR ── */
         .sidebar {
             width: 280px;
             background: #111827;
             border-right: 1px solid #1f2937;
             display: flex;
             flex-direction: column;
+            transition: transform 0.3s ease;
             flex-shrink: 0;
-            transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            z-index: 1100;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+        }
+        /* Mobile: fixed overlay */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0; top: 0;
+                height: 100%; height: 100dvh;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            .sidebar.mobile-open { transform: translateX(0); }
         }
 
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: #00000080;
-            z-index: 1050;
-            display: none;
-            backdrop-filter: blur(2px);
-        }
+        .sidebar-header { padding: 16px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #fbbf24, #ef4444); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .close-sidebar { background: none; border: none; color: #9ca3af; font-size: 1.2rem; cursor: pointer; display: none; }
+        @media (max-width: 768px) { .close-sidebar { display: block; } }
 
-        .overlay.active {
-            display: block;
-        }
+        .user-profile { padding: 16px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .avatar-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; }
+        .user-name { margin-top: 8px; font-weight: 600; font-size: 0.9rem; }
+        .admin-badge { background: linear-gradient(135deg, #ef4444, #f59e0b); padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; display: inline-block; margin-left: 6px; }
+        .hidden { display: none !important; }
 
-        /* CHAT AREA */
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin: 4px 12px; border-radius: 12px; cursor: pointer; color: #9ca3af; transition: 0.2s; }
+        .nav-item:hover { background: #1f2937; color: #fbbf24; }
+
+        .category-group { margin: 10px 0; }
+        .category-title { font-size: 0.65rem; text-transform: uppercase; color: #6b7280; padding: 6px 12px; }
+        .channel-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 28px; border-radius: 8px; cursor: pointer; color: #9ca3af; font-size: 0.85rem; }
+        .channel-item.active { background: #1f2937; color: #fbbf24; }
+
+        /* ── CHAT AREA ── */
         .chat-area {
             flex: 1;
+            min-width: 0;          /* KEY FIX: prevents flex overflow on mobile */
             display: flex;
             flex-direction: column;
             background: #0f172a;
             overflow: hidden;
-            min-width: 0;
+            width: 100%;
         }
 
-        .chat-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #0f172a;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        .chat-header { padding: 12px 16px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; background: #0f172a; flex-shrink: 0; }
+        .mobile-menu-btn { background: #1e293b; border: none; color: #fbbf24; padding: 8px 12px; border-radius: 10px; cursor: pointer; margin-right: 12px; display: none; }
+        @media (max-width: 768px) { .mobile-menu-btn { display: flex; } }
 
-        .channel-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .invite-btn {
-            background: #1e293b;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            color: #fbbf24;
-            cursor: pointer;
-            font-size: 0.75rem;
-            touch-action: manipulation;
-        }
+        .channel-info { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .channel-name { font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sign-out-btn { background: #1e293b; border: none; padding: 6px 14px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.8rem; flex-shrink: 0; }
 
         .messages-container {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
             -webkit-overflow-scrolling: touch;
+            min-height: 0;         /* KEY FIX: allows flex child to scroll */
         }
+        .message { display: flex; gap: 10px; max-width: 100%; animation: fadeIn 0.2s ease; position: relative; transition: background 0.1s; border-radius: 12px; padding: 2px 4px; }
+        .message:active { background: rgba(251,191,36,0.05); }
+        .message-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .message-content { background: #1e293b; padding: 8px 14px; border-radius: 18px; word-break: break-word; flex: 1; min-width: 0; }
+        .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+        .message-time { font-size: 0.6rem; color: #94a3b8; }
+        .message-text { font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
+        .system-message .message-content { background: linear-gradient(135deg, #1e293b, #1a1f2e); border-left: 3px solid #fbbf24; }
+        .bot-tag { background: #8b5cf6; padding: 2px 6px; border-radius: 10px; font-size: 0.6rem; margin-left: 6px; }
 
-        .message {
-            display: flex;
-            gap: 10px;
-            max-width: 100%;
-            animation: fadeIn 0.2s;
-            transition: background 0.1s;
-            padding: 4px;
-            border-radius: 16px;
-        }
-        .message.holding {
-            background: #2d3748;
-        }
-        .reply-context {
-            font-size: 0.7rem;
-            color: #fbbf24;
-            margin-bottom: 4px;
-            border-left: 2px solid #fbbf24;
-            padding-left: 8px;
-        }
+        .replying-to { font-size: 0.65rem; color: #94a3b8; margin-bottom: 6px; }
 
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .message-content {
-            background: #1e293b;
-            padding: 10px 14px;
-            border-radius: 20px;
-            word-break: break-word;
-            flex: 1;
-        }
-
-        .input-area {
-            padding: 12px;
-            border-top: 1px solid #1e293b;
-            background: #0f172a;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .input-area input {
-            flex: 1;
-            background: #1e293b;
-            border: none;
-            padding: 14px 18px;
-            border-radius: 40px;
-            color: white;
-            outline: none;
-            font-size: 1rem;
-        }
-
-        /* VOICE VIEW */
-        .voice-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #060b14;
-            overflow: hidden;
-        }
-
-        .voice-view-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .voice-participants-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            width: 100%;
-        }
-
-        .voice-participant-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            background: #111827cc;
-            padding: 12px 16px;
-            border-radius: 48px;
-            backdrop-filter: blur(8px);
-            width: 100px;
-        }
-
-        .voice-participant-avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #fbbf24;
-        }
-
-        .voice-controls {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            padding: 16px 20px;
-            background: #0d1727;
-            border-top: 1px solid #1e293b;
-            justify-content: center;
-        }
-
-        .voice-ctrl-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            background: #1e293b;
-            color: white;
-            font-size: 26px;
-            transition: 0.1s;
-            touch-action: manipulation;
-        }
-
-        .btn-mic.muted {
-            background: #3b1a1a;
-            color: #ef4444;
-        }
-
-        .btn-share-screen.active {
-            background: #2563eb;
-            color: white;
-        }
-
-        .screenshare-container {
-            width: 100%;
-            background: #000;
-            border-radius: 24px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .screenshare-video {
-            width: 100%;
-            max-height: 240px;
-            object-fit: contain;
-            background: #000;
-        }
-
-        /* FULLSCREEN SETTINGS MODAL (2 TABS) */
-        .fullscreen-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #0a0c15;
-            z-index: 3000;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-        .fullscreen-modal.active {
-            display: flex;
-        }
-        .settings-tabs {
-            display: flex;
-            background: #111827;
-            border-bottom: 1px solid #1f2937;
-            padding: 12px 20px;
-            gap: 24px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .settings-tab {
-            font-weight: 600;
-            padding-bottom: 8px;
-            cursor: pointer;
-            color: #94a3b8;
-            border-bottom: 2px solid transparent;
-        }
-        .settings-tab.active {
-            color: #fbbf24;
-            border-bottom-color: #fbbf24;
-        }
-        .settings-pane {
-            padding: 24px;
-            display: none;
-            flex-direction: column;
-            gap: 24px;
-        }
-        .settings-pane.active {
-            display: flex;
-        }
-        .setting-group {
-            background: #111827;
-            border-radius: 20px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .setting-label {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .setting-input, .setting-select {
-            background: #1e293b;
-            border: none;
-            padding: 14px;
-            border-radius: 40px;
-            color: white;
-            font-size: 1rem;
-            width: 100%;
-        }
-        .toggle-switch {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .toggle-btn {
-            width: 52px;
-            height: 28px;
-            background: #334155;
-            border-radius: 40px;
-            cursor: pointer;
-            position: relative;
-            transition: 0.2s;
-        }
-        .toggle-btn.active {
-            background: #fbbf24;
-        }
-        .toggle-btn span {
+        /* Long-press action menu (replaces shift+click on mobile) */
+        .message-actions {
             position: absolute;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 4px;
-            transition: 0.2s;
-        }
-        .toggle-btn.active span {
-            left: 24px;
-        }
-        .member-tag {
-            background: #1f2937;
-            padding: 8px 12px;
-            border-radius: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .remove-icon {
-            color: #ef4444;
-            cursor: pointer;
-            margin-left: 12px;
-        }
-        .add-member-btn {
-            background: #2563eb;
-            border: none;
-            padding: 10px;
-            border-radius: 40px;
-            color: white;
-            margin-top: 8px;
-        }
-        .close-settings {
-            background: #fbbf24;
-            color: black;
-            border: none;
-            padding: 14px;
-            border-radius: 40px;
-            font-weight: bold;
-            margin-top: 16px;
-        }
-
-        @media (max-width: 700px) {
-            .sidebar { transform: translateX(-100%); position: fixed; top: 0; height: 100%; }
-            .sidebar.open { transform: translateX(0); }
-            .server-list { display: none; }
-            .mobile-bottom-nav { display: flex; }
-            .chat-area { margin-bottom: 70px; }
-            .voice-controls { margin-bottom: 60px; }
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 16px;
-            cursor: pointer;
-        }
-        .category-settings-icon {
-            cursor: pointer;
-            color: #9ca3af;
-            font-size: 0.9rem;
-        }
-        .channel-item {
-            padding: 10px 12px 10px 32px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-        }
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 5px; top: -40px;
+            display: flex; gap: 6px;
             background: #1e293b;
-            padding: 10px 24px;
-            border-radius: 40px;
-            z-index: 4000;
-            border-left: 4px solid #fbbf24;
-            opacity: 0;
-            transition: opacity 0.2s;
-            pointer-events: none;
-            white-space: nowrap;
+            padding: 4px 8px;
+            border-radius: 20px;
+            border: 1px solid #fbbf24;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
-        .toast.show { opacity: 1; }
+        .action-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; transition: 0.1s; white-space: nowrap; }
+        .action-btn:hover, .action-btn:active { background: #334155; color: #fbbf24; }
+        .action-btn.delete { color: #ef4444; }
+        .action-btn.delete:hover, .action-btn.delete:active { background: #7f1d1d; color: white; }
+
+        /* ── INPUT AREA ── */
+        .input-area { padding: 12px; border-top: 1px solid #1e293b; display: flex; flex-direction: column; gap: 8px; background: #0f172a; flex-shrink: 0; }
+        .input-row { display: flex; gap: 10px; align-items: center; }
+        .input-area input { flex: 1; min-width: 0; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
+        .input-area button.send-btn { background: #fbbf24; border: none; padding: 0 20px; border-radius: 30px; font-weight: bold; cursor: pointer; color: #0f172a; height: 44px; flex-shrink: 0; }
+
+        .reply-indicator { background: #334155; padding: 6px 12px; border-radius: 12px; font-size: 0.7rem; color: #fbbf24; border-left: 3px solid #fbbf24; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .cancel-reply { background: #475569; border: none; padding: 4px 10px; border-radius: 20px; color: white; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; margin-left: auto; }
+
+        /* ── TOAST ── */
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(70px); background: #1e293b; padding: 8px 16px; border-radius: 30px; z-index: 3000; transition: 0.3s; border-left: 3px solid #fbbf24; font-size: 13px; white-space: nowrap; pointer-events: none; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── SIDEBAR OVERLAY (tap to close) ── */
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+        .sidebar-overlay.active { display: block; }
+
+        /* ── MODAL / BOT STUDIO ── */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal.active { display: flex; }
+        .modal-content { background: #0f172a; border-radius: 28px; padding: 24px; width: 95%; max-width: 1300px; height: 90vh; display: flex; flex-direction: column; border: 1px solid #334155; overflow: hidden; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; flex-shrink: 0; }
+        .studio-grid { display: flex; gap: 20px; flex: 1; min-height: 0; flex-wrap: wrap; overflow-y: auto; }
+        .editor-panel { flex: 2; min-width: 280px; display: flex; flex-direction: column; gap: 12px; }
+        .preview-panel { flex: 1.5; min-width: 280px; display: flex; flex-direction: column; gap: 16px; background: #111827; border-radius: 20px; padding: 16px; overflow-y: auto; }
+        .test-panel { flex: 1.2; min-width: 260px; background: #111827; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .monaco-editor-holder { height: 400px; border-radius: 16px; overflow: hidden; border: 1px solid #334155; background: #1e1e2f; }
+        .lang-select { background: #1e293b; padding: 6px 12px; border-radius: 24px; color: #fbbf24; border: none; }
+        .cmd-list { background: #1e293b; padding: 12px; border-radius: 16px; max-height: 200px; overflow-y: auto; font-size: 0.8rem; }
+        .test-console { background: #0a0a0f; border-radius: 14px; padding: 12px; height: 180px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; }
+        .test-input { display: flex; gap: 6px; margin-top: 8px; }
+        .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 8px 18px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 30px; cursor: pointer; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .empty-chat { text-align: center; padding: 40px; color: #6b7280; }
+
+        /* Long-press visual feedback */
+        .message.pressing { background: rgba(251,191,36,0.08); border-radius: 12px; }
     </style>
 </head>
 <body>
 <div class="app">
-    <div class="server-list" id="serverListContainer"></div>
+
+    <!-- Sidebar overlay (tap outside to close on mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="sidebar" id="sidebarPanel">
-        <div class="sidebar-header" style="padding:16px;"><div><span id="currentServerName">Stonks Hub</span><span id="serverOwnerCrown"></span></div><div><button id="createCategoryBtn" style="background:#1f2937;border:none;padding:6px 12px;border-radius:20px;"><i class="fas fa-folder-plus"></i></button><button id="invitePeopleBtn" style="background:#1f2937;border:none;padding:6px 12px;border-radius:20px;"><i class="fas fa-user-plus"></i></button></div></div>
-        <div style="flex:1; overflow-y: auto;" id="channelsListContainer"></div>
-        <div style="padding:12px;display:flex;justify-content:space-between;border-top:1px solid #1f2937;"><span><i class="fas fa-user-circle"></i> <span id="userDisplay"></span></span><button id="signOutBtn" style="background:none; border:none; color:#fbbf24;"><i class="fas fa-sign-out-alt"></i></button></div>
+        <div class="sidebar-header">
+            <div class="logo">⚡ STONKS BOT STUDIO</div>
+            <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="user-profile">
+            <img id="sidebarAvatar" class="avatar-img" src="https://ui-avatars.com/api/?name=User" alt="avatar">
+            <div class="user-name" id="sidebarName">Guest</div>
+            <div id="adminIndicator" class="admin-badge hidden">ADMIN</div>
+            <div id="ownerIndicator" class="admin-badge hidden" style="background:#fbbf24; color:#000;">👑 OWNER</div>
+        </div>
+        <div style="flex:1; overflow-y:auto;" id="channelsList"></div>
+        <div class="nav-item" id="botStudioBtn"><i class="fas fa-robot"></i> 🤖 Custom Bot Studio</div>
+        <div class="nav-item" id="signOutSidebarBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
     </div>
-    <div class="overlay" id="mobileOverlay"></div>
-    <div class="chat-area">
-        <div class="chat-header"><div class="channel-info"><i class="fas fa-hashtag" id="channelTypeIcon"></i><span id="currentChannelName">general</span></div><button class="invite-btn" id="headerInviteBtn"><i class="fas fa-link"></i> Invite</button></div>
-        <div id="textChatView" style="display:flex; flex-direction:column; flex:1;"><div class="messages-container" id="messagesContainer"></div><div class="input-area"><input type="text" id="messageInput" placeholder="Message..."><button id="sendBtn" style="background:#fbbf24; border:none; border-radius:40px; padding:0 18px;"><i class="fas fa-paper-plane"></i></button></div></div>
-        <div id="voiceChatView" class="voice-view" style="display:none;"><div class="voice-view-body"><div id="screenShareDynamicArea"></div><div class="voice-participants-grid" id="voiceParticipantsGrid"></div></div><div class="voice-controls"><button class="voice-ctrl-btn btn-mic" id="micToggleBtn"><i class="fas fa-microphone"></i></button><button class="voice-ctrl-btn btn-share-screen" id="shareScreenBtn"><i class="fas fa-desktop"></i></button><button class="voice-ctrl-btn btn-leave" id="leaveVoiceBtn"><i class="fas fa-phone-slash"></i></button></div></div>
+
+    <div class="chat-area" id="chatArea">
+        <div class="chat-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+            <div class="channel-info">
+                <i class="fas fa-hashtag"></i>
+                <span class="channel-name" id="currentChannelName">general</span>
+            </div>
+            <button class="sign-out-btn" id="signOutTopBtn">Exit</button>
+        </div>
+        <div class="messages-container" id="messagesContainer"></div>
+        <div class="input-area" id="inputArea">
+            <div id="replyPreview" style="display:none;" class="reply-indicator">
+                <i class="fas fa-reply"></i>
+                <span id="replyingToText"></span>
+                <button class="cancel-reply" id="cancelReplyBtn">✖ Cancel</button>
+            </div>
+            <div class="input-row">
+                <input type="text" id="messageInput" placeholder="Type a message… hold a message to reply/delete">
+                <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
+            </div>
+        </div>
     </div>
-    <div class="mobile-bottom-nav"><div class="mobile-nav-item" data-nav="servers"><i class="fas fa-server"></i><span>Servers</span></div><div class="mobile-nav-item" data-nav="channels"><i class="fas fa-comments"></i><span>Channels</span></div><div class="mobile-nav-item" data-nav="voice"><i class="fas fa-microphone-alt"></i><span>Voice</span></div></div>
+
+    <!-- Auth overlay -->
+    <div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:200;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;max-width:350px;width:90%;">
+            <i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i>
+            <h2 style="margin:15px 0;">STONKS SEVER</h2>
+            <p>Admin Bot Creator &amp; Chat</p>
+            <button id="signInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;width:100%;font-size:1rem;cursor:pointer;font-weight:600;">
+                <i class="fab fa-google"></i> Continue with Google
+            </button>
+        </div>
+    </div>
 </div>
 
-<!-- Fullscreen Settings Modal (Overview + Permissions) -->
-<div id="settingsModal" class="fullscreen-modal">
-    <div class="settings-tabs"><div class="settings-tab" data-tab="overview">Overview</div><div class="settings-tab" data-tab="permissions">Permissions</div><i class="fas fa-times" id="closeSettingsBtn" style="margin-left:auto; font-size:24px; cursor:pointer;"></i></div>
-    <div id="overviewPane" class="settings-pane"><div class="setting-group"><div class="setting-label">Channel Name</div><input type="text" id="settingsChannelName" class="setting-input" placeholder="Channel name"></div><div class="setting-group"><div class="setting-label">Channel Topic</div><input type="text" id="settingsChannelTopic" class="setting-input" placeholder="Topic"></div><div class="setting-group"><div class="setting-label">Slow Mode (cooldown)</div><select id="settingsSlowMode" class="setting-select"><option value="0">Off</option><option value="5">5s</option><option value="10">10s</option><option value="15">15s</option><option value="30">30s</option><option value="60">1m</option><option value="120">2m</option><option value="300">5m</option><option value="600">10m</option><option value="900">15m</option><option value="1800">30m</option><option value="3600">1h</option><option value="7200">2h</option><option value="21600">6h</option></select></div><button id="saveOverviewBtn" class="close-settings">Save Changes</button></div>
-    <div id="permissionsPane" class="settings-pane"><div class="setting-group"><div class="toggle-switch"><span class="setting-label">Private Channel</span><div id="privateToggleBtn" class="toggle-btn"><span></span></div></div><div class="setting-label" style="margin-top:4px;">make your channel seen by certain people</div></div>
-        <div id="privateSettingsExpand" style="display:none; flex-direction:column; gap:16px;"><div class="setting-group"><div class="setting-label">Add members or Roles</div><div id="allowedRolesContainer"><div class="member-tag">@everyone <span class="remove-icon" data-role="everyone">✖</span></div></div><input type="text" id="newRoleInput" placeholder="Role name" class="setting-input" style="margin-top:8px;"><button id="addRoleBtn" class="add-member-btn">➕ Add Role</button><div class="setting-label" style="margin-top:12px;">Allowed Members</div><div id="allowedMembersContainer"></div><input type="text" id="newMemberInput" placeholder="User ID or email" class="setting-input"><button id="addMemberBtn" class="add-member-btn">👤 Add Member</button></div></div>
-        <button id="savePermissionsBtn" class="close-settings">Save Permissions</button>
+<!-- Bot Studio Modal -->
+<div id="studioModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-code"></i> Custom Bot Studio</h2>
+            <button id="closeStudioBtn" class="btn-outline">✕ Close</button>
+        </div>
+        <div class="studio-grid">
+            <div class="editor-panel">
+                <div class="flex-between">
+                    <span><i class="fas fa-terminal"></i> Code Editor (JS)</span>
+                    <select id="botLangSelect" class="lang-select">
+                        <option value="javascript">JavaScript (Full Control)</option>
+                        <option value="html">HTML Embed Widget</option>
+                    </select>
+                </div>
+                <div id="monacoContainer" class="monaco-editor-holder"></div>
+                <div class="flex-between" style="margin-top:12px;">
+                    <button id="saveBotBtn" class="btn-gold"><i class="fas fa-save"></i> Save Bot</button>
+                    <button id="testBotBtn" class="btn-outline"><i class="fas fa-vial"></i> Run Test</button>
+                </div>
+                <div class="cmd-list">
+                    <strong>📋 Bot Commands:</strong> <span id="botCommandsList">Define commands via botCommands object</span><br>
+                    <small>Example: const botCommands = { "/ping": "Pong!", "/status": "Online" };</small>
+                </div>
+            </div>
+            <div class="preview-panel">
+                <h4><i class="fas fa-eye"></i> Live Preview (HTML Embed)</h4>
+                <div id="embedPreviewArea" style="background:#0f172a;border-radius:16px;padding:12px;min-height:200px;border:1px solid #334155;">✨ HTML preview will appear here</div>
+                <h4>🤖 Bot Behavior</h4>
+                <div id="botBehaviorPreview" style="font-size:0.85rem;color:#94a3b8;">Click "Run Test" to see command outputs</div>
+            </div>
+            <div class="test-panel">
+                <h4><i class="fas fa-flask"></i> Testing Console</h4>
+                <div id="testConsole" class="test-console">&gt; Bot tester ready. Type a command below:</div>
+                <div class="test-input">
+                    <input type="text" id="testCommandInput" placeholder="/ping or /mycommand" style="flex:1;background:#1e293b;border:none;padding:8px 12px;border-radius:30px;color:white;">
+                    <button id="execTestCmd" class="btn-gold" style="padding:6px 14px;">Test</button>
+                </div>
+                <button id="resetDefaultBot" class="btn-outline" style="margin-top:8px;"><i class="fas fa-undo-alt"></i> Load Default Bot</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Modals -->
-<div id="createServerModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); align-items:center; justify-content:center; z-index:5000;"><div style="background:#0f172a; padding:24px; border-radius:32px; width:300px;"><h3>New Server</h3><input id="newServerName" placeholder="Name" style="width:100%; margin:12px 0; padding:12px; border-radius:30px;"><button id="confirmCreateServer" style="background:#fbbf24; padding:10px; border-radius:30px;">Create</button><button id="closeCreateModal" style="margin-top:8px;">Cancel</button></div></div>
-<div id="createCategoryModal" class="modal" style="display:none;"><div style="background:#0f172a; padding:24px; border-radius:32px;"><h3>Category</h3><input id="categoryName" placeholder="Name"><button id="confirmCreateCategory">Add</button><button id="closeCatModal">Cancel</button></div></div>
-<div id="joinServerModal" class="modal" style="display:none;"><div style="background:#0f172a; padding:24px; border-radius:32px;"><h3>Join</h3><input id="joinCodeInput" placeholder="Code"><button id="confirmJoinServer">Join</button><button id="closeJoinModal">Cancel</button></div></div>
-<div id="inviteModal" class="modal" style="display:none;"><div style="background:#0f172a; padding:24px;"><h3>Invite Code</h3><p id="inviteCodeDisplay"></p><button id="closeInviteModal">Close</button></div></div>
-<div id="micPermModal" class="modal" style="display:none;"><div style="background:#0f172a; padding:24px;"><h3>Mic Access</h3><button id="allowMicBtn">Allow</button><button id="denyMicBtn">Muted</button></div></div>
 <div id="toastMsg" class="toast"></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc", authDomain: "vertexpaste.firebaseapp.com", projectId: "vertexpaste", storageBucket: "vertexpaste.firebasestorage.app", messagingSenderId: "255275350380", appId: "1:255275350380:web:7be4e8add2cb5b04045b49" };
+    // ── Firebase ──────────────────────────────────────────────────────────────
+    const firebaseConfig = {
+        apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
+        authDomain: "vertexpaste.firebaseapp.com",
+        projectId: "vertexpaste",
+        storageBucket: "vertexpaste.firebasestorage.app",
+        messagingSenderId: "255275350380",
+        appId: "1:255275350380:web:7be4e8add2cb5b04045b49"
+    };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.firestore();
-    let currentUser = null, currentServerId = null, currentChannelId = "general", currentChannelType = "text";
-    let unsubscribeMessages = null, currentVoiceChannelId = null, isMicMuted = false, localStream = null, isSharing = false, screenStream = null;
-    let selectedCategoryForSettings = null;
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    // ── State ─────────────────────────────────────────────────────────────────
     const OWNER_EMAIL = "defnot67kid@gmail.com";
-    let isGlobalOwner = false;
+    let currentUser        = null;
+    let isAdmin            = false;
+    let isOwner            = false;
+    let currentChannelId   = "general";
+    let unsubscribeMessages = null;
+    let currentReplyTo     = null;
+    let botType            = "javascript";
+    let monacoEditor       = null;
 
-    function showToast(m) { const t = document.getElementById('toastMsg'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-    function escapeHtml(s) { return String(s).replace(/[&<>]/g, function(m){ if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m;}); }
+    let activeBotCode = `// === CUSTOM STONKS BOT ===
+// Define your commands here:
+const botCommands = {
+    "/ping": "🏓 Pong! Custom bot is alive!",
+    "/status": "✅ Bot is online and ready",
+    "/stonks": { embed: true, html: '<div style="border-left:4px solid #fbbf24;padding:12px;background:#1e293b;border-radius:12px;"><b>📈 STONKS LIVE</b><br>STNK: $156.20 ▲ +2.4%<br>CRPT: $92.45 🟢</div>' },
+    "/hello": (args, user) => \`Hello @\${user}, welcome to Stonks Sever!\`
+};
 
-    // Load servers and structure
-    async function fetchUserServers() { if(!currentUser) return []; if(isGlobalOwner) { const snap = await db.collection("servers").get(); return snap.docs.map(d=>({id:d.id,...d.data()})); } const mem = await db.collection("serverMembers").where("userId","==",currentUser.uid).get(); const ids = mem.docs.map(d=>d.data().serverId); const servers = await Promise.all(ids.map(id=>db.collection("servers").doc(id).get())); return servers.filter(s=>s.exists).map(s=>({id:s.id,...s.data()})); }
-    async function renderServerList() { const servers = await fetchUserServers(); let html=''; servers.forEach(s=>{ html+=`<div class="server-icon ${currentServerId===s.id?'active':''}" data-server-id="${s.id}"><span>${s.name.charAt(0)}</span></div>`; }); html+=`<div class="server-icon add-server-btn" id="addServerBtn"><i class="fas fa-plus"></i></div><div class="server-icon join-server-btn" id="joinServerBtn"><i class="fas fa-sign-in-alt"></i></div>`; document.getElementById('serverListContainer').innerHTML=html; document.querySelectorAll('.server-icon[data-server-id]').forEach(el=>el.addEventListener('click',()=>switchServer(el.dataset.serverId))); document.getElementById('addServerBtn')?.addEventListener('click',()=>document.getElementById('createServerModal').style.display='flex'); document.getElementById('joinServerBtn')?.addEventListener('click',()=>document.getElementById('joinServerModal').style.display='flex'); }
-    async function switchServer(id) { if(unsubscribeMessages) unsubscribeMessages(); await leaveVoiceIfIn(); currentServerId=id; await loadServerChannels(id); renderServerList(); closeSidebar(); }
-    async function loadServerChannels(serverId) { const structRef = db.collection("serverStructure").doc(serverId); let struct = (await structRef.get()).data(); if(!struct) { struct = { categories:[{ name:"GENERAL", channels:[{ id:"general", name:"general", type:"text" }] }] }; await structRef.set(struct); } if(!currentChannelId) currentChannelId="general"; const found = findChannel(struct, currentChannelId); currentChannelType = found?.type || "text"; await renderSidebarChannels(struct); if(currentChannelType==="text") { showTextView(); loadMessagesForChannel(serverId,currentChannelId); } else joinVoiceChannel(currentChannelId); document.getElementById('currentChannelName').innerText = getChannelNameById(struct,currentChannelId); document.getElementById('channelTypeIcon').className = currentChannelType==="voice" ? "fas fa-microphone-alt" : "fas fa-hashtag"; }
-    function findChannel(struct,id) { for(let c of struct.categories) for(let ch of c.channels) if(ch.id===id) return ch; return null; }
-    function getChannelNameById(struct,id) { let ch = findChannel(struct,id); return ch?ch.name:id; }
-    async function renderSidebarChannels(struct) { let container=document.getElementById('channelsListContainer'); let html=''; for(let i=0;i<struct.categories.length;i++){ let cat=struct.categories[i]; html+=`<div><div class="category-header"><span><i class="fas fa-chevron-right"></i> ${escapeHtml(cat.name)}</span><i class="fas fa-cog category-settings-icon" data-cat-name="${escapeHtml(cat.name)}"></i></div><div class="channels-container">`; cat.channels.forEach(ch=>{ html+=`<div class="channel-item" data-channel-id="${ch.id}" data-channel-type="${ch.type}"><i class="fas ${ch.type==='voice'?'fa-microphone-alt':'fa-hashtag'}"></i> ${escapeHtml(ch.name)}</div>`; }); html+=`</div></div>`; } container.innerHTML=html; document.querySelectorAll('.channel-item').forEach(el=>{ el.addEventListener('click',()=>{ let type=el.dataset.channelType; if(type!=='voice'&&currentVoiceChannelId) leaveVoiceIfIn(); currentChannelId=el.dataset.channelId; currentChannelType=type; loadServerChannels(currentServerId); closeSidebar(); }); }); document.querySelectorAll('.category-settings-icon').forEach(icon=>{ icon.addEventListener('click',(e)=>{ e.stopPropagation(); let catName = icon.dataset.catName; openFullSettingsForCategory(catName); }); }); }
-    function openFullSettingsForCategory(catName) { selectedCategoryForSettings = catName; document.getElementById('settingsModal').classList.add('active'); loadSettingsData(catName); }
-    async function loadSettingsData(catName) { const struct = (await db.collection("serverStructure").doc(currentServerId).get()).data(); const category = struct.categories.find(c=>c.name===catName); if(!category) return; document.getElementById('settingsChannelName').value = category.name; let topic = category.topic || ''; document.getElementById('settingsChannelTopic').value = topic; let slow = category.slowMode || 0; document.getElementById('settingsSlowMode').value = slow; let isPrivate = category.private || false; let privateToggle = document.getElementById('privateToggleBtn'); let expandDiv = document.getElementById('privateSettingsExpand'); if(isPrivate) { privateToggle.classList.add('active'); expandDiv.style.display = 'flex'; } else { privateToggle.classList.remove('active'); expandDiv.style.display = 'none'; } let roles = category.allowedRoles || ['everyone']; let members = category.allowedMembers || []; let rolesDiv = document.getElementById('allowedRolesContainer'); rolesDiv.innerHTML = roles.map(r=>`<div class="member-tag">@${escapeHtml(r)} <span class="remove-icon" data-role="${escapeHtml(r)}">✖</span></div>`).join(''); let membersDiv = document.getElementById('allowedMembersContainer'); membersDiv.innerHTML = members.map(m=>`<div class="member-tag">${escapeHtml(m)} <span class="remove-icon" data-member="${escapeHtml(m)}">✖</span></div>`).join(''); document.querySelectorAll('[data-role]').forEach(el=>el.addEventListener('click',(e)=>{ let role = el.dataset.role; roles.splice(roles.indexOf(role),1); loadSettingsData(catName); })); document.querySelectorAll('[data-member]').forEach(el=>el.addEventListener('click',(e)=>{ let mem = el.dataset.member; members.splice(members.indexOf(mem),1); loadSettingsData(catName); })); window.tempCatData = { roles, members, isPrivate }; }
-    function showTextView() { document.getElementById('textChatView').style.display='flex'; document.getElementById('voiceChatView').style.display='none'; }
-    function showVoiceView() { document.getElementById('textChatView').style.display='none'; document.getElementById('voiceChatView').style.display='flex'; }
-    async function joinVoiceChannel(channelId){ document.getElementById('micPermModal').style.display='flex'; const onAllow = async (withMic)=>{ document.getElementById('micPermModal').style.display='none'; if(withMic) try{ localStream = await navigator.mediaDevices.getUserMedia({audio:true}); }catch(e){} currentVoiceChannelId=channelId; showVoiceView(); updateMicBtnUI(); listenVoiceParticipants(channelId); listenScreenShare(channelId); }; document.getElementById('allowMicBtn').onclick=()=>onAllow(true); document.getElementById('denyMicBtn').onclick=()=>onAllow(false); }
-    function listenVoiceParticipants(channelId){ const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members"); ref.onSnapshot(snap=>{ let grid=document.getElementById('voiceParticipantsGrid'); if(snap.empty){ grid.innerHTML='<div>✨ No one here</div>'; return; } let html=''; snap.forEach(doc=>{ let d=doc.data(); html+=`<div class="voice-participant-card"><img src="${escapeHtml(d.photoURL)}" class="voice-participant-avatar"><div><i class="fas ${d.muted?'fa-microphone-slash':'fa-microphone'}"></i> ${escapeHtml(d.displayName)}</div></div>`; }); grid.innerHTML=html; }); }
-    async function startScreenShare(){ if(!currentVoiceChannelId) return; try{ screenStream = await navigator.mediaDevices.getDisplayMedia({video:true}); isSharing=true; document.getElementById('shareScreenBtn').classList.add('active'); const area=document.getElementById('screenShareDynamicArea'); area.innerHTML=`<div class="screenshare-container"><video id="localScreenVideo" class="screenshare-video" autoplay muted playsinline></video><button id="stopShareInlineBtn" style="margin:12px;">Stop</button></div>`; document.getElementById('localScreenVideo').srcObject=screenStream; document.getElementById('stopShareInlineBtn')?.addEventListener('click',stopScreenShare); screenStream.getVideoTracks()[0].onended=()=>stopScreenShare(); }catch(e){ showToast("Share cancelled"); } }
-    async function stopScreenShare(){ if(screenStream) screenStream.getTracks().forEach(t=>t.stop()); screenStream=null; isSharing=false; document.getElementById('shareScreenBtn').classList.remove('active'); document.getElementById('screenShareDynamicArea').innerHTML=''; }
-    function listenScreenShare(channelId){ const ref = db.collection("screenShares").doc(`${currentServerId}_${channelId}`); ref.onSnapshot(snap=>{ if(!snap.exists || !snap.data()?.active){ if(!isSharing) document.getElementById('screenShareDynamicArea').innerHTML=''; return; } if(snap.data().sharerUid !== currentUser?.uid && !isSharing){ document.getElementById('screenShareDynamicArea').innerHTML=`<div class="screenshare-container"><video id="remoteScreenVideo" class="screenshare-video" autoplay playsinline></video><div>🔴 Live screen</div></div>`; } }); }
-    async function leaveVoiceIfIn(){ if(currentVoiceChannelId && currentUser) await db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).delete(); if(localStream) localStream.getTracks().forEach(t=>t.stop()); localStream=null; isSharing=false; currentVoiceChannelId=null; showTextView(); }
-    function updateMicBtnUI(){ let btn=document.getElementById('micToggleBtn'); if(btn) btn.classList.toggle('muted',isMicMuted); if(localStream) localStream.getAudioTracks().forEach(t=>t.enabled=!isMicMuted); }
-    document.getElementById('micToggleBtn')?.addEventListener('click',()=>{ isMicMuted=!isMicMuted; updateMicBtnUI(); if(currentVoiceChannelId&&currentUser) db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).set({muted:isMicMuted},{merge:true}); });
-    document.getElementById('leaveVoiceBtn')?.addEventListener('click',async()=>{ await leaveVoiceIfIn(); loadServerChannels(currentServerId); });
-    document.getElementById('shareScreenBtn')?.addEventListener('click',()=>{ isSharing?stopScreenShare():startScreenShare(); });
-    async function loadMessagesForChannel(serverId,channelId){ if(unsubscribeMessages) unsubscribeMessages(); const msgsRef = db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages").orderBy("createdAt","asc"); unsubscribeMessages = msgsRef.onSnapshot(snap=>{ let container=document.getElementById('messagesContainer'); let html=''; snap.forEach(doc=>{ let d=doc.data(); html+=`<div class="message" data-msg-id="${doc.id}"><img src="${escapeHtml(d.photoURL)}" class="message-avatar"><div class="message-content"><div class="message-author">${escapeHtml(d.displayName)}<span style="font-size:0.7rem;"> ${d.createdAt?new Date(d.createdAt.toDate()).toLocaleTimeString():''}</span></div><div class="message-text">${escapeHtml(d.text)}</div></div></div>`; }); if(!html) html='<div>✨ No messages</div>'; container.innerHTML=html; container.scrollTop=container.scrollHeight; attachHoldToReply(); }); }
-    function attachHoldToReply(){ let msgs = document.querySelectorAll('.message'); msgs.forEach(msg=>{ let timer; msg.addEventListener('touchstart',(e)=>{ timer = setTimeout(()=>{ msg.classList.add('holding'); let replyText = msg.querySelector('.message-text')?.innerText; document.getElementById('messageInput').value = `> ${replyText}\n`; setTimeout(()=>msg.classList.remove('holding'),500); },500); }); msg.addEventListener('touchend',()=>clearTimeout(timer)); }); }
-    async function sendMessage(){ let input=document.getElementById('messageInput'); let text=input.value.trim(); if(!text) return; input.value=''; await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({ text, uid:currentUser.uid, displayName:currentUser.displayName||currentUser.email, photoURL:`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName||'U')}`, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); }
-    document.getElementById('sendBtn')?.addEventListener('click',sendMessage);
-    document.getElementById('messageInput')?.addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage();});
-    async function createServer(name){ if(!currentUser) return; let ref=db.collection("servers").doc(); await ref.set({name, ownerId:currentUser.uid}); await db.collection("serverMembers").add({serverId:ref.id, userId:currentUser.uid, role:"owner"}); await db.collection("serverStructure").doc(ref.id).set({ categories:[{ name:"GENERAL", channels:[{ id:"general", name:"general", type:"text" }] }] }); await switchServer(ref.id); renderServerList(); }
-    document.getElementById('confirmCreateServer')?.addEventListener('click',async()=>{ let n=document.getElementById('newServerName').value; if(n) await createServer(n); document.getElementById('createServerModal').style.display='none'; });
-    document.getElementById('closeCreateModal')?.addEventListener('click',()=>document.getElementById('createServerModal').style.display='none');
-    document.getElementById('confirmJoinServer')?.addEventListener('click',async()=>{ let code=document.getElementById('joinCodeInput').value; if(code){ let inv=await db.collection("invites").doc(code).get(); if(inv.exists){ let serverId=inv.data().serverId; await db.collection("serverMembers").add({serverId, userId:currentUser.uid, role:"member"}); await renderServerList(); await switchServer(serverId); } else showToast("Invalid code"); } document.getElementById('joinServerModal').style.display='none'; });
-    document.getElementById('invitePeopleBtn')?.addEventListener('click',async()=>{ let code=Math.random().toString(36).substring(2,10); await db.collection("invites").doc(code).set({serverId:currentServerId}); document.getElementById('inviteCodeDisplay').innerText=code; document.getElementById('inviteModal').style.display='flex'; });
-    document.getElementById('headerInviteBtn')?.addEventListener('click',()=>document.getElementById('invitePeopleBtn').click());
-    document.getElementById('closeInviteModal')?.addEventListener('click',()=>document.getElementById('inviteModal').style.display='none');
-    document.getElementById('createCategoryBtn')?.addEventListener('click',()=>document.getElementById('createCategoryModal').style.display='flex');
-    document.getElementById('confirmCreateCategory')?.addEventListener('click',async()=>{ let catName=document.getElementById('categoryName').value; if(catName){ let struct=(await db.collection("serverStructure").doc(currentServerId).get()).data(); struct.categories.push({name:catName, channels:[]}); await db.collection("serverStructure").doc(currentServerId).set(struct); loadServerChannels(currentServerId); } document.getElementById('createCategoryModal').style.display='none'; });
-    document.getElementById('closeCatModal')?.addEventListener('click',()=>document.getElementById('createCategoryModal').style.display='none');
-    document.getElementById('signOutBtn')?.addEventListener('click',()=>{ auth.signOut(); window.location.reload(); });
-    document.getElementById('closeSettingsBtn')?.addEventListener('click',()=>document.getElementById('settingsModal').classList.remove('active'));
-    document.getElementById('saveOverviewBtn')?.addEventListener('click',async()=>{ if(!selectedCategoryForSettings) return; let struct=(await db.collection("serverStructure").doc(currentServerId).get()).data(); let cat=struct.categories.find(c=>c.name===selectedCategoryForSettings); if(cat){ cat.name=document.getElementById('settingsChannelName').value; cat.topic=document.getElementById('settingsChannelTopic').value; cat.slowMode=parseInt(document.getElementById('settingsSlowMode').value); await db.collection("serverStructure").doc(currentServerId).set(struct); loadServerChannels(currentServerId); showToast("Overview saved"); } document.getElementById('settingsModal').classList.remove('active'); });
-    document.getElementById('savePermissionsBtn')?.addEventListener('click',async()=>{ if(!selectedCategoryForSettings) return; let struct=(await db.collection("serverStructure").doc(currentServerId).get()).data(); let cat=struct.categories.find(c=>c.name===selectedCategoryForSettings); let isPrivate = document.getElementById('privateToggleBtn').classList.contains('active'); cat.private = isPrivate; if(window.tempCatData){ cat.allowedRoles = window.tempCatData.roles; cat.allowedMembers = window.tempCatData.members; } await db.collection("serverStructure").doc(currentServerId).set(struct); loadServerChannels(currentServerId); showToast("Permissions saved"); document.getElementById('settingsModal').classList.remove('active'); });
-    let privBtn = document.getElementById('privateToggleBtn'); privBtn?.addEventListener('click',()=>{ privBtn.classList.toggle('active'); let expand=document.getElementById('privateSettingsExpand'); expand.style.display = privBtn.classList.contains('active') ? 'flex' : 'none'; });
-    document.getElementById('addRoleBtn')?.addEventListener('click',()=>{ let role=document.getElementById('newRoleInput').value.trim(); if(role && window.tempCatData){ if(!window.tempCatData.roles.includes(role)) window.tempCatData.roles.push(role); loadSettingsData(selectedCategoryForSettings); document.getElementById('newRoleInput').value=''; } });
-    document.getElementById('addMemberBtn')?.addEventListener('click',()=>{ let mem=document.getElementById('newMemberInput').value.trim(); if(mem && window.tempCatData){ if(!window.tempCatData.members.includes(mem)) window.tempCatData.members.push(mem); loadSettingsData(selectedCategoryForSettings); document.getElementById('newMemberInput').value=''; } });
-    document.querySelectorAll('.settings-tab').forEach(tab=>{ tab.addEventListener('click',()=>{ let paneId = tab.dataset.tab; document.querySelectorAll('.settings-pane').forEach(p=>p.classList.remove('active')); document.getElementById(`${paneId}Pane`).classList.add('active'); document.querySelectorAll('.settings-tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active'); }); });
-    function closeSidebar(){ document.getElementById('sidebarPanel').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('active'); }
-    document.querySelectorAll('.mobile-nav-item').forEach(item=>{ item.addEventListener('click',()=>{ if(item.dataset.nav==='servers') document.getElementById('joinServerModal').style.display='flex'; if(item.dataset.nav==='channels') { document.getElementById('sidebarPanel').classList.add('open'); document.getElementById('mobileOverlay').classList.add('active'); } if(item.dataset.nav==='voice' && currentServerId) loadServerChannels(currentServerId); }); });
-    document.getElementById('mobileOverlay')?.addEventListener('click',closeSidebar);
-    auth.onAuthStateChanged(user=>{ currentUser=user; if(user){ isGlobalOwner = (user.email === OWNER_EMAIL); document.getElementById('userDisplay').innerText = user.displayName||user.email; renderServerList().then(async()=>{ let servers = await fetchUserServers(); if(servers.length && !currentServerId) await switchServer(servers[0].id); }); document.getElementById('authOverlay')?.remove(); } });
-    setTimeout(async()=>{ let all=await db.collection("servers").get(); if(all.empty){ let hub=db.collection("servers").doc(); await hub.set({name:"Stonks Hub", ownerId:"system"}); await db.collection("serverStructure").doc(hub.id).set({ categories:[{ name:"GENERAL", channels:[{ id:"welcome", name:"welcome", type:"text" }] },{ name:"VOICE", channels:[{ id:"voice-lounge", name:"General Voice", type:"voice" }] }] }); } },1000);
+// Optional: advanced handler
+function handleCommand(cmd, args, username) {
+    if (botCommands[cmd]) {
+        const res = botCommands[cmd];
+        if (typeof res === 'function') return res(args, username);
+        return res;
+    }
+    return null;
+}`;
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function showToast(msg) {
+        const t = document.getElementById('toastMsg');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    }
+
+    function formatTime(ts) {
+        if (!ts) return '';
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ── Bot engine ────────────────────────────────────────────────────────────
+    function executeCustomBot(commandText, username) {
+        if (botType !== "javascript") return null;
+        try {
+            const wrappedCode = `(function() { ${activeBotCode}; return { botCommands, handleCommand }; })()`;
+            const context = (new Function(wrappedCode))();
+            const commands = context.botCommands || {};
+            const handler  = context.handleCommand;
+            const cmdName  = commandText.split(' ')[0];
+            const args     = commandText.slice(cmdName.length).trim();
+
+            if (commands[cmdName]) {
+                let response = commands[cmdName];
+                if (typeof response === 'function') response = response(args, username);
+                if (response && typeof response === 'object' && response.embed)
+                    return { embed: true, html: response.html };
+                return { text: String(response) };
+            }
+            if (handler && typeof handler === 'function') {
+                const res = handler(cmdName, args, username);
+                if (res) {
+                    if (res.embed) return { embed: true, html: res.html };
+                    return { text: String(res) };
+                }
+            }
+        } catch(e) {
+            console.warn(e);
+            return { text: "🤖 Bot error: " + e.message };
+        }
+        return null;
+    }
+
+    function getDefaultResponse(cmd) {
+        const low = cmd.toLowerCase();
+        if (low === '/help')   return { text: "📋 Commands: /ping, /stonks, /status, /hello, plus your custom bot commands!" };
+        if (low === '/ping')   return { text: "🏓 Pong from core bot!" };
+        if (low === '/stonks') return { embed: true, html: '<div style="border-left:4px solid #fbbf24;padding:12px;background:#1e293b;border-radius:12px;"><b>📈 STONKS</b><br>$STONK: $142.50 🟢<br>$MOON: $315.20 🚀</div>' };
+        return null;
+    }
+
+    async function handleBotTrigger(msgText, authorName) {
+        if (!msgText.startsWith('/')) return false;
+        let response = executeCustomBot(msgText, authorName);
+        if (!response) response = getDefaultResponse(msgText);
+        if (response) {
+            await db.collection("channels").doc(currentChannelId).collection("messages").add({
+                text: response.embed ? (response.html || "✨") : response.text,
+                uid: "bot_system",
+                displayName: "CustomBot 🤖",
+                photoURL: "https://cdn-icons-png.flaticon.com/512/4712/4712109.png",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                isBot: true,
+                isEmbed: response.embed || false
+            });
+            return true;
+        }
+        return false;
+    }
+
+    // ── Message actions ───────────────────────────────────────────────────────
+    async function deleteMessage(channelId, messageId) {
+        if (!currentUser) return;
+        const msgRef = db.collection("channels").doc(channelId).collection("messages").doc(messageId);
+        const doc    = await msgRef.get();
+        if (!doc.exists) return;
+        const data   = doc.data();
+        if (!isOwner && !isAdmin && data.uid !== currentUser.uid) { showToast("❌ No permission"); return; }
+        await msgRef.delete();
+        showToast("🗑️ Message deleted");
+    }
+
+    function setReplyTo(messageId, author, text) {
+        currentReplyTo = { messageId, author, text };
+        document.getElementById('replyingToText').innerText =
+            `Replying to @${author}: ${text.substring(0, 60)}${text.length > 60 ? '…' : ''}`;
+        document.getElementById('replyPreview').style.display = 'flex';
+        document.getElementById('messageInput').focus();
+    }
+
+    function cancelReply() {
+        currentReplyTo = null;
+        document.getElementById('replyPreview').style.display = 'none';
+    }
+
+    // Show action menu on a message div
+    function showActionMenu(msgDiv, channelId, msgId, author, text, canDel) {
+        // Remove any existing menus
+        document.querySelectorAll('.message-actions').forEach(m => m.remove());
+
+        const actionMenu = document.createElement('div');
+        actionMenu.className = 'message-actions';
+        actionMenu.innerHTML = `
+            <button class="action-btn reply"><i class="fas fa-reply"></i> Reply</button>
+            ${canDel ? `<button class="action-btn delete"><i class="fas fa-trash"></i> Delete</button>` : ''}
+        `;
+        msgDiv.appendChild(actionMenu);
+
+        actionMenu.querySelector('.reply')?.addEventListener('click', e => {
+            e.stopPropagation();
+            setReplyTo(msgId, author, text);
+            actionMenu.remove();
+        });
+        actionMenu.querySelector('.delete')?.addEventListener('click', async e => {
+            e.stopPropagation();
+            await deleteMessage(channelId, msgId);
+            actionMenu.remove();
+        });
+
+        // Auto-dismiss
+        const timer = setTimeout(() => actionMenu.remove(), 4000);
+        const outside = e => {
+            if (!actionMenu.contains(e.target)) {
+                actionMenu.remove();
+                clearTimeout(timer);
+                document.removeEventListener('pointerdown', outside);
+            }
+        };
+        setTimeout(() => document.addEventListener('pointerdown', outside), 0);
+    }
+
+    // ── Send message ──────────────────────────────────────────────────────────
+    async function sendMessage() {
+        if (!currentUser) { showToast("Sign in first"); return; }
+        const input = document.getElementById('messageInput');
+        const text  = input.value.trim();
+        if (!text) return;
+
+        let replyData = null;
+        if (currentReplyTo) {
+            replyData = { ...currentReplyTo };
+            cancelReply();
+        }
+
+        await db.collection("channels").doc(currentChannelId).collection("messages").add({
+            text,
+            uid: currentUser.uid,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}`,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            isBot: false,
+            replyTo: replyData || null
+        });
+
+        input.value = '';
+        setTimeout(() => handleBotTrigger(text, currentUser.displayName), 80);
+    }
+
+    // ── Channels / Sidebar ────────────────────────────────────────────────────
+    async function loadChannels() {
+        const docRef  = db.collection("server").doc("structure");
+        const docSnap = await docRef.get();
+        if (docSnap.exists) return docSnap.data();
+        const def = { categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }] }] };
+        await docRef.set(def);
+        return def;
+    }
+
+    async function renderSidebar() {
+        const struct    = await loadChannels();
+        const container = document.getElementById('channelsList');
+        let html = '';
+        for (const cat of struct.categories) {
+            html += `<div class="category-group"><div class="category-title">${escapeHtml(cat.name)}</div>`;
+            for (const ch of cat.channels) {
+                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}"
+                    data-channel-id="${ch.id}" data-channel-name="${ch.name}">
+                    <i class="fas fa-hashtag"></i> ${escapeHtml(ch.name)}
+                </div>`;
+            }
+            html += `</div>`;
+        }
+        container.innerHTML = html;
+        container.querySelectorAll('.channel-item').forEach(el => {
+            el.addEventListener('click', () => switchChannel(el.dataset.channelId, el.dataset.channelName));
+        });
+    }
+
+    function switchChannel(id, name) {
+        if (unsubscribeMessages) unsubscribeMessages();
+        currentChannelId = id;
+        document.getElementById('currentChannelName').innerText = name;
+        loadMessagesForChannel(id);
+        renderSidebar();
+        closeSidebar();
+    }
+
+    function openSidebar() {
+        document.getElementById('sidebarPanel').classList.add('mobile-open');
+        document.getElementById('sidebarOverlay').classList.add('active');
+    }
+
+    function closeSidebar() {
+        document.getElementById('sidebarPanel').classList.remove('mobile-open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+
+    // ── Message rendering & long-press ────────────────────────────────────────
+    function loadMessagesForChannel(channelId) {
+        const container = document.getElementById('messagesContainer');
+
+        unsubscribeMessages = db.collection("channels")
+            .doc(channelId).collection("messages")
+            .orderBy("createdAt", "asc")
+            .onSnapshot(snapshot => {
+                let html = '';
+                snapshot.forEach(doc => {
+                    const d     = doc.data();
+                    const msgId = doc.id;
+
+                    let replyHtml = '';
+                    if (d.replyTo) {
+                        replyHtml = `<div class="replying-to">
+                            <i class="fas fa-reply"></i>
+                            Replying to @${escapeHtml(d.replyTo.author)}:
+                            ${escapeHtml(d.replyTo.text.substring(0, 60))}${d.replyTo.text.length > 60 ? '…' : ''}
+                        </div>`;
+                    }
+
+                    const contentHtml = d.isEmbed ? d.text : escapeHtml(d.text);
+
+                    html += `<div class="message ${d.isBot ? 'system-message' : ''}"
+                        data-msg-id="${msgId}"
+                        data-msg-uid="${escapeHtml(d.uid)}"
+                        data-msg-author="${escapeHtml(d.displayName)}"
+                        data-msg-text="${escapeHtml(d.text).replace(/"/g, '&quot;')}">
+                        <img src="${escapeHtml(d.photoURL || 'https://ui-avatars.com/api/?name=User')}"
+                             class="message-avatar"
+                             onerror="this.src='https://ui-avatars.com/api/?name=User'"
+                             alt="avatar">
+                        <div class="message-content">
+                            <div class="message-author">
+                                ${escapeHtml(d.displayName)}
+                                ${d.isBot ? '<span class="bot-tag">BOT</span>' : ''}
+                                <span class="message-time">${formatTime(d.createdAt)}</span>
+                            </div>
+                            ${replyHtml}
+                            <div class="message-text">${contentHtml}</div>
+                        </div>
+                    </div>`;
+                });
+
+                if (!html) html = '<div class="empty-chat">✨ No messages yet. Try /help</div>';
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+
+                // Attach long-press + shift-click handlers
+                container.querySelectorAll('.message').forEach(msgDiv => {
+                    attachMessageHandlers(msgDiv, channelId);
+                });
+            });
+    }
+
+    function attachMessageHandlers(msgDiv, channelId) {
+        let pressTimer = null;
+        const LONG_PRESS_MS = 500;
+
+        const triggerMenu = async () => {
+            const msgId  = msgDiv.dataset.msgId;
+            const author = msgDiv.dataset.msgAuthor;
+            const text   = msgDiv.dataset.msgText;
+            const msgUid = msgDiv.dataset.msgUid;
+            const canDel = isOwner || isAdmin || (currentUser && msgUid === currentUser.uid);
+            showActionMenu(msgDiv, channelId, msgId, author, text, canDel);
+        };
+
+        // Long press (touch)
+        msgDiv.addEventListener('touchstart', e => {
+            pressTimer = setTimeout(() => {
+                msgDiv.classList.add('pressing');
+                triggerMenu();
+            }, LONG_PRESS_MS);
+        }, { passive: true });
+
+        msgDiv.addEventListener('touchend',   () => { clearTimeout(pressTimer); msgDiv.classList.remove('pressing'); });
+        msgDiv.addEventListener('touchmove',  () => { clearTimeout(pressTimer); msgDiv.classList.remove('pressing'); });
+        msgDiv.addEventListener('touchcancel',() => { clearTimeout(pressTimer); msgDiv.classList.remove('pressing'); });
+
+        // Shift+click (desktop)
+        msgDiv.addEventListener('click', e => {
+            if (e.shiftKey) { e.stopPropagation(); triggerMenu(); }
+        });
+    }
+
+    // ── Bot Studio ────────────────────────────────────────────────────────────
+    function initMonaco() {
+        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+        require(['vs/editor/editor.main'], () => {
+            monacoEditor = monaco.editor.create(document.getElementById('monacoContainer'), {
+                value: activeBotCode,
+                language: 'javascript',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                fontSize: 13,
+                minimap: { enabled: false }
+            });
+        });
+    }
+
+    function saveBot() {
+        if (!isAdmin && !isOwner) { showToast("Admin/Owner only"); return; }
+        const lang = document.getElementById('botLangSelect').value;
+        const code = monacoEditor ? monacoEditor.getValue() : activeBotCode;
+
+        if (lang === 'html') {
+            botType = 'html';
+            activeBotCode = code;
+            showToast("HTML embed bot saved!");
+        } else {
+            botType = 'javascript';
+            try {
+                new Function(code);
+                activeBotCode = code;
+                showToast("✅ JS Bot saved");
+            } catch(e) {
+                showToast("JS Error: " + e.message);
+                return;
+            }
+        }
+        document.getElementById('studioModal').classList.remove('active');
+    }
+
+    function testBotCommand() {
+        const testInput  = document.getElementById('testCommandInput').value;
+        if (!testInput) return;
+        const consoleDiv = document.getElementById('testConsole');
+
+        let result = botType === 'javascript' ? executeCustomBot(testInput, "Tester") : null;
+        if (!result) result = getDefaultResponse(testInput);
+
+        const output = result
+            ? (result.embed ? "[EMBED] " + (result.html || "").substring(0, 100) : result.text)
+            : "⚠️ No response";
+
+        consoleDiv.innerHTML += `\n&gt; ${escapeHtml(testInput)}\n&lt; ${escapeHtml(output)}`;
+        consoleDiv.scrollTop  = consoleDiv.scrollHeight;
+
+        if (result && result.embed)
+            document.getElementById('embedPreviewArea').innerHTML = result.html || "Preview";
+
+        document.getElementById('testCommandInput').value = '';
+    }
+
+    function resetDefault() {
+        if (!isAdmin && !isOwner) return;
+        activeBotCode = `// === CUSTOM STONKS BOT ===
+const botCommands = {
+    "/ping": "🏓 Pong! Custom bot is alive!",
+    "/status": "✅ Bot is online and ready",
+    "/stonks": { embed: true, html: '<div style="border-left:4px solid #fbbf24;padding:12px;background:#1e293b;border-radius:12px;"><b>📈 STONKS LIVE</b><br>STNK: $156.20 ▲ +2.4%</div>' },
+    "/hello": (args, user) => \`Hello @\${user}!\`
+};`;
+        botType = "javascript";
+        if (monacoEditor) monacoEditor.setValue(activeBotCode);
+        document.getElementById('botLangSelect').value = "javascript";
+        showToast("Default bot restored");
+    }
+
+    function openStudio() {
+        if (!isAdmin && !isOwner) { showToast("Admin/Owner only"); return; }
+        if (monacoEditor) monacoEditor.setValue(activeBotCode);
+        document.getElementById('botLangSelect').value = botType;
+        document.getElementById('studioModal').classList.add('active');
+    }
+
+    // ── Auth / UI ─────────────────────────────────────────────────────────────
+    function updateUI(user) {
+        const authOverlay = document.getElementById('authOverlay');
+        if (user) {
+            authOverlay.style.display = 'none';
+            document.getElementById('sidebarName').innerText   = user.displayName || user.email;
+            document.getElementById('sidebarAvatar').src       = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
+            isAdmin = isOwner = (user.email === OWNER_EMAIL);
+            document.getElementById('adminIndicator').classList.toggle('hidden', !isAdmin);
+            document.getElementById('ownerIndicator').classList.toggle('hidden', !isOwner);
+            renderSidebar();
+            loadMessagesForChannel(currentChannelId);
+        } else {
+            authOverlay.style.display = 'flex';
+            if (unsubscribeMessages) unsubscribeMessages();
+        }
+    }
+
+    // ── Event bindings ────────────────────────────────────────────────────────
+    document.getElementById('signInBtn')?.addEventListener('click', () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider);
+    });
+    document.getElementById('signOutTopBtn')?.addEventListener('click',     () => auth.signOut());
+    document.getElementById('signOutSidebarBtn')?.addEventListener('click', () => auth.signOut());
+    document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
+    document.getElementById('messageInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+    document.getElementById('mobileMenuBtn')?.addEventListener('click',  openSidebar);
+    document.getElementById('closeSidebarBtn')?.addEventListener('click', closeSidebar);
+    document.getElementById('sidebarOverlay')?.addEventListener('click',  closeSidebar);
+    document.getElementById('botStudioBtn')?.addEventListener('click', openStudio);
+    document.getElementById('closeStudioBtn')?.addEventListener('click', () => document.getElementById('studioModal').classList.remove('active'));
+    document.getElementById('saveBotBtn')?.addEventListener('click', saveBot);
+    document.getElementById('testBotBtn')?.addEventListener('click', testBotCommand);
+    document.getElementById('execTestCmd')?.addEventListener('click', testBotCommand);
+    document.getElementById('resetDefaultBot')?.addEventListener('click', resetDefault);
+    document.getElementById('cancelReplyBtn')?.addEventListener('click', cancelReply);
+    document.getElementById('testCommandInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') testBotCommand(); });
+
+    document.getElementById('botLangSelect')?.addEventListener('change', () => {
+        const lang = document.getElementById('botLangSelect').value;
+        if (!monacoEditor) return;
+        if (lang === 'html') {
+            monacoEditor.setValue(`<div style="background:#1f2937;padding:16px;border-radius:20px;text-align:center;">
+  <i class="fas fa-chart-line" style="font-size:32px;color:#fbbf24;"></i>
+  <h3>Stonks Widget</h3>
+  <p>STNK: $178.20 🚀</p>
+</div>`);
+        } else {
+            monacoEditor.setValue(activeBotCode);
+        }
+    });
+
+    // ── Boot ──────────────────────────────────────────────────────────────────
+    auth.onAuthStateChanged(user => { currentUser = user; updateUI(user); });
+    initMonaco();
 </script>
-<div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;"><i class="fab fa-google"></i> Sign in with Google</button></div></div>
-<script>document.getElementById('googleSignInBtn')?.addEventListener('click',()=>firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()));</script>
 </body>
 </html>
