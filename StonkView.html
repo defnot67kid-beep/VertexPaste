@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Stonks · Discord-like Chat</title>
+    <title>Stonks · Discord-like Chat Platform</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -25,13 +25,13 @@
             overflow: hidden;
         }
 
-        /* Discord-like Layout */
+        /* Main Layout */
         .app {
             display: flex;
             height: 100vh;
         }
 
-        /* Server List (Leftmost) */
+        /* Server Bar */
         .servers-bar {
             width: 72px;
             background: #1e1f22;
@@ -57,6 +57,13 @@
             position: relative;
             color: #dbdee1;
             font-size: 24px;
+            overflow: hidden;
+        }
+
+        .server-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .server-icon:hover {
@@ -79,22 +86,6 @@
             color: white;
         }
 
-        .server-name-tooltip {
-            position: absolute;
-            left: 70px;
-            background: #000;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            z-index: 100;
-            display: none;
-        }
-
-        .server-icon:hover .server-name-tooltip {
-            display: block;
-        }
-
         /* Channel Sidebar */
         .channel-sidebar {
             width: 240px;
@@ -102,6 +93,7 @@
             display: flex;
             flex-direction: column;
             border-right: 1px solid #1e1f22;
+            transition: transform 0.3s ease;
         }
 
         .server-header {
@@ -189,7 +181,6 @@
             border-left: 2px solid #5865f2;
         }
 
-        /* Voice Users Container */
         .voice-users {
             margin-left: 24px;
             margin-top: 4px;
@@ -205,12 +196,6 @@
             align-items: center;
             gap: 8px;
             font-size: 12px;
-        }
-
-        .voice-user img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
         }
 
         /* Chat Area */
@@ -271,6 +256,7 @@
             gap: 12px;
             padding: 4px 8px;
             border-radius: 8px;
+            transition: background 0.2s;
         }
 
         .message:hover {
@@ -281,6 +267,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
+            object-fit: cover;
         }
 
         .message-content {
@@ -302,12 +289,13 @@
         .message-text {
             font-size: 14px;
             line-height: 1.4;
+            word-break: break-word;
         }
 
-        /* Voice Overlay */
+        /* Voice Overlay / Black Screen */
         .voice-overlay {
             position: fixed;
-            bottom: 20px;
+            bottom: 80px;
             right: 20px;
             width: 280px;
             background: #1e1f22;
@@ -357,6 +345,33 @@
             cursor: pointer;
         }
 
+        /* Black Screen for Voice */
+        .voice-black-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .voice-black-screen img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #5865f2;
+        }
+
+        .voice-black-screen.hidden {
+            display: none;
+        }
+
         /* Input Area */
         .input-area {
             padding: 16px;
@@ -390,7 +405,7 @@
             cursor: pointer;
         }
 
-        /* Modal */
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -422,6 +437,7 @@
             border-bottom: 1px solid #1e1f22;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
         .modal-body {
@@ -461,6 +477,10 @@
             background: #da373c;
         }
 
+        button.success {
+            background: #23a55a;
+        }
+
         /* Toast */
         .toast {
             position: fixed;
@@ -478,11 +498,24 @@
             display: block;
         }
 
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            background: #2b2d31;
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .servers-bar {
                 width: 56px;
             }
+            
             .channel-sidebar {
                 position: fixed;
                 left: -240px;
@@ -491,14 +524,43 @@
                 z-index: 1500;
                 transition: left 0.3s;
             }
+            
             .channel-sidebar.mobile-open {
                 left: 56px;
             }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
             .voice-overlay {
                 width: 240px;
                 bottom: 10px;
                 right: 10px;
             }
+            
+            .voice-black-screen img {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e1f22;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2b2d31;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #404249;
         }
     </style>
 </head>
@@ -508,6 +570,7 @@
     <div class="servers-bar" id="serversBar">
         <div class="server-icon add-server" id="createServerBtn">
             <i class="fas fa-plus"></i>
+            <div class="server-name-tooltip">Create Server</div>
         </div>
     </div>
 
@@ -522,17 +585,21 @@
                 Create or join a server to start chatting
             </div>
         </div>
-        <div style="padding: 12px;">
-            <button id="createChannelBtn" style="width: 100%; background: #23a55a;">+ Create Channel</button>
+        <div style="padding: 12px; display: flex; gap: 8px;">
+            <button id="createChannelBtn" style="flex: 1; background: #23a55a;">+ Channel</button>
+            <button id="createCategoryBtn" style="flex: 1; background: #5865f2;">+ Category</button>
         </div>
     </div>
 
     <!-- Chat Area -->
     <div class="chat-area">
         <div class="chat-header">
-            <div class="channel-info">
-                <i class="fas fa-hashtag"></i>
-                <span id="currentChannelName"># general</span>
+            <div style="display: flex; align-items: center;">
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+                <div class="channel-info">
+                    <i class="fas fa-hashtag"></i>
+                    <span id="currentChannelName"># general</span>
+                </div>
             </div>
             <div class="user-controls">
                 <div class="user-profile-btn" id="userProfileBtn">
@@ -547,6 +614,16 @@
                 <input type="text" id="messageInput" placeholder="Type a message...">
                 <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
             </div>
+        </div>
+    </div>
+
+    <!-- Voice Black Screen -->
+    <div id="voiceBlackScreen" class="voice-black-screen hidden">
+        <img id="blackScreenAvatar" src="" alt="">
+        <h3 id="blackScreenName">Voice Connected</h3>
+        <div class="mic-control">
+            <button id="blackScreenMicBtn"><i class="fas fa-microphone"></i> Mute</button>
+            <button id="blackScreenLeaveBtn" class="danger">Leave</button>
         </div>
     </div>
 
@@ -622,9 +699,8 @@
                 <input type="text" id="channelName" placeholder="new-channel">
             </div>
             <div class="form-group">
-                <label>Category (optional)</label>
+                <label>Category</label>
                 <select id="categorySelect"></select>
-                <button onclick="createCategory()" style="margin-top: 8px; background: #23a55a;">+ New Category</button>
             </div>
             <button onclick="createChannel()">Create Channel</button>
         </div>
@@ -667,6 +743,22 @@
     </div>
 </div>
 
+<div id="editCategoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Category</h3>
+            <button onclick="closeModal('editCategoryModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Category Name</label>
+                <input type="text" id="editCategoryName">
+            </div>
+            <button onclick="saveCategoryEdit()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
@@ -689,8 +781,8 @@
     let currentChannel = null;
     let currentVoiceChannel = null;
     let mediaStream = null;
-    let peerConnections = {};
     let isMuted = false;
+    let currentEditingCategory = null;
     const CO_OWNER_EMAIL = "defnot67kid@gmail.com";
 
     // Helper Functions
@@ -705,6 +797,12 @@
         document.getElementById(modalId).classList.remove('active');
     }
 
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Load Servers
     async function loadServers() {
         if (!currentUser) return;
@@ -712,28 +810,26 @@
         const serversSnapshot = await db.collection('users').doc(currentUser.uid).collection('servers').get();
         const serversBar = document.getElementById('serversBar');
         
-        // Clear existing servers (keep add button)
         const addBtn = serversBar.querySelector('.add-server');
         serversBar.innerHTML = '';
         serversBar.appendChild(addBtn);
         
         for (const doc of serversSnapshot.docs) {
-            const serverData = doc.data();
             const serverDoc = await db.collection('servers').doc(doc.id).get();
             const server = serverDoc.data();
             
-            const serverIcon = document.createElement('div');
-            serverIcon.className = 'server-icon';
-            if (currentServer && currentServer.id === doc.id) serverIcon.classList.add('active');
-            serverIcon.innerHTML = `
-                ${server.icon ? `<img src="${server.icon}" style="width:48px;height:48px;border-radius:50%;">` : `<i class="fas fa-server"></i>`}
-                <div class="server-name-tooltip">${server.name}</div>
-            `;
-            serverIcon.onclick = () => switchServer(doc.id, server);
-            serversBar.appendChild(serverIcon);
+            if (server) {
+                const serverIcon = document.createElement('div');
+                serverIcon.className = 'server-icon';
+                if (currentServer && currentServer.id === doc.id) serverIcon.classList.add('active');
+                serverIcon.innerHTML = server.icon ? 
+                    `<img src="${server.icon}" alt="${server.name}">` : 
+                    `<i class="fas fa-server"></i>`;
+                serverIcon.onclick = () => switchServer(doc.id, server);
+                serversBar.appendChild(serverIcon);
+            }
         }
         
-        // Add join server button
         const joinBtn = document.createElement('div');
         joinBtn.className = 'server-icon add-server';
         joinBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
@@ -746,7 +842,6 @@
         currentServer = { id: serverId, ...serverData };
         document.getElementById('currentServerName').textContent = serverData.name;
         
-        // Load categories and channels
         const categoriesSnapshot = await db.collection('servers').doc(serverId).collection('categories').orderBy('order').get();
         const container = document.getElementById('categoriesContainer');
         container.innerHTML = '';
@@ -759,9 +854,9 @@
             categoryDiv.className = 'category';
             categoryDiv.innerHTML = `
                 <div class="category-header">
-                    <span>${category.name}</span>
+                    <span>${escapeHtml(category.name)}</span>
                     <div class="category-actions">
-                        <button onclick="editCategory('${catDoc.id}')"><i class="fas fa-edit"></i></button>
+                        <button onclick="editCategory('${catDoc.id}', '${escapeHtml(category.name)}')"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteCategory('${catDoc.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -776,16 +871,17 @@
                 channelDiv.className = `channel-item ${channel.type === 'voice' ? 'voice-channel' : ''}`;
                 channelDiv.innerHTML = `
                     <i class="fas fa-${channel.type === 'voice' ? 'volume-up' : 'hashtag'}"></i>
-                    ${channel.name}
+                    ${escapeHtml(channel.name)}
                 `;
-                channelDiv.onclick = () => channel.type === 'text' ? switchChannel(chDoc.id, channel) : joinVoiceChannel(chDoc.id, channel);
+                channelDiv.onclick = () => {
+                    if (channel.type === 'text') {
+                        switchChannel(chDoc.id, channel);
+                    } else if (channel.type === 'voice') {
+                        joinVoiceChannel(chDoc.id, channel);
+                    }
+                };
                 
                 channelsContainer.appendChild(channelDiv);
-                
-                // Load voice users if voice channel
-                if (channel.type === 'voice' && currentVoiceChannel && currentVoiceChannel.id === chDoc.id) {
-                    loadVoiceUsers(chDoc.id);
-                }
             }
             
             container.appendChild(categoryDiv);
@@ -793,11 +889,12 @@
     }
 
     // Switch Text Channel
+    let currentChannelListener = null;
+    
     async function switchChannel(channelId, channelData) {
         currentChannel = { id: channelId, ...channelData };
         document.getElementById('currentChannelName').textContent = `# ${channelData.name}`;
         
-        // Load messages
         const messagesSnapshot = await db.collection('servers')
             .doc(currentServer.id)
             .collection('channels')
@@ -810,24 +907,16 @@
         const container = document.getElementById('messagesContainer');
         container.innerHTML = '';
         
-        for (const msgDoc of messagesSnapshot.docs.reverse()) {
-            const msg = msgDoc.data();
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            messageDiv.innerHTML = `
-                <img src="${msg.avatar}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${msg.author}'">
-                <div class="message-content">
-                    <div class="message-author">
-                        ${msg.author}
-                        <span class="message-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</span>
-                    </div>
-                    <div class="message-text">${escapeHtml(msg.text)}</div>
-                </div>
-            `;
-            container.prepend(messageDiv);
-        }
+        const messages = [];
+        messagesSnapshot.forEach(doc => {
+            messages.push({ id: doc.id, ...doc.data() });
+        });
         
-        // Listen for new messages
+        messages.reverse().forEach(msg => {
+            const messageDiv = createMessageElement(msg);
+            container.appendChild(messageDiv);
+        });
+        
         if (currentChannelListener) currentChannelListener();
         currentChannelListener = db.collection('servers')
             .doc(currentServer.id)
@@ -839,38 +928,56 @@
                 snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         const msg = change.doc.data();
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = 'message';
-                        messageDiv.innerHTML = `
-                            <img src="${msg.avatar}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${msg.author}'">
-                            <div class="message-content">
-                                <div class="message-author">
-                                    ${msg.author}
-                                    <span class="message-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</span>
-                                </div>
-                                <div class="message-text">${escapeHtml(msg.text)}</div>
-                            </div>
-                        `;
+                        const messageDiv = createMessageElement(msg);
                         container.appendChild(messageDiv);
                         container.scrollTop = container.scrollHeight;
                     }
                 });
             });
+        
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function createMessageElement(msg) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+        messageDiv.innerHTML = `
+            <img src="${msg.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(msg.author)}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(msg.author)}'">
+            <div class="message-content">
+                <div class="message-author">
+                    ${escapeHtml(msg.author)}
+                    <span class="message-time">${msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString() : 'Just now'}</span>
+                </div>
+                <div class="message-text">${escapeHtml(msg.text)}</div>
+            </div>
+        `;
+        return messageDiv;
     }
 
     // Join Voice Channel
     async function joinVoiceChannel(channelId, channelData) {
+        if (currentVoiceChannel) {
+            await leaveVoiceChannel();
+        }
+        
         currentVoiceChannel = { id: channelId, ...channelData };
         
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaStream = stream;
+            isMuted = false;
             
+            // Show black screen
+            const blackScreen = document.getElementById('voiceBlackScreen');
+            document.getElementById('blackScreenAvatar').src = currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.displayName);
+            document.getElementById('blackScreenName').textContent = `Voice Channel: ${channelData.name}`;
+            blackScreen.classList.remove('hidden');
+            
+            // Show overlay
             document.getElementById('voiceOverlay').style.display = 'block';
-            document.getElementById('voiceUserAvatar').src = currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + currentUser.displayName;
+            document.getElementById('voiceUserAvatar').src = currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.displayName);
             document.getElementById('voiceUserName').textContent = currentUser.displayName;
             
-            // Store user in voice channel
             await db.collection('servers')
                 .doc(currentServer.id)
                 .collection('voiceChannels')
@@ -894,31 +1001,38 @@
     }
 
     // Load Voice Users
+    let voiceUsersListener = null;
+    
     function loadVoiceUsers(channelId) {
-        db.collection('servers')
+        if (voiceUsersListener) voiceUsersListener();
+        
+        voiceUsersListener = db.collection('servers')
             .doc(currentServer.id)
             .collection('voiceChannels')
             .doc(channelId)
             .collection('users')
             .onSnapshot(snapshot => {
-                // Update the channel display
-                const channelElement = document.querySelector(`.channel-item:has(i.fa-volume-up):contains('${currentVoiceChannel?.name}')`);
-                if (channelElement) {
-                    const usersContainer = channelElement.parentElement.querySelector('.voice-users') || document.createElement('div');
-                    usersContainer.className = 'voice-users';
+                const count = snapshot.size;
+                const voiceChannelElement = document.querySelector(`.channel-item:has(i.fa-volume-up)`);
+                if (voiceChannelElement) {
+                    let usersContainer = voiceChannelElement.parentElement.querySelector('.voice-users');
+                    if (!usersContainer) {
+                        usersContainer = document.createElement('div');
+                        usersContainer.className = 'voice-users';
+                        voiceChannelElement.parentElement.appendChild(usersContainer);
+                    }
                     usersContainer.innerHTML = '';
                     snapshot.forEach(doc => {
                         const user = doc.data();
                         const userDiv = document.createElement('div');
                         userDiv.className = 'voice-user';
                         userDiv.innerHTML = `
-                            <img src="${user.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=${user.name}'">
-                            <span>${user.name}</span>
+                            <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}'">
+                            <span>${escapeHtml(user.name)}</span>
                             <i class="fas fa-${user.muted ? 'microphone-slash' : 'microphone'}" style="margin-left: auto; font-size: 12px;"></i>
                         `;
                         usersContainer.appendChild(userDiv);
                     });
-                    channelElement.parentElement.appendChild(usersContainer);
                 }
             });
     }
@@ -940,8 +1054,11 @@
                 .delete();
         }
         
+        if (voiceUsersListener) voiceUsersListener();
+        
         currentVoiceChannel = null;
         document.getElementById('voiceOverlay').style.display = 'none';
+        document.getElementById('voiceBlackScreen').classList.add('hidden');
         showToast('Left voice channel');
     }
 
@@ -952,11 +1069,16 @@
             if (audioTrack) {
                 isMuted = !isMuted;
                 audioTrack.enabled = !isMuted;
+                
+                const micIcon = document.querySelector('#toggleMicBtn i, #blackScreenMicBtn i');
+                const btnText = isMuted ? 'Unmute' : 'Mute';
                 document.getElementById('toggleMicBtn').innerHTML = isMuted ? 
                     '<i class="fas fa-microphone-slash"></i> Unmute' : 
                     '<i class="fas fa-microphone"></i> Mute';
+                document.getElementById('blackScreenMicBtn').innerHTML = isMuted ? 
+                    '<i class="fas fa-microphone-slash"></i> Unmute' : 
+                    '<i class="fas fa-microphone"></i> Mute';
                 
-                // Update in Firestore
                 if (currentVoiceChannel) {
                     db.collection('servers')
                         .doc(currentServer.id)
@@ -972,8 +1094,8 @@
 
     // Create Server
     async function createServer() {
-        const name = document.getElementById('serverName').value;
-        const icon = document.getElementById('serverIcon').value;
+        const name = document.getElementById('serverName').value.trim();
+        const icon = document.getElementById('serverIcon').value.trim();
         
         if (!name) {
             showToast('Server name required');
@@ -991,7 +1113,6 @@
             joinedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        // Create default category
         await db.collection('servers').doc(serverRef.id).collection('categories').add({
             name: 'GENERAL',
             order: 0
@@ -1001,12 +1122,13 @@
         document.getElementById('serverName').value = '';
         document.getElementById('serverIcon').value = '';
         await loadServers();
+        await switchServer(serverRef.id, { name: name, icon: icon });
         showToast('Server created!');
     }
 
     // Join Server
     async function joinServer() {
-        const serverId = document.getElementById('joinServerId').value;
+        const serverId = document.getElementById('joinServerId').value.trim();
         
         if (!serverId) {
             showToast('Server ID required');
@@ -1032,7 +1154,7 @@
     // Create Channel
     async function createChannel() {
         const type = document.getElementById('channelType').value;
-        const name = document.getElementById('channelName').value;
+        const name = document.getElementById('channelName').value.trim();
         const categoryId = document.getElementById('categorySelect').value;
         
         if (!name || !categoryId) {
@@ -1059,7 +1181,7 @@
 
     // Create Category
     async function createNewCategory() {
-        const name = document.getElementById('categoryName').value;
+        const name = document.getElementById('categoryName').value.trim();
         
         if (!name) {
             showToast('Category name required');
@@ -1082,10 +1204,50 @@
         showToast('Category created!');
     }
 
+    // Edit Category
+    function editCategory(catId, catName) {
+        currentEditingCategory = catId;
+        document.getElementById('editCategoryName').value = catName;
+        document.getElementById('editCategoryModal').classList.add('active');
+    }
+    
+    async function saveCategoryEdit() {
+        const newName = document.getElementById('editCategoryName').value.trim();
+        if (!newName || !currentEditingCategory) return;
+        
+        await db.collection('servers')
+            .doc(currentServer.id)
+            .collection('categories')
+            .doc(currentEditingCategory)
+            .update({ name: newName.toUpperCase() });
+        
+        closeModal('editCategoryModal');
+        await switchServer(currentServer.id, currentServer);
+        showToast('Category updated!');
+    }
+    
+    // Delete Category
+    async function deleteCategory(catId) {
+        if (!confirm('Delete this category and all channels inside it?')) return;
+        
+        const channels = await db.collection('servers').doc(currentServer.id).collection('categories').doc(catId).collection('channels').get();
+        for (const ch of channels.docs) {
+            await ch.ref.delete();
+        }
+        await db.collection('servers').doc(currentServer.id).collection('categories').doc(catId).delete();
+        await switchServer(currentServer.id, currentServer);
+        showToast('Category deleted');
+    }
+
     // Update Profile
     async function updateProfile() {
-        const displayName = document.getElementById('profileDisplayName').value;
-        const avatar = document.getElementById('profileAvatar').value;
+        const displayName = document.getElementById('profileDisplayName').value.trim();
+        const avatar = document.getElementById('profileAvatar').value.trim();
+        
+        if (!displayName) {
+            showToast('Display name required');
+            return;
+        }
         
         await currentUser.updateProfile({
             displayName: displayName,
@@ -1099,7 +1261,7 @@
         }, { merge: true });
         
         document.getElementById('userDisplayName').textContent = displayName;
-        document.getElementById('userAvatar').src = avatar || 'https://ui-avatars.com/api/?name=' + displayName;
+        document.getElementById('userAvatar').src = avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName);
         
         closeModal('profileModal');
         showToast('Profile updated!');
@@ -1120,19 +1282,12 @@
             .add({
                 text: text,
                 author: currentUser.displayName,
-                avatar: currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + currentUser.displayName,
+                avatar: currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.displayName),
                 uid: currentUser.uid,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         
         input.value = '';
-    }
-
-    // Escape HTML
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     }
 
     // Load Categories into Select
@@ -1141,7 +1296,7 @@
         
         const categoriesSnapshot = await db.collection('servers').doc(currentServer.id).collection('categories').get();
         const select = document.getElementById('categorySelect');
-        select.innerHTML = '<option value="">Select Category</option>';
+        select.innerHTML = '';
         
         categoriesSnapshot.forEach(doc => {
             const option = document.createElement('option');
@@ -1151,12 +1306,23 @@
         });
     }
 
+    // Toggle Mobile Sidebar
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('channelSidebar');
+        sidebar.classList.toggle('mobile-open');
+    }
+    
+    function closeMobileSidebar() {
+        const sidebar = document.getElementById('channelSidebar');
+        sidebar.classList.remove('mobile-open');
+    }
+
     // Auth State
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
             document.getElementById('userDisplayName').textContent = user.displayName || user.email;
-            document.getElementById('userAvatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + (user.displayName || 'User');
+            document.getElementById('userAvatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User');
             document.getElementById('profileDisplayName').value = user.displayName || '';
             document.getElementById('profileAvatar').value = user.photoURL || '';
             
@@ -1179,36 +1345,39 @@
         await loadCategorySelect();
         document.getElementById('channelModal').classList.add('active');
     });
+    document.getElementById('createCategoryBtn').addEventListener('click', () => {
+        document.getElementById('categoryModal').classList.add('active');
+    });
     document.getElementById('userProfileBtn').addEventListener('click', () => {
         document.getElementById('profileModal').classList.add('active');
     });
     document.getElementById('leaveVoiceBtn').addEventListener('click', leaveVoiceChannel);
     document.getElementById('toggleMicBtn').addEventListener('click', toggleMic);
+    document.getElementById('blackScreenMicBtn').addEventListener('click', toggleMic);
+    document.getElementById('blackScreenLeaveBtn').addEventListener('click', leaveVoiceChannel);
+    document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileSidebar);
     
-    // Add create category button to channel modal
-    window.createCategory = () => {
-        closeModal('channelModal');
-        document.getElementById('categoryModal').classList.add('active');
-    };
-    
-    window.editCategory = (catId) => {
-        // Implement edit category
-        showToast('Edit category coming soon');
-    };
-    
-    window.deleteCategory = async (catId) => {
-        if (confirm('Delete this category and all channels?')) {
-            const channels = await db.collection('servers').doc(currentServer.id).collection('categories').doc(catId).collection('channels').get();
-            for (const ch of channels.docs) {
-                await ch.ref.delete();
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        const sidebar = document.getElementById('channelSidebar');
+        const menuBtn = document.getElementById('mobileMenuBtn');
+        if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {
+            if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                closeMobileSidebar();
             }
-            await db.collection('servers').doc(currentServer.id).collection('categories').doc(catId).delete();
-            await switchServer(currentServer.id, currentServer);
-            showToast('Category deleted');
         }
-    };
+    });
     
-    let currentChannelListener = null;
+    // Make functions global for onclick handlers
+    window.closeModal = closeModal;
+    window.createServer = createServer;
+    window.joinServer = joinServer;
+    window.createChannel = createChannel;
+    window.createNewCategory = createNewCategory;
+    window.updateProfile = updateProfile;
+    window.editCategory = editCategory;
+    window.saveCategoryEdit = saveCategoryEdit;
+    window.deleteCategory = deleteCategory;
 </script>
 </body>
 </html>
