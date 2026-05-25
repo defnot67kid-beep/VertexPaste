@@ -32,7 +32,6 @@
         .channel-item.active { background: #1f2937; color: #fbbf24; }
         .channel-item:hover { background: #1f2937; }
         .voice-channel { color: #34d399; }
-        .podcast-channel { color: #a78bfa; }
         .member-info { padding: 12px; border-top: 1px solid #1f2937; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
         .crown { color: #fbbf24; margin-left: 4px; }
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #0f172a; overflow: hidden; min-width: 0; }
@@ -40,23 +39,30 @@
         .channel-info { display: flex; align-items: center; gap: 8px; }
         .invite-btn { background: #1e293b; border: none; padding: 6px 14px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.8rem; }
         
-        /* VOICE CHANNEL UI */
+        /* VOICE CHANNEL UI - participants centered when no screen share */
         .voice-container { flex: 1; display: flex; flex-direction: column; background: #0a0a0f; overflow: hidden; }
-        .screen-share-area { flex: 2; background: #000000; display: flex; flex-direction: column; position: relative; min-height: 0; }
+        .screen-share-area { flex: 2; background: #000000; display: flex; flex-direction: column; position: relative; min-height: 0; display: none; }
+        .screen-share-area.active { display: flex; }
         .share-canvas { flex: 1; display: flex; align-items: center; justify-content: center; background: #111; position: relative; }
-        #screenVideo { width: 100%; height: 100%; object-fit: contain; background: black; display: none; }
+        #screenVideo { width: 100%; height: 100%; object-fit: contain; background: black; }
         .no-share-placeholder { color: #475569; text-align: center; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .fullscreen-btn { position: absolute; bottom: 16px; right: 16px; background: #1e293b; border: none; color: white; padding: 8px 12px; border-radius: 30px; cursor: pointer; z-index: 10; }
         .fullscreen-btn:hover { background: #fbbf24; color: black; }
         
-        .participants-area { background: #111827; border-top: 1px solid #1f2937; padding: 12px; max-height: 200px; overflow-y: auto; }
-        .participant-list { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
-        .participant { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #1e293b; padding: 10px; border-radius: 16px; min-width: 80px; position: relative; }
-        .participant-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #fbbf24; }
-        .participant-name { font-size: 12px; font-weight: 500; }
-        .mic-icon { position: absolute; bottom: 0; right: 5px; background: #0f172a; border-radius: 20px; padding: 2px 5px; font-size: 10px; }
-        .mic-on { color: #34d399; }
-        .mic-off { color: #ef4444; }
+        /* Participants grid centered when no screen share */
+        .participants-main { flex: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 24px; padding: 24px; overflow-y: auto; }
+        .participant-card { display: flex; flex-direction: column; align-items: center; gap: 10px; background: #1e293b; padding: 20px; border-radius: 24px; min-width: 120px; transition: 0.2s; }
+        .participant-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; }
+        .participant-name { font-size: 14px; font-weight: 600; }
+        .mic-status { font-size: 12px; padding: 4px 8px; border-radius: 20px; }
+        .mic-on { color: #34d399; background: #0f172a; }
+        .mic-off { color: #ef4444; background: #0f172a; }
+        
+        .participants-sidebar { background: #111827; border-top: 1px solid #1f2937; padding: 12px; max-height: 200px; overflow-y: auto; display: none; }
+        .participants-sidebar.active { display: block; }
+        .participant-list-side { display: flex; gap: 12px; flex-wrap: wrap; }
+        .participant-side-item { display: flex; align-items: center; gap: 8px; background: #1e293b; padding: 6px 12px; border-radius: 30px; }
+        .participant-side-avatar { width: 28px; height: 28px; border-radius: 50%; }
         
         .voice-controls { padding: 12px; background: #0f172a; border-top: 1px solid #1e293b; display: flex; gap: 12px; justify-content: center; }
         .voice-btn { background: #1e293b; border: none; color: white; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
@@ -69,7 +75,6 @@
         .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; }
         .message-time { font-size: 0.6rem; color: #94a3b8; }
         .message-text { font-size: 0.85rem; margin-top: 4px; }
-        .embed-link { margin-top: 8px; border-left: 3px solid #fbbf24; background: #0f172a; border-radius: 12px; padding: 10px; }
         .input-area { padding: 12px; border-top: 1px solid #1e293b; background: #0f172a; display: flex; gap: 10px; }
         .input-area input { flex: 1; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; }
         .input-area button { background: #fbbf24; border: none; padding: 0 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
@@ -108,6 +113,7 @@
 <div id="createChannelModal" class="modal"><div class="modal-content"><h3>New Channel</h3><input type="text" id="channelName" placeholder="Channel name"><select id="channelTypeSelect"><option value="text">📝 Text</option><option value="voice">🎙️ Voice</option><option value="podcast">🎧 Podcast</option></select><select id="categorySelect"></select><button id="confirmCreateChannel" class="btn-gold">Create</button><button id="closeChanModal" class="btn-outline">Cancel</button></div></div>
 <div id="inviteModal" class="modal"><div class="modal-content"><h3>Invite</h3><p>Code: <strong id="inviteCodeDisplay"></strong></p><button id="closeInviteModal" class="btn-gold">Close</button></div></div>
 <div id="joinServerModal" class="modal"><div class="modal-content"><h3>Join Server</h3><input type="text" id="joinCodeInput" placeholder="Invite code"><button id="confirmJoinServer" class="btn-gold">Join</button><button id="closeJoinModal" class="btn-outline">Cancel</button></div></div>
+<div id="micPermissionModal" class="modal"><div class="modal-content"><h3><i class="fas fa-microphone"></i> Microphone Access</h3><p>This app needs mic access for voice chat. Allow microphone to speak with others.</p><button id="allowMicBtn" class="btn-gold">Allow Microphone</button><button id="skipMicBtn" class="btn-outline">Skip (Muted)</button></div></div>
 <div id="toastMsg" class="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -122,11 +128,16 @@
     let currentUser = null, currentServerId = null, currentChannelId = null, currentChannelType = "text";
     let unsubscribeMessages = null, isGlobalOwner = false;
     
-    // Voice Channel State (simulated real-time)
-    let voiceParticipants = new Map(); // userId -> { name, avatar, micOn }
-    let screenShareStream = null; let screenVideoElement = null;
+    // Real-time voice state (Firebase)
+    let voiceParticipantsRef = null;
+    let voiceUnsubscribe = null;
+    let currentVoiceChannelId = null;
+    let localStream = null;
+    let isMicMuted = false;
+    let screenStream = null;
     let isSharingScreen = false;
-    let voiceChannelInterval = null;
+    let screenDocRef = null;
+    let screenUnsubscribe = null;
     
     function showToast(msg) { const t = document.getElementById('toastMsg'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
     function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])); }
@@ -156,7 +167,7 @@
     
     async function switchServer(serverId) {
         if (unsubscribeMessages) unsubscribeMessages();
-        if (voiceChannelInterval) clearInterval(voiceChannelInterval);
+        leaveVoiceChannel();
         currentServerId = serverId;
         const serverDoc = await db.collection("servers").doc(serverId).get();
         document.getElementById('currentServerName').innerHTML = escapeHtml(serverDoc.data()?.name || "Server");
@@ -205,7 +216,6 @@
         document.querySelectorAll('.add-channel-btn').forEach(btn => { btn.addEventListener('click', (e) => { e.stopPropagation(); openCreateChannelModal(btn.dataset.category); }); });
     }
     
-    // TEXT CHANNEL RENDER
     function renderTextChannel() {
         const area = document.getElementById('dynamicContentArea');
         area.innerHTML = `<div class="messages-container" id="messagesContainer" style="flex:1; overflow-y:auto; padding:16px;"></div><div class="input-area"><input type="text" id="messageInput" placeholder="Type a message..."><button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button></div>`;
@@ -220,7 +230,7 @@
         if (!container) return;
         unsubscribeMessages = db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages").orderBy("createdAt", "asc").onSnapshot(snapshot => {
             let html = '';
-            snapshot.forEach(doc => { const d = doc.data(); let embedHtml = ''; if (d.embed) embedHtml = `<div class="embed-link"><div class="embed-title">${escapeHtml(d.embed.title || '')}</div><div class="embed-description">${escapeHtml(d.embed.description || '')}</div></div>`; html += `<div class="message"><img src="${escapeHtml(d.photoURL)}" class="message-avatar"><div class="message-content"><div class="message-author">${escapeHtml(d.displayName)}<span class="message-time">${d.createdAt ? new Date(d.createdAt.toDate()).toLocaleTimeString() : ''}</span></div><div class="message-text">${escapeHtml(d.text)}</div>${embedHtml}</div></div>`; });
+            snapshot.forEach(doc => { const d = doc.data(); html += `<div class="message"><img src="${escapeHtml(d.photoURL)}" class="message-avatar"><div class="message-content"><div class="message-author">${escapeHtml(d.displayName)}<span class="message-time">${d.createdAt ? new Date(d.createdAt.toDate()).toLocaleTimeString() : ''}</span></div><div class="message-text">${escapeHtml(d.text)}</div></div></div>`; });
             if (!html) html = '<div style="text-align:center;color:#6b7280;padding:40px;">✨ No messages</div>';
             container.innerHTML = html; container.scrollTop = container.scrollHeight;
         });
@@ -228,53 +238,181 @@
     
     async function sendMessage() { if (!currentUser || currentChannelType !== "text") return; const input = document.getElementById('messageInput'); const text = input.value.trim(); if (!text) return; input.value = ''; await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({ text, uid: currentUser.uid, displayName: currentUser.displayName, photoURL: currentUser.photoURL, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); }
     
-    // VOICE CHANNEL with screen share simulation
-    function renderVoiceChannel(channelId) {
+    // Voice Channel with Firebase real-time participants and screen share
+    async function renderVoiceChannel(channelId) {
+        currentVoiceChannelId = channelId;
         const area = document.getElementById('dynamicContentArea');
-        area.innerHTML = `<div class="voice-container"><div class="screen-share-area"><div class="share-canvas" id="shareCanvas"><video id="screenVideo" autoplay playsinline></video><div id="noSharePlaceholder" class="no-share-placeholder"><i class="fas fa-desktop" style="font-size:48px;opacity:0.5"></i><span>No one is sharing their screen</span></div><button id="fullscreenBtn" class="fullscreen-btn" style="display:none;"><i class="fas fa-expand"></i> Fullscreen</button></div></div><div class="participants-area"><div class="participant-list" id="participantList"></div></div><div class="voice-controls"><button id="toggleMicBtn" class="voice-btn"><i class="fas fa-microphone"></i> Mute</button><button id="shareScreenBtn" class="voice-btn share"><i class="fas fa-desktop"></i> Share Screen</button><button id="leaveVoiceBtn" class="voice-btn leave"><i class="fas fa-phone-slash"></i> Disconnect</button></div></div>`;
+        area.innerHTML = `<div class="voice-container">
+            <div class="screen-share-area" id="screenShareArea">
+                <div class="share-canvas">
+                    <video id="screenVideo" autoplay playsinline style="width:100%;height:100%;object-fit:contain;"></video>
+                    <button id="fullscreenBtn" class="fullscreen-btn" style="display:none;"><i class="fas fa-expand"></i> Fullscreen</button>
+                </div>
+            </div>
+            <div class="participants-main" id="participantsMainGrid"></div>
+            <div class="participants-sidebar" id="participantsSidebar"></div>
+            <div class="voice-controls">
+                <button id="toggleMicBtn" class="voice-btn"><i class="fas fa-microphone"></i> Mute</button>
+                <button id="shareScreenBtn" class="voice-btn share"><i class="fas fa-desktop"></i> Share Screen</button>
+                <button id="leaveVoiceBtn" class="voice-btn leave"><i class="fas fa-phone-slash"></i> Disconnect</button>
+            </div>
+        </div>`;
         
-        // Simulate joining voice channel: add current user to participants
-        if (!voiceParticipants.has(currentUser.uid)) {
-            voiceParticipants.set(currentUser.uid, { name: currentUser.displayName, avatar: currentUser.photoURL, micOn: true });
+        // Request mic permissions first
+        const micGranted = await requestMicrophone();
+        if (micGranted) {
+            showToast("Microphone connected");
+        } else {
+            showToast("Microphone denied - you'll appear muted");
         }
-        // Simulate random other users for demo
-        if (voiceParticipants.size === 1) { voiceParticipants.set("user2", { name: "CryptoTrader", avatar: "https://ui-avatars.com/api/?name=CT", micOn: true }); voiceParticipants.set("user3", { name: "StonkMaster", avatar: "https://ui-avatars.com/api/?name=SM", micOn: false }); }
         
-        updateParticipantList();
-        let userMicMuted = false;
-        document.getElementById('toggleMicBtn')?.addEventListener('click', () => { userMicMuted = !userMicMuted; const p = voiceParticipants.get(currentUser.uid); if (p) p.micOn = !userMicMuted; updateParticipantList(); document.getElementById('toggleMicBtn').innerHTML = userMicMuted ? '<i class="fas fa-microphone-slash"></i> Unmute' : '<i class="fas fa-microphone"></i> Mute'; showToast(userMicMuted ? "Microphone muted" : "Microphone on"); });
+        // Join voice channel in Firebase
+        const voiceStateRef = db.collection("voiceStates").doc(`${channelId}_${currentUser.uid}`);
+        await voiceStateRef.set({
+            userId: currentUser.uid,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL,
+            micOn: !isMicMuted,
+            channelId: channelId,
+            serverId: currentServerId,
+            joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
         
-        const shareBtn = document.getElementById('shareScreenBtn');
-        const screenVideo = document.getElementById('screenVideo');
-        const noShareDiv = document.getElementById('noSharePlaceholder');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        // Listen for participants
+        if (voiceUnsubscribe) voiceUnsubscribe();
+        voiceUnsubscribe = db.collection("voiceStates").where("channelId", "==", channelId).where("serverId", "==", currentServerId).onSnapshot(snapshot => {
+            const participants = [];
+            snapshot.forEach(doc => { if (doc.data().userId !== currentUser.uid || true) participants.push(doc.data()); });
+            updateVoiceUI(participants);
+        });
         
-        shareBtn?.addEventListener('click', async () => {
-            if (isSharingScreen) { stopScreenShare(); return; }
-            try { const stream = await navigator.mediaDevices.getDisplayMedia({ video: true }); screenShareStream = stream; screenVideo.srcObject = stream; screenVideo.style.display = 'block'; noShareDiv.style.display = 'none'; fullscreenBtn.style.display = 'flex'; isSharingScreen = true; shareBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Share'; stream.getVideoTracks()[0].onended = () => stopScreenShare(); showToast("Screen sharing started"); } catch(e) { showToast("Screen share cancelled"); } });
+        // Listen for screen share
+        screenDocRef = db.collection("screenShares").doc(channelId);
+        screenUnsubscribe = screenDocRef.onSnapshot(doc => {
+            const data = doc.data();
+            const screenArea = document.getElementById('screenShareArea');
+            if (data && data.active && data.screenUrl) {
+                screenArea.classList.add('active');
+                const video = document.getElementById('screenVideo');
+                if (video && data.screenUrl) video.src = data.screenUrl;
+                document.getElementById('fullscreenBtn').style.display = 'flex';
+            } else {
+                screenArea.classList.remove('active');
+                document.getElementById('fullscreenBtn').style.display = 'none';
+                const video = document.getElementById('screenVideo');
+                if (video) video.src = '';
+            }
+        });
         
-        function stopScreenShare() { if (screenShareStream) { screenShareStream.getTracks().forEach(t => t.stop()); screenVideo.srcObject = null; } screenVideo.style.display = 'none'; noShareDiv.style.display = 'flex'; fullscreenBtn.style.display = 'none'; isSharingScreen = false; if (shareBtn) shareBtn.innerHTML = '<i class="fas fa-desktop"></i> Share Screen'; }
-        
-        fullscreenBtn?.addEventListener('click', () => { const canvas = document.querySelector('.share-canvas'); if (!document.fullscreenElement) canvas.requestFullscreen(); else document.exitFullscreen(); });
-        
-        document.getElementById('leaveVoiceBtn')?.addEventListener('click', () => { stopScreenShare(); voiceParticipants.clear(); if (voiceChannelInterval) clearInterval(voiceChannelInterval); loadServerChannels(currentServerId); showToast("Disconnected from voice"); });
-        
-        voiceChannelInterval = setInterval(() => { if (currentChannelType === "voice") updateParticipantList(); }, 2000);
+        document.getElementById('toggleMicBtn')?.addEventListener('click', toggleMicrophone);
+        document.getElementById('shareScreenBtn')?.addEventListener('click', toggleScreenShare);
+        document.getElementById('leaveVoiceBtn')?.addEventListener('click', () => leaveVoiceChannel());
+        document.getElementById('fullscreenBtn')?.addEventListener('click', () => { const canvas = document.querySelector('.share-canvas'); if (canvas) canvas.requestFullscreen(); });
     }
     
-    function updateParticipantList() {
-        const container = document.getElementById('participantList');
-        if (!container) return;
-        let html = '';
-        for (let [uid, p] of voiceParticipants.entries()) {
-            html += `<div class="participant"><img src="${escapeHtml(p.avatar)}" class="participant-avatar"><span class="participant-name">${escapeHtml(p.name)}</span><div class="mic-icon ${p.micOn ? 'mic-on' : 'mic-off'}"><i class="fas fa-${p.micOn ? 'microphone' : 'microphone-slash'}"></i></div></div>`;
+    async function requestMicrophone() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            isMicMuted = false;
+            return true;
+        } catch(e) {
+            console.warn("Mic denied:", e);
+            isMicMuted = true;
+            return false;
         }
-        container.innerHTML = html || '<div style="color:#6b7280;padding:12px;">No participants</div>';
     }
     
-    function renderPodcastChannel(channelId) { const area = document.getElementById('dynamicContentArea'); area.innerHTML = `<div class="voice-container" style="justify-content:center;align-items:center;"><div style="background:#1e293b;border-radius:32px;padding:40px;text-align:center;"><i class="fas fa-podcast" style="font-size:64px;color:#a78bfa;"></i><h2 style="margin-top:16px;">Podcast Studio 🎧</h2><p>You're listening to ${escapeHtml(channelId)}</p><button id="exitPodcastBtn" class="voice-btn leave" style="margin-top:24px;"><i class="fas fa-sign-out-alt"></i> Exit</button></div></div>`; document.getElementById('exitPodcastBtn')?.addEventListener('click', () => loadServerChannels(currentServerId)); }
+    async function toggleMicrophone() {
+        if (!localStream) { await requestMicrophone(); }
+        if (localStream) {
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) audioTrack.enabled = !audioTrack.enabled;
+            isMicMuted = !audioTrack?.enabled;
+        } else {
+            isMicMuted = !isMicMuted;
+        }
+        const btn = document.getElementById('toggleMicBtn');
+        if (btn) btn.innerHTML = isMicMuted ? '<i class="fas fa-microphone-slash"></i> Unmute' : '<i class="fas fa-microphone"></i> Mute';
+        if (currentVoiceChannelId && currentUser) {
+            await db.collection("voiceStates").doc(`${currentVoiceChannelId}_${currentUser.uid}`).update({ micOn: !isMicMuted });
+        }
+        showToast(isMicMuted ? "Muted" : "Unmuted");
+    }
     
-    // Server Management
+    async function toggleScreenShare() {
+        if (isSharingScreen) {
+            if (screenStream) screenStream.getTracks().forEach(t => t.stop());
+            await db.collection("screenShares").doc(currentVoiceChannelId).delete();
+            isSharingScreen = false;
+            showToast("Screen share stopped");
+        } else {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                screenStream = stream;
+                // Create blob URL from stream for demo (in real app would use WebRTC)
+                const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                const chunks = [];
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(chunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    await db.collection("screenShares").doc(currentVoiceChannelId).set({ active: true, screenUrl: url, sharedBy: currentUser.uid, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                };
+                mediaRecorder.start();
+                stream.getVideoTracks()[0].onended = () => { mediaRecorder.stop(); isSharingScreen = false; };
+                isSharingScreen = true;
+                showToast("Sharing screen...");
+                setTimeout(() => mediaRecorder.stop(), 100);
+            } catch(e) { showToast("Screen share cancelled"); }
+        }
+        const btn = document.getElementById('shareScreenBtn');
+        if (btn) btn.innerHTML = isSharingScreen ? '<i class="fas fa-stop"></i> Stop Share' : '<i class="fas fa-desktop"></i> Share Screen';
+    }
+    
+    function updateVoiceUI(participants) {
+        const mainGrid = document.getElementById('participantsMainGrid');
+        const hasScreenShare = document.getElementById('screenShareArea')?.classList.contains('active');
+        if (!hasScreenShare) {
+            mainGrid.style.display = 'flex';
+            let gridHtml = '';
+            for (const p of participants) {
+                gridHtml += `<div class="participant-card">
+                    <img src="${escapeHtml(p.photoURL)}" class="participant-avatar">
+                    <span class="participant-name">${escapeHtml(p.displayName)}</span>
+                    <div class="mic-status ${p.micOn ? 'mic-on' : 'mic-off'}"><i class="fas fa-${p.micOn ? 'microphone' : 'microphone-slash'}"></i> ${p.micOn ? 'Speaking' : 'Muted'}</div>
+                </div>`;
+            }
+            mainGrid.innerHTML = gridHtml || '<div style="color:#6b7280;text-align:center;">No one else is here yet</div>';
+        } else {
+            mainGrid.style.display = 'none';
+            const sidebarArea = document.getElementById('participantsSidebar');
+            sidebarArea.classList.add('active');
+            let listHtml = '<div class="participant-list-side">';
+            for (const p of participants) {
+                listHtml += `<div class="participant-side-item"><img src="${escapeHtml(p.photoURL)}" class="participant-side-avatar"><span>${escapeHtml(p.displayName)}</span><i class="fas fa-${p.micOn ? 'microphone' : 'microphone-slash'}" style="font-size:10px;color:${p.micOn ? '#34d399' : '#ef4444'}"></i></div>`;
+            }
+            listHtml += '</div>';
+            sidebarArea.innerHTML = listHtml;
+        }
+    }
+    
+    async function leaveVoiceChannel() {
+        if (currentVoiceChannelId && currentUser) {
+            await db.collection("voiceStates").doc(`${currentVoiceChannelId}_${currentUser.uid}`).delete().catch(()=>{});
+        }
+        if (voiceUnsubscribe) voiceUnsubscribe();
+        if (screenUnsubscribe) screenUnsubscribe();
+        if (localStream) localStream.getTracks().forEach(t => t.stop());
+        if (screenStream) screenStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+        isSharingScreen = false;
+        currentVoiceChannelId = null;
+        loadServerChannels(currentServerId);
+    }
+    
+    function renderPodcastChannel(channelId) { const area = document.getElementById('dynamicContentArea'); area.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;"><div style="background:#1e293b;border-radius:32px;padding:40px;text-align:center;"><i class="fas fa-podcast" style="font-size:64px;color:#a78bfa;"></i><h2>Podcast Studio 🎧</h2><button id="exitPodcastBtn" class="voice-btn leave" style="margin-top:24px;">Exit</button></div></div>`; document.getElementById('exitPodcastBtn')?.addEventListener('click', () => loadServerChannels(currentServerId)); }
+    
+    // Server Management (identical to before)
     async function createServer(name) { if (!currentUser) return; const serverRef = db.collection("servers").doc(); await serverRef.set({ name, ownerId: currentUser.uid }); await db.collection("serverMembers").add({ serverId: serverRef.id, userId: currentUser.uid, role: "owner" }); await db.collection("serverStructure").doc(serverRef.id).set({ categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general", type: "text" }] }] }); showToast(`Server "${name}" created`); await switchServer(serverRef.id); renderServerList(); }
     async function deleteCurrentServer() { if (!currentServerId) return; const doc = await db.collection("servers").doc(currentServerId).get(); if (doc.data()?.name === "Stonks Hub") { showToast("Cannot delete Stonks Hub"); return; } const can = isGlobalOwner || (currentUser && doc.data()?.ownerId === currentUser.uid); if (!can) { showToast("Only owner"); return; } if (confirm("Delete server?")) { await db.collection("servers").doc(currentServerId).delete(); await db.collection("serverStructure").doc(currentServerId).delete(); const members = await db.collection("serverMembers").where("serverId", "==", currentServerId).get(); members.forEach(m => m.ref.delete()); showToast("Server deleted"); currentServerId = null; const servers = await fetchUserServers(); if (servers.length) await switchServer(servers[0].id); else { document.getElementById('currentServerName').innerHTML = "No Server"; document.getElementById('dynamicContentArea').innerHTML = ''; } renderServerList(); } }
     async function generateInvite() { if (!currentServerId) return; const code = Math.random().toString(36).substring(2, 10).toUpperCase(); await db.collection("invites").doc(code).set({ serverId: currentServerId }); document.getElementById('inviteCodeDisplay').innerText = code; document.getElementById('inviteModal').classList.add('active'); }
@@ -288,6 +426,7 @@
     
     function updateAuthUI(user) { if (user) { if (document.getElementById('authOverlay')) document.getElementById('authOverlay').style.display = 'none'; document.getElementById('userDisplay').innerHTML = escapeHtml(user.displayName || user.email); isGlobalOwner = (user.email === OWNER_EMAIL); document.getElementById('roleBadge').innerHTML = isGlobalOwner ? '<span class="owner-badge"><i class="fas fa-crown"></i> OWNER</span>' : ''; renderServerList().then(async () => { const servers = await fetchUserServers(); if (servers.length && !currentServerId) await switchServer(servers[0].id); }); } }
     
+    // Event listeners
     document.getElementById('signOutBtn')?.addEventListener('click', () => auth.signOut());
     document.getElementById('createCategoryBtn')?.addEventListener('click', () => document.getElementById('createCategoryModal').classList.add('active'));
     document.getElementById('invitePeopleBtn')?.addEventListener('click', generateInvite);
@@ -303,11 +442,11 @@
     document.getElementById('confirmJoinServer')?.addEventListener('click', async () => { const c = document.getElementById('joinCodeInput').value; if (c) await joinWithCode(c); document.getElementById('joinServerModal').classList.remove('active'); });
     document.getElementById('closeJoinModal')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.remove('active'));
     document.getElementById('mobileOverlay')?.addEventListener('click', closeSidebarMobile);
-    const menuBtn = document.createElement('button'); menuBtn.innerHTML = '<i class="fas fa-bars"></i>'; menuBtn.style.cssText = "position:fixed;bottom:20px;left:20px;background:#fbbf24;border:none;border-radius:50%;width:48px;height:48px;z-index:1200;display:none;"; document.body.appendChild(menuBtn); if (window.innerWidth <= 700) menuBtn.style.display = 'flex'; else menuBtn.style.display = 'none'; menuBtn.addEventListener('click', openSidebarMobile); window.addEventListener('resize', () => { if (window.innerWidth <= 700) menuBtn.style.display = 'flex'; else menuBtn.style.display = 'none'; });
+    const menuBtn = document.createElement('button'); menuBtn.innerHTML = '<i class="fas fa-bars"></i>'; menuBtn.style.cssText = "position:fixed;bottom:20px;left:20px;background:#fbbf24;border:none;border-radius:50%;width:48px;height:48px;z-index:1200;display:none;"; document.body.appendChild(menuBtn); if (window.innerWidth <= 700) menuBtn.style.display = 'flex'; else menuBtn.style.display = 'none'; menuBtn.addEventListener('click', openSidebarMobile);
     auth.onAuthStateChanged(user => { currentUser = user; updateAuthUI(user); });
-    setTimeout(async () => { const all = await db.collection("servers").get(); if (all.empty) { const hub = db.collection("servers").doc(); await hub.set({ name: "Stonks Hub", ownerId: "system" }); await db.collection("serverStructure").doc(hub.id).set({ categories: [{ name: "VOICE ZONE", channels: [{ id: "vc1", name: "General Voice", type: "voice" }] }, { name: "TEXT", channels: [{ id: "general", name: "general", type: "text" }] }] }); } }, 500);
+    setTimeout(async () => { const all = await db.collection("servers").get(); if (all.empty) { const hub = db.collection("servers").doc(); await hub.set({ name: "Stonks Hub", ownerId: "system" }); await db.collection("serverStructure").doc(hub.id).set({ categories: [{ name: "VOICE ZONE", channels: [{ id: "vc_main", name: "General Voice", type: "voice" }] }, { name: "TEXT", channels: [{ id: "general", name: "general", type: "text" }] }] }); } }, 500);
 </script>
-<div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><p>Voice + Screen Share</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;font-weight:600;">Sign in with Google</button></div></div>
+<div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><p>Voice + Screen Share • Real-time</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;font-weight:600;">Sign in with Google</button></div></div>
 <script> document.getElementById('googleSignInBtn')?.addEventListener('click', () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())); </script>
 </body>
 </html>
