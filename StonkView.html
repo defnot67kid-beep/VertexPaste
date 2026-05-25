@@ -11,7 +11,7 @@
         body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e2e8f0; height: 100vh; overflow: hidden; }
         .app { display: flex; height: 100%; width: 100%; overflow: hidden; }
 
-        /* SERVER LIST (leftmost) */
+        /* SERVER LIST */
         .server-list {
             width: 72px;
             background: #0f0f14;
@@ -38,33 +38,15 @@
             color: #fbbf24;
             font-weight: bold;
         }
-        .server-icon.active {
-            border-radius: 16px;
-            background: linear-gradient(135deg, #fbbf24, #ef4444);
-            color: white;
-        }
+        .server-icon.active { border-radius: 16px; background: linear-gradient(135deg, #fbbf24, #ef4444); color: white; }
         .server-icon:hover { border-radius: 16px; background: #334155; }
-        .add-server-btn {
-            background: #1f2937;
-            border: 2px dashed #fbbf24;
-            color: #fbbf24;
-        }
-        .server-tooltip {
-            position: absolute;
-            left: 70px;
-            background: #000c;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            white-space: nowrap;
-            z-index: 100;
-            display: none;
-        }
+        .add-server-btn, .join-server-btn { background: #1f2937; border: 2px dashed #fbbf24; }
+        .server-tooltip { position: absolute; left: 70px; background: #000c; padding: 4px 10px; border-radius: 20px; font-size: 12px; white-space: nowrap; display: none; z-index: 100; }
         .server-icon:hover .server-tooltip { display: block; }
 
-        /* SIDEBAR (channels & categories) */
+        /* SIDEBAR */
         .sidebar {
-            width: 260px;
+            width: 280px;
             background: #111827;
             border-right: 1px solid #1f2937;
             display: flex;
@@ -73,41 +55,75 @@
             transition: transform 0.2s;
         }
         .sidebar-header { padding: 16px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
-        .server-name-header { font-weight: 700; font-size: 1rem; }
+        .server-name-header { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
         .server-actions { display: flex; gap: 8px; }
         .server-actions button { background: #1f2937; border: none; color: #fbbf24; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
-        .category-group { margin: 12px 0; }
-        .category-title { font-size: 0.7rem; text-transform: uppercase; color: #9ca3af; padding: 6px 16px; display: flex; justify-content: space-between; cursor: pointer; }
-        .add-channel-btn { background: none; border: none; color: #fbbf24; cursor: pointer; font-size: 12px; }
-        .channel-item { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 32px; border-radius: 8px; cursor: pointer; color: #9ca3af; font-size: 0.85rem; }
+        
+        .category-group { margin: 8px 0; }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 16px;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .category-header:hover { background: #1a2332; color: #fbbf24; }
+        .category-header i.fa-chevron-down, .category-header i.fa-chevron-right { font-size: 10px; margin-right: 6px; }
+        .category-name { flex: 1; }
+        .add-channel-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 12px; padding: 0 4px; }
+        .add-channel-btn:hover { color: #fbbf24; }
+        
+        .channels-container { overflow: hidden; transition: max-height 0.2s ease; }
+        .channels-container.collapsed { display: none; }
+        
+        .channel-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px 6px 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            transition: 0.1s;
+        }
         .channel-item.active { background: #1f2937; color: #fbbf24; }
         .channel-item:hover { background: #1f2937; }
-
+        .voice-channel { color: #34d399; }
+        .podcast-channel { color: #a78bfa; }
+        
+        .member-info { padding: 12px; border-top: 1px solid #1f2937; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
+        .crown { color: #fbbf24; margin-left: 4px; }
+        
         /* CHAT AREA */
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #0f172a;
-            overflow: hidden;
-            min-width: 0;
-        }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #0f172a; overflow: hidden; min-width: 0; }
         .chat-header { padding: 12px 20px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between; background: #0f172a; }
         .channel-info { display: flex; align-items: center; gap: 8px; }
         .invite-btn { background: #1e293b; border: none; padding: 6px 14px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.8rem; }
         .messages-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .message { display: flex; gap: 10px; max-width: 100%; }
+        .message { display: flex; gap: 10px; max-width: 100%; animation: fadeIn 0.2s; }
         .message-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
         .message-content { background: #1e293b; padding: 8px 14px; border-radius: 18px; word-break: break-word; flex: 1; }
-        .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; }
+        .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
         .message-time { font-size: 0.6rem; color: #94a3b8; }
-        .message-text { font-size: 0.85rem; margin-top: 4px; }
-        .system-message .message-content { background: #1a1f2e; border-left: 3px solid #fbbf24; }
-
+        .message-text { font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
+        .embed-link { margin-top: 8px; border-left: 3px solid #fbbf24; background: #0f172a; border-radius: 12px; padding: 10px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .embed-image { max-width: 200px; max-height: 150px; border-radius: 12px; object-fit: cover; }
+        .embed-title { font-weight: 600; color: #fbbf24; }
+        .embed-description { font-size: 0.75rem; color: #94a3b8; }
+        
         .input-area { padding: 12px; border-top: 1px solid #1e293b; background: #0f172a; display: flex; gap: 10px; }
         .input-area input { flex: 1; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; }
         .input-area button { background: #fbbf24; border: none; padding: 0 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
-
+        
+        .voice-panel { background: #111827; border-radius: 16px; padding: 12px; margin: 8px; display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .voice-panel i { font-size: 20px; color: #34d399; }
+        
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: #0f172a; border-radius: 28px; padding: 24px; width: 90%; max-width: 450px; border: 1px solid #334155; }
@@ -116,22 +132,17 @@
         .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 30px; cursor: pointer; }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; padding: 8px 20px; border-radius: 40px; z-index: 3000; border-left: 3px solid #fbbf24; }
         .hidden { display: none; }
-        .admin-badge, .owner-badge { font-size: 0.6rem; background: #ef4444; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
-        .owner-badge { background: #fbbf24; color: black; }
+        .owner-badge { background: #fbbf24; color: black; padding: 2px 8px; border-radius: 20px; font-size: 10px; margin-left: 6px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 700px) { .server-list { width: 60px; } .sidebar { position: fixed; left: 0; top: 0; height: 100%; transform: translateX(-100%); z-index: 1100; } .sidebar.open { transform: translateX(0); } .overlay { position: fixed; inset: 0; background: #00000080; z-index: 1050; display: none; } .overlay.active { display: block; } }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .member-list { font-size: 12px; margin-top: 4px; color: #9ca3af; }
     </style>
 </head>
 <body>
 <div class="app">
-    <!-- SERVER LIST (leftmost bar) -->
     <div class="server-list" id="serverListContainer"></div>
-
-    <!-- Sidebar (channels + categories) -->
     <div class="sidebar" id="sidebarPanel">
         <div class="sidebar-header">
-            <div class="server-name-header" id="currentServerName">Loading...</div>
+            <div class="server-name-header"><span id="currentServerName">Stonks Hub</span><span id="serverOwnerCrown"></span></div>
             <div class="server-actions">
                 <button id="createCategoryBtn" title="Create Category"><i class="fas fa-folder-plus"></i></button>
                 <button id="invitePeopleBtn" title="Invite"><i class="fas fa-user-plus"></i></button>
@@ -139,36 +150,31 @@
             </div>
         </div>
         <div style="flex:1; overflow-y: auto;" id="channelsListContainer"></div>
-        <div style="padding: 12px; border-top: 1px solid #1f2937; font-size: 12px;">
-            <div><i class="fas fa-user"></i> <span id="userDisplay">Guest</span><span id="roleBadge"></span></div>
-            <button id="signOutBtn" style="background: none; border: none; color: #fbbf24; margin-top: 6px; cursor: pointer;">Sign out</button>
+        <div class="member-info">
+            <span><i class="fas fa-user-circle"></i> <span id="userDisplay"></span><span id="roleBadge"></span></span>
+            <button id="signOutBtn" style="background:none; border:none; color:#fbbf24; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
     <div class="overlay" id="mobileOverlay"></div>
 
-    <!-- CHAT AREA -->
     <div class="chat-area">
         <div class="chat-header">
-            <div class="channel-info">
-                <i class="fas fa-hashtag"></i>
-                <span id="currentChannelName">general</span>
-            </div>
+            <div class="channel-info"><i class="fas fa-hashtag" id="channelTypeIcon"></i><span id="currentChannelName">general</span></div>
             <button class="invite-btn" id="headerInviteBtn"><i class="fas fa-link"></i> Invite</button>
         </div>
         <div class="messages-container" id="messagesContainer"></div>
-        <div class="input-area">
-            <input type="text" id="messageInput" placeholder="Type a message...">
-            <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
-        </div>
+        <div class="input-area"><input type="text" id="messageInput" placeholder="Type a message..."><button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button></div>
     </div>
 </div>
 
-<!-- MODALS -->
-<div id="createServerModal" class="modal"><div class="modal-content"><h3>Create New Server</h3><input type="text" id="newServerName" placeholder="Server name"><button id="confirmCreateServer" class="btn-gold">Create</button><button id="closeCreateModal" class="btn-outline" style="margin-top:8px;">Cancel</button></div></div>
-<div id="createCategoryModal" class="modal"><div class="modal-content"><h3>New Category</h3><input type="text" id="categoryName" placeholder="Category name (e.g., GAMING)"><button id="confirmCreateCategory" class="btn-gold">Add Category</button><button id="closeCatModal" class="btn-outline">Cancel</button></div></div>
-<div id="createChannelModal" class="modal"><div class="modal-content"><h3>New Channel</h3><input type="text" id="channelName" placeholder="Channel name"><select id="categorySelect"></select><button id="confirmCreateChannel" class="btn-gold">Create</button><button id="closeChanModal" class="btn-outline">Cancel</button></div></div>
-<div id="inviteModal" class="modal"><div class="modal-content"><h3>Invite Link</h3><p>Share this code: <strong id="inviteCodeDisplay"></strong></p><p>Anyone with the code can join!</p><button id="closeInviteModal" class="btn-gold">Close</button></div></div>
-<div id="joinServerModal" class="modal"><div class="modal-content"><h3>Join Server</h3><input type="text" id="joinCodeInput" placeholder="Paste invite code"><button id="confirmJoinServer" class="btn-gold">Join</button><button id="closeJoinModal" class="btn-outline">Cancel</button></div></div>
+<!-- Modals -->
+<div id="createServerModal" class="modal"><div class="modal-content"><h3>Create New Server</h3><input type="text" id="newServerName" placeholder="Server name"><button id="confirmCreateServer" class="btn-gold">Create</button><button id="closeCreateModal" class="btn-outline">Cancel</button></div></div>
+<div id="createCategoryModal" class="modal"><div class="modal-content"><h3>New Category</h3><input type="text" id="categoryName" placeholder="Category name"><button id="confirmCreateCategory" class="btn-gold">Add Category</button><button id="closeCatModal" class="btn-outline">Cancel</button></div></div>
+<div id="createChannelModal" class="modal"><div class="modal-content"><h3>New Channel</h3><input type="text" id="channelName" placeholder="Channel name"><select id="channelTypeSelect"><option value="text">📝 Text Channel</option><option value="voice">🎙️ Voice Channel</option><option value="podcast">🎧 Podcast Channel</option></select><select id="categorySelect"></select><button id="confirmCreateChannel" class="btn-gold">Create</button><button id="closeChanModal" class="btn-outline">Cancel</button></div></div>
+<div id="inviteModal" class="modal"><div class="modal-content"><h3>Invite Link</h3><p>Share code: <strong id="inviteCodeDisplay"></strong></p><button id="closeInviteModal" class="btn-gold">Close</button></div></div>
+<div id="joinServerModal" class="modal"><div class="modal-content"><h3>Join Server</h3><input type="text" id="joinCodeInput" placeholder="Invite code"><button id="confirmJoinServer" class="btn-gold">Join</button><button id="closeJoinModal" class="btn-outline">Cancel</button></div></div>
+<div id="voiceModal" class="modal"><div class="modal-content"><h3><i class="fas fa-microphone-alt"></i> Voice Channel</h3><p id="voiceChannelName">Connecting...</p><button id="closeVoiceModal" class="btn-gold">Leave</button></div></div>
+<div id="podcastModal" class="modal"><div class="modal-content"><h3><i class="fas fa-podcast"></i> Podcast Studio</h3><p id="podcastChannelName">You're listening 🎧</p><button id="closePodcastModal" class="btn-gold">Exit</button></div></div>
 
 <div id="toastMsg" class="toast"></div>
 
@@ -176,7 +182,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
-    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc",
         authDomain: "vertexpaste.firebaseapp.com",
@@ -190,62 +195,91 @@
     const db = firebase.firestore();
 
     const OWNER_EMAIL = "defnot67kid@gmail.com";
-    let currentUser = null;
-    let currentServerId = null;
-    let currentChannelId = null;
+    let currentUser = null, currentServerId = null, currentChannelId = null, currentChannelType = "text";
     let unsubscribeMessages = null;
-    let isOwnerGlobal = false;
+    let isGlobalOwner = false;
+    let serverMembersCache = new Map(); // serverId -> { ownerId, members }
 
-    // Helper
     function showToast(msg) { const t = document.getElementById('toastMsg'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
     function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])); }
 
-    // Fetch all servers user is member of OR owner (co-owner sees all)
-    async function fetchUserServers() {
-        if (!currentUser) return [];
-        if (isOwnerGlobal) {
-            const allServersSnap = await db.collection("servers").get();
-            return allServersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
-            const memberSnap = await db.collection("serverMembers").where("userId", "==", currentUser.uid).get();
-            const serverIds = memberSnap.docs.map(d => d.data().serverId);
-            if (serverIds.length === 0) return [];
-            const servers = await Promise.all(serverIds.map(id => db.collection("servers").doc(id).get()));
-            return servers.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
-        }
+    // Advanced Link Embedding
+    async function fetchLinkPreview(url) {
+        try {
+            const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}&embed=image.url,title,description`);
+            const data = await response.json();
+            if (data.status === 'success' && data.data) {
+                return { title: data.data.title, description: data.data.description, image: data.data.image?.url };
+            }
+        } catch(e) { console.warn(e); }
+        return null;
     }
 
-    // Render server icons (left bar)
+    async function processMessageWithEmbeds(text, authorName, authorPhoto, uid) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urls = text.match(urlRegex);
+        let embedData = null;
+        if (urls && urls.length) {
+            const preview = await fetchLinkPreview(urls[0]);
+            if (preview) embedData = preview;
+        }
+        await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({
+            text, uid, displayName: authorName, photoURL: authorPhoto,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            isBot: false, embed: embedData || null
+        });
+    }
+
+    // Fetch server owner & crown
+    async function updateServerOwnerCrown(serverId) {
+        const serverDoc = await db.collection("servers").doc(serverId).get();
+        if (serverDoc.exists) {
+            const ownerId = serverDoc.data().ownerId;
+            const isCurrentUserOwner = currentUser && ownerId === currentUser.uid;
+            const crownHtml = isCurrentUserOwner ? '<i class="fas fa-crown crown"></i>' : '';
+            document.getElementById('serverOwnerCrown').innerHTML = crownHtml;
+            return ownerId;
+        }
+        return null;
+    }
+
+    // Fetch user servers
+    async function fetchUserServers() {
+        if (!currentUser) return [];
+        if (isGlobalOwner) {
+            const all = await db.collection("servers").get();
+            return all.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+        const memberSnap = await db.collection("serverMembers").where("userId", "==", currentUser.uid).get();
+        const serverIds = memberSnap.docs.map(d => d.data().serverId);
+        if (!serverIds.length) return [];
+        const servers = await Promise.all(serverIds.map(id => db.collection("servers").doc(id).get()));
+        return servers.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
+    }
+
     async function renderServerList() {
         const servers = await fetchUserServers();
         const container = document.getElementById('serverListContainer');
         let html = '';
         for (const sv of servers) {
-            html += `<div class="server-icon ${currentServerId === sv.id ? 'active' : ''}" data-server-id="${sv.id}">
-                        <span>${sv.name.charAt(0).toUpperCase()}</span>
-                        <div class="server-tooltip">${escapeHtml(sv.name)}</div>
-                    </div>`;
+            html += `<div class="server-icon ${currentServerId === sv.id ? 'active' : ''}" data-server-id="${sv.id}"><span>${sv.name.charAt(0).toUpperCase()}</span><div class="server-tooltip">${escapeHtml(sv.name)}</div></div>`;
         }
         html += `<div class="server-icon add-server-btn" id="addServerBtn"><i class="fas fa-plus"></i><div class="server-tooltip">Create Server</div></div>`;
-        html += `<div class="server-icon" id="joinServerBtn"><i class="fas fa-sign-in-alt"></i><div class="server-tooltip">Join Server</div></div>`;
+        html += `<div class="server-icon join-server-btn" id="joinServerBtn"><i class="fas fa-sign-in-alt"></i><div class="server-tooltip">Join Server</div></div>`;
         container.innerHTML = html;
-        document.querySelectorAll('.server-icon[data-server-id]').forEach(el => {
-            el.addEventListener('click', () => switchServer(el.dataset.serverId));
-        });
+        document.querySelectorAll('.server-icon[data-server-id]').forEach(el => el.addEventListener('click', () => switchServer(el.dataset.serverId)));
         document.getElementById('addServerBtn')?.addEventListener('click', () => document.getElementById('createServerModal').classList.add('active'));
         document.getElementById('joinServerBtn')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.add('active'));
     }
 
-    // Switch server: load structure and default channel
     async function switchServer(serverId) {
         if (unsubscribeMessages) unsubscribeMessages();
         currentServerId = serverId;
         const serverDoc = await db.collection("servers").doc(serverId).get();
-        if (!serverDoc.exists) return;
-        const serverData = serverDoc.data();
-        document.getElementById('currentServerName').innerText = serverData.name || "Server";
+        document.getElementById('currentServerName').innerHTML = escapeHtml(serverDoc.data()?.name || "Server");
+        await updateServerOwnerCrown(serverId);
         await loadServerChannels(serverId);
-        renderServerList();
+        await renderServerList();
         closeSidebarMobile();
     }
 
@@ -253,185 +287,229 @@
         const structRef = db.collection("serverStructure").doc(serverId);
         let struct = (await structRef.get()).data();
         if (!struct) {
-            struct = { categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }] }] };
+            struct = { categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general", type: "text" }] }] };
             await structRef.set(struct);
         }
-        if (!currentChannelId || !struct.categories.some(c => c.channels.some(ch => ch.id === currentChannelId))) {
-            currentChannelId = struct.categories[0]?.channels[0]?.id || "general";
+        if (!currentChannelId || !findChannel(struct, currentChannelId)) {
+            const firstText = findFirstTextChannel(struct);
+            currentChannelId = firstText?.id || "general";
+            currentChannelType = firstText?.type || "text";
+        } else {
+            const ch = findChannel(struct, currentChannelId);
+            if (ch) currentChannelType = ch.type || "text";
         }
         renderSidebarChannels(struct);
-        loadMessagesForChannel(currentServerId, currentChannelId);
-        document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId) || currentChannelId;
+        if (currentChannelType === "text") loadMessagesForChannel(currentServerId, currentChannelId);
+        else if (currentChannelType === "voice") openVoiceChannel(currentChannelId);
+        else if (currentChannelType === "podcast") openPodcastChannel(currentChannelId);
+        updateChannelHeaderIcon();
+        document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId);
     }
 
-    function getChannelNameById(struct, chId) {
+    function findChannel(struct, chId) {
         for (const cat of struct.categories)
             for (const ch of cat.channels)
-                if (ch.id === chId) return ch.name;
-        return chId;
+                if (ch.id === chId) return ch;
+        return null;
+    }
+    function findFirstTextChannel(struct) {
+        for (const cat of struct.categories)
+            for (const ch of cat.channels)
+                if (ch.type !== "voice" && ch.type !== "podcast") return ch;
+        return struct.categories[0]?.channels[0];
+    }
+    function getChannelNameById(struct, chId) {
+        const ch = findChannel(struct, chId);
+        return ch ? ch.name : chId;
+    }
+    function updateChannelHeaderIcon() {
+        const icon = document.getElementById('channelTypeIcon');
+        if (currentChannelType === "voice") icon.className = "fas fa-microphone-alt";
+        else if (currentChannelType === "podcast") icon.className = "fas fa-podcast";
+        else icon.className = "fas fa-hashtag";
     }
 
     function renderSidebarChannels(struct) {
         const container = document.getElementById('channelsListContainer');
         let html = '';
-        for (const cat of struct.categories) {
+        for (let i = 0; i < struct.categories.length; i++) {
+            const cat = struct.categories[i];
+            const collapseId = `cat-${i}`;
+            const isExpanded = localStorage.getItem(`collapse_${currentServerId}_${i}`) !== 'false';
             html += `<div class="category-group">
-                        <div class="category-title">
-                            <span>${escapeHtml(cat.name)}</span>
+                        <div class="category-header" data-cat-index="${i}">
+                            <i class="fas fa-chevron-${isExpanded ? 'down' : 'right'}"></i>
+                            <span class="category-name">${escapeHtml(cat.name)}</span>
                             <button class="add-channel-btn" data-category="${escapeHtml(cat.name)}"><i class="fas fa-plus-circle"></i></button>
-                        </div>`;
+                        </div>
+                        <div class="channels-container ${isExpanded ? '' : 'collapsed'}" data-cat-body="${i}">`;
             for (const ch of cat.channels) {
-                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}" data-channel-id="${ch.id}">
-                            <i class="fas fa-hashtag"></i> ${escapeHtml(ch.name)}
+                let iconClass = "fa-hashtag";
+                if (ch.type === "voice") iconClass = "fa-microphone-alt";
+                else if (ch.type === "podcast") iconClass = "fa-podcast";
+                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}" data-channel-id="${ch.id}" data-channel-type="${ch.type || 'text'}">
+                            <i class="fas ${iconClass}"></i> ${escapeHtml(ch.name)}
                          </div>`;
             }
-            html += `</div>`;
+            html += `</div></div>`;
         }
         container.innerHTML = html;
+        // Category collapse toggle
+        document.querySelectorAll('.category-header').forEach(header => {
+            header.addEventListener('click', (e) => {
+                if (e.target.classList.contains('add-channel-btn')) return;
+                const idx = header.dataset.catIndex;
+                const bodyDiv = document.querySelector(`.channels-container[data-cat-body="${idx}"]`);
+                if (bodyDiv) {
+                    const isNowCollapsed = bodyDiv.classList.toggle('collapsed');
+                    const icon = header.querySelector('i');
+                    if (icon) icon.className = `fas fa-chevron-${isNowCollapsed ? 'right' : 'down'}`;
+                    localStorage.setItem(`collapse_${currentServerId}_${idx}`, (!isNowCollapsed).toString());
+                }
+            });
+        });
         document.querySelectorAll('.channel-item').forEach(el => {
             el.addEventListener('click', () => {
-                const newId = el.dataset.channelId;
-                if (currentChannelId !== newId) {
-                    currentChannelId = newId;
-                    loadMessagesForChannel(currentServerId, currentChannelId);
-                    renderSidebarChannels(struct);
-                    document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId);
-                }
+                currentChannelId = el.dataset.channelId;
+                currentChannelType = el.dataset.channelType || "text";
+                updateChannelHeaderIcon();
+                document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId);
+                if (currentChannelType === "text") { loadMessagesForChannel(currentServerId, currentChannelId); closeVoicePodcastModals(); }
+                else if (currentChannelType === "voice") openVoiceChannel(currentChannelId);
+                else if (currentChannelType === "podcast") openPodcastChannel(currentChannelId);
+                renderSidebarChannels(struct);
                 closeSidebarMobile();
             });
         });
         document.querySelectorAll('.add-channel-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const categoryName = btn.dataset.category;
-                openCreateChannelModal(categoryName);
-            });
+            btn.addEventListener('click', (e) => { e.stopPropagation(); openCreateChannelModal(btn.dataset.category); });
         });
     }
 
+    function closeVoicePodcastModals() {
+        document.getElementById('voiceModal')?.classList.remove('active');
+        document.getElementById('podcastModal')?.classList.remove('active');
+    }
+    function openVoiceChannel(channelId) {
+        const name = getChannelNameById({ categories: [] }, channelId);
+        document.getElementById('voiceChannelName').innerText = `🎙️ ${name} - Voice connected (simulated)`;
+        document.getElementById('voiceModal').classList.add('active');
+    }
+    function openPodcastChannel(channelId) {
+        const name = getChannelNameById({ categories: [] }, channelId);
+        document.getElementById('podcastChannelName').innerText = `🎧 Now playing: Stonks Podcast - ${name}`;
+        document.getElementById('podcastModal').classList.add('active');
+    }
+
     async function loadMessagesForChannel(serverId, channelId) {
-        const container = document.getElementById('messagesContainer');
         if (unsubscribeMessages) unsubscribeMessages();
+        const container = document.getElementById('messagesContainer');
         unsubscribeMessages = db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages")
-            .orderBy("createdAt", "asc")
-            .onSnapshot(snapshot => {
+            .orderBy("createdAt", "asc").onSnapshot(snapshot => {
                 let html = '';
                 snapshot.forEach(doc => {
                     const d = doc.data();
-                    html += `<div class="message ${d.isBot ? 'system-message' : ''}">
+                    let embedHtml = '';
+                    if (d.embed && d.embed.title) {
+                        embedHtml = `<div class="embed-link"><div><div class="embed-title">${escapeHtml(d.embed.title)}</div><div class="embed-description">${escapeHtml(d.embed.description || '')}</div></div>${d.embed.image ? `<img src="${escapeHtml(d.embed.image)}" class="embed-image">` : ''}</div>`;
+                    }
+                    html += `<div class="message">
                                 <img src="${escapeHtml(d.photoURL || 'https://ui-avatars.com/api/?name=User')}" class="message-avatar">
                                 <div class="message-content">
                                     <div class="message-author">${escapeHtml(d.displayName)}<span class="message-time">${d.createdAt ? new Date(d.createdAt.toDate()).toLocaleTimeString() : ''}</span></div>
                                     <div class="message-text">${escapeHtml(d.text)}</div>
+                                    ${embedHtml}
                                 </div>
                             </div>`;
                 });
-                if (!html) html = '<div class="empty-chat" style="text-align:center;color:#6b7280;">✨ No messages. Start chatting!</div>';
+                if (!html) html = '<div style="text-align:center;color:#6b7280;padding:40px;">✨ No messages. Start chatting!</div>';
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
             });
     }
 
     async function sendMessage() {
-        if (!currentUser || !currentServerId || !currentChannelId) return;
+        if (!currentUser || !currentServerId || !currentChannelId || currentChannelType !== "text") return;
         const input = document.getElementById('messageInput');
         const text = input.value.trim();
         if (!text) return;
-        await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({
-            text, uid: currentUser.uid, displayName: currentUser.displayName,
-            photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}`,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(), isBot: false
-        });
         input.value = '';
+        await processMessageWithEmbeds(text, currentUser.displayName, currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}`, currentUser.uid);
     }
 
-    // Server creation (with automatic membership and owner)
-    async function createServer(serverName) {
+    async function createServer(name) {
         if (!currentUser) return;
         const serverRef = db.collection("servers").doc();
-        const serverId = serverRef.id;
-        await serverRef.set({ name: serverName, ownerId: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        await db.collection("serverMembers").doc().set({ serverId, userId: currentUser.uid, role: "owner" });
-        await db.collection("serverStructure").doc(serverId).set({ categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general" }] }] });
-        showToast(`Server "${serverName}" created!`);
-        await switchServer(serverId);
+        await serverRef.set({ name, ownerId: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection("serverMembers").add({ serverId: serverRef.id, userId: currentUser.uid, role: "owner" });
+        await db.collection("serverStructure").doc(serverRef.id).set({ categories: [{ name: "TEXT CHANNELS", channels: [{ id: "general", name: "general", type: "text" }] }] });
+        showToast(`Server "${name}" created!`);
+        await switchServer(serverRef.id);
         renderServerList();
     }
 
-    // Delete server (only owner or global owner can delete, but STONKS HUB main server can't be deleted)
     async function deleteCurrentServer() {
         if (!currentServerId) return;
         const serverDoc = await db.collection("servers").doc(currentServerId).get();
-        const serverData = serverDoc.data();
-        if (serverData.name === "Stonks Hub") { showToast("❌ Cannot delete Stonks Hub (main server)!"); return; }
-        const canDelete = isOwnerGlobal || (currentUser && serverData.ownerId === currentUser.uid);
-        if (!canDelete) { showToast("Only server owner or global admin can delete."); return; }
-        if (confirm(`Delete server "${serverData.name}" permanently?`)) {
-            const membersSnap = await db.collection("serverMembers").where("serverId", "==", currentServerId).get();
-            membersSnap.forEach(d => d.ref.delete());
+        if (serverDoc.data()?.name === "Stonks Hub") { showToast("❌ Cannot delete Stonks Hub (main server)!"); return; }
+        const canDelete = isGlobalOwner || (currentUser && serverDoc.data()?.ownerId === currentUser.uid);
+        if (!canDelete) { showToast("Only server owner can delete."); return; }
+        if (confirm(`Delete "${serverDoc.data()?.name}"?`)) {
+            const members = await db.collection("serverMembers").where("serverId", "==", currentServerId).get();
+            members.forEach(d => d.ref.delete());
             await db.collection("servers").doc(currentServerId).delete();
             await db.collection("serverStructure").doc(currentServerId).delete();
             showToast("Server deleted.");
             currentServerId = null;
-            await renderServerList();
-            // auto-select first available server
             const servers = await fetchUserServers();
             if (servers.length) await switchServer(servers[0].id);
-            else { document.getElementById('currentServerName').innerText = "No Server"; document.getElementById('channelsListContainer').innerHTML = ""; }
+            else { document.getElementById('currentServerName').innerHTML = "No Server"; document.getElementById('channelsListContainer').innerHTML = ""; }
+            renderServerList();
         }
     }
 
-    // Invite system: generate code
     async function generateInvite() {
         if (!currentServerId) return;
         const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-        await db.collection("invites").doc(code).set({ serverId: currentServerId, createdBy: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection("invites").doc(code).set({ serverId: currentServerId, createdBy: currentUser.uid });
         document.getElementById('inviteCodeDisplay').innerText = code;
         document.getElementById('inviteModal').classList.add('active');
     }
-
     async function joinWithCode(code) {
-        const inviteDoc = await db.collection("invites").doc(code).get();
-        if (!inviteDoc.exists) { showToast("Invalid invite code"); return; }
-        const serverId = inviteDoc.data().serverId;
+        const invite = await db.collection("invites").doc(code).get();
+        if (!invite.exists) { showToast("Invalid code"); return; }
+        const serverId = invite.data().serverId;
         const existing = await db.collection("serverMembers").where("serverId", "==", serverId).where("userId", "==", currentUser.uid).get();
-        if (!existing.empty) { showToast("Already a member!"); return; }
+        if (!existing.empty) { showToast("Already member"); return; }
         await db.collection("serverMembers").add({ serverId, userId: currentUser.uid, role: "member" });
-        showToast("Joined server!");
+        showToast("Joined!");
         await renderServerList();
         await switchServer(serverId);
     }
 
-    async function createCategory() {
+    async function createCategory(name) {
         if (!currentServerId) return;
-        const catName = document.getElementById('categoryName').value.trim();
-        if (!catName) return;
         const structRef = db.collection("serverStructure").doc(currentServerId);
         const struct = (await structRef.get()).data() || { categories: [] };
-        struct.categories.push({ name: catName, channels: [] });
+        struct.categories.push({ name, channels: [] });
         await structRef.set(struct);
-        document.getElementById('createCategoryModal').classList.remove('active');
-        document.getElementById('categoryName').value = '';
         loadServerChannels(currentServerId);
-        showToast(`Category "${catName}" added`);
+        showToast(`Category "${name}" added`);
     }
-
-    async function createChannel(categoryName, channelName) {
-        if (!currentServerId || !channelName) return;
+    async function createChannel(name, type, categoryName) {
         const structRef = db.collection("serverStructure").doc(currentServerId);
         const struct = (await structRef.get()).data();
         const cat = struct.categories.find(c => c.name === categoryName);
         if (!cat) return;
-        const newId = channelName.toLowerCase().replace(/\s/g, '-') + Date.now();
-        cat.channels.push({ id: newId, name: channelName });
+        const newId = name.toLowerCase().replace(/\s/g, '-') + Date.now();
+        cat.channels.push({ id: newId, name, type });
         await structRef.set(struct);
         loadServerChannels(currentServerId);
-        showToast(`#${channelName} created`);
+        showToast(`${type === 'voice' ? '🔊' : type === 'podcast' ? '🎧' : '#'} ${name} created`);
     }
-
     function openCreateChannelModal(categoryName) {
-        document.getElementById('categorySelect').innerHTML = '';
         const select = document.getElementById('categorySelect');
+        select.innerHTML = '';
         db.collection("serverStructure").doc(currentServerId).get().then(doc => {
             const struct = doc.data();
             struct.categories.forEach(c => { const opt = document.createElement('option'); opt.value = c.name; opt.innerText = c.name; select.appendChild(opt); });
@@ -440,37 +518,25 @@
         document.getElementById('createChannelModal').classList.add('active');
     }
 
-    // sidebars mobile
     function openSidebarMobile() { document.getElementById('sidebarPanel').classList.add('open'); document.getElementById('mobileOverlay').classList.add('active'); }
     function closeSidebarMobile() { document.getElementById('sidebarPanel').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('active'); }
 
-    // Auth UI
     function updateAuthUI(user) {
-        const authOverlay = document.getElementById('authOverlay');
         if (user) {
             if (document.getElementById('authOverlay')) document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('userDisplay').innerText = user.displayName || user.email;
-            const isOwner = (user.email === OWNER_EMAIL);
-            isOwnerGlobal = isOwner;
-            const roleSpan = document.getElementById('roleBadge');
-            if (isOwner) roleSpan.innerHTML = '<span class="owner-badge">👑 GLOBAL OWNER</span>';
-            else roleSpan.innerHTML = '';
+            document.getElementById('userDisplay').innerHTML = escapeHtml(user.displayName || user.email);
+            isGlobalOwner = (user.email === OWNER_EMAIL);
+            const badge = document.getElementById('roleBadge');
+            if (isGlobalOwner) badge.innerHTML = '<span class="owner-badge"><i class="fas fa-crown"></i> GLOBAL OWNER</span>';
+            else badge.innerHTML = '';
             renderServerList().then(async () => {
                 const servers = await fetchUserServers();
-                if (servers.length > 0 && !currentServerId) await switchServer(servers[0].id);
-                else if (servers.length === 0) { document.getElementById('currentServerName').innerText = "No servers"; }
+                if (servers.length && !currentServerId) await switchServer(servers[0].id);
             });
-        } else {
-            if (!document.getElementById('authOverlay')) {
-                const div = document.createElement('div'); div.id = 'authOverlay'; div.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;";
-                div.innerHTML = `<div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><p>Discord-like servers, categories, invites</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;font-weight:600;">Sign in with Google</button></div>`;
-                document.body.appendChild(div);
-                document.getElementById('googleSignInBtn')?.addEventListener('click', () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()));
-            }
         }
     }
 
-    // Event Listeners
+    // Event bindings
     document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
     document.getElementById('messageInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
     document.getElementById('signOutBtn')?.addEventListener('click', () => auth.signOut());
@@ -478,40 +544,29 @@
     document.getElementById('invitePeopleBtn')?.addEventListener('click', generateInvite);
     document.getElementById('headerInviteBtn')?.addEventListener('click', generateInvite);
     document.getElementById('deleteServerBtn')?.addEventListener('click', deleteCurrentServer);
-    document.getElementById('confirmCreateServer')?.addEventListener('click', async () => { const name = document.getElementById('newServerName').value; if (name) await createServer(name); document.getElementById('createServerModal').classList.remove('active'); });
+    document.getElementById('confirmCreateServer')?.addEventListener('click', async () => { const n = document.getElementById('newServerName').value; if (n) await createServer(n); document.getElementById('createServerModal').classList.remove('active'); });
     document.getElementById('closeCreateModal')?.addEventListener('click', () => document.getElementById('createServerModal').classList.remove('active'));
-    document.getElementById('confirmCreateCategory')?.addEventListener('click', createCategory);
+    document.getElementById('confirmCreateCategory')?.addEventListener('click', async () => { const n = document.getElementById('categoryName').value; if (n) await createCategory(n); document.getElementById('createCategoryModal').classList.remove('active'); document.getElementById('categoryName').value = ''; });
     document.getElementById('closeCatModal')?.addEventListener('click', () => document.getElementById('createCategoryModal').classList.remove('active'));
-    document.getElementById('confirmCreateChannel')?.addEventListener('click', async () => { const chanName = document.getElementById('channelName').value; const cat = document.getElementById('categorySelect').value; if (chanName && cat) await createChannel(cat, chanName); document.getElementById('createChannelModal').classList.remove('active'); });
+    document.getElementById('confirmCreateChannel')?.addEventListener('click', async () => { const name = document.getElementById('channelName').value; const type = document.getElementById('channelTypeSelect').value; const cat = document.getElementById('categorySelect').value; if (name && cat) await createChannel(name, type, cat); document.getElementById('createChannelModal').classList.remove('active'); document.getElementById('channelName').value = ''; });
     document.getElementById('closeChanModal')?.addEventListener('click', () => document.getElementById('createChannelModal').classList.remove('active'));
     document.getElementById('closeInviteModal')?.addEventListener('click', () => document.getElementById('inviteModal').classList.remove('active'));
-    document.getElementById('confirmJoinServer')?.addEventListener('click', async () => { const code = document.getElementById('joinCodeInput').value; if (code) await joinWithCode(code); document.getElementById('joinServerModal').classList.remove('active'); });
+    document.getElementById('confirmJoinServer')?.addEventListener('click', async () => { const c = document.getElementById('joinCodeInput').value; if (c) await joinWithCode(c); document.getElementById('joinServerModal').classList.remove('active'); });
     document.getElementById('closeJoinModal')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.remove('active'));
+    document.getElementById('closeVoiceModal')?.addEventListener('click', () => document.getElementById('voiceModal').classList.remove('active'));
+    document.getElementById('closePodcastModal')?.addEventListener('click', () => document.getElementById('podcastModal').classList.remove('active'));
     document.getElementById('mobileOverlay')?.addEventListener('click', closeSidebarMobile);
-    if (document.querySelector('.server-list')) document.querySelector('.server-list')?.addEventListener('click', (e) => { if (window.innerWidth <= 700 && e.target.closest('.server-icon')) closeSidebarMobile(); });
-    // Add menu for mobile open sidebar
     const menuBtn = document.createElement('button'); menuBtn.innerHTML = '<i class="fas fa-bars"></i>'; menuBtn.style.cssText = "position:fixed;bottom:20px;left:20px;background:#fbbf24;border:none;border-radius:50%;width:48px;height:48px;z-index:1200;display:none;"; document.body.appendChild(menuBtn);
     if (window.innerWidth <= 700) menuBtn.style.display = 'flex'; else menuBtn.style.display = 'none';
     menuBtn.addEventListener('click', openSidebarMobile);
     window.addEventListener('resize', () => { if (window.innerWidth <= 700) menuBtn.style.display = 'flex'; else menuBtn.style.display = 'none'; });
 
     auth.onAuthStateChanged(user => { currentUser = user; updateAuthUI(user); });
-    // Preload Stonks Hub default server creation if none exists
-    setTimeout(async () => {
-        const allServers = await db.collection("servers").get();
-        if (allServers.empty) {
-            const hubRef = db.collection("servers").doc();
-            await hubRef.set({ name: "Stonks Hub", ownerId: "system", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            await db.collection("serverStructure").doc(hubRef.id).set({ categories: [{ name: "GENERAL", channels: [{ id: "welcome", name: "welcome" }, { id: "general", name: "general" }] }] });
-            console.log("Stonks Hub created");
-        }
-    }, 1000);
+    setTimeout(async () => { const all = await db.collection("servers").get(); if (all.empty) { const hub = db.collection("servers").doc(); await hub.set({ name: "Stonks Hub", ownerId: "system" }); await db.collection("serverStructure").doc(hub.id).set({ categories: [{ name: "GENERAL", channels: [{ id: "welcome", name: "welcome", type: "text" }, { id: "lounge", name: "lounge", type: "text" }] }] }); } }, 1000);
 </script>
 <div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><p>Create servers, categories, invite friends</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;font-weight:600;">Sign in with Google</button></div>
+    <div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2>Stonks Hub</h2><p>Create servers, categories, voice & podcast channels</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;margin-top:20px;font-weight:600;">Sign in with Google</button></div>
 </div>
-<script>
-    document.getElementById('googleSignInBtn')?.addEventListener('click', () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()));
-</script>
+<script> document.getElementById('googleSignInBtn')?.addEventListener('click', () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())); </script>
 </body>
 </html>
