@@ -3,354 +3,1063 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Stonks Hub · Real Voice & Screen Share</title>
+    <title>Stonks Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e2e8f0; height: 100vh; overflow: hidden; }
-        .app { display: flex; height: 100%; width: 100%; overflow: hidden; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e2e8f0; }
+
+        .app { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
 
         /* SERVER LIST */
-        .server-list { width: 72px; background: #0f0f14; border-right: 1px solid #1f2937; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 0; overflow-y: auto; flex-shrink: 0; }
-        .server-icon { width: 48px; height: 48px; background: #1e293b; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; color: #fbbf24; font-weight: bold; }
+        .server-list { width: 72px; min-width: 72px; background: #0f0f14; border-right: 1px solid #1f2937; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 0; overflow-y: auto; flex-shrink: 0; }
+        .server-icon { width: 48px; height: 48px; background: #1e293b; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; color: #fbbf24; font-weight: bold; font-size: 18px; flex-shrink: 0; }
         .server-icon.active { border-radius: 16px; background: linear-gradient(135deg, #fbbf24, #ef4444); color: white; }
         .server-icon:hover { border-radius: 16px; background: #334155; }
         .add-server-btn, .join-server-btn { background: #1f2937; border: 2px dashed #fbbf24; }
-        .server-tooltip { position: absolute; left: 70px; background: #000c; padding: 4px 10px; border-radius: 20px; font-size: 12px; white-space: nowrap; display: none; z-index: 100; }
+        .server-tooltip { position: absolute; left: 58px; background: #1e293b; border: 1px solid #334155; padding: 4px 10px; border-radius: 8px; font-size: 12px; white-space: nowrap; display: none; z-index: 100; pointer-events: none; }
         .server-icon:hover .server-tooltip { display: block; }
 
         /* SIDEBAR */
-        .sidebar { width: 280px; background: #111827; border-right: 1px solid #1f2937; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.2s; }
-        .sidebar-header { padding: 16px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
-        .server-name-header { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
-        .server-actions { display: flex; gap: 8px; }
+        .sidebar { width: 260px; min-width: 260px; background: #111827; border-right: 1px solid #1f2937; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; z-index: 1100; }
+        .sidebar-header { padding: 14px 12px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .server-name-header { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .server-actions { display: flex; gap: 6px; flex-shrink: 0; }
         .server-actions button { background: #1f2937; border: none; color: #fbbf24; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
-        .category-group { margin: 8px 0; }
-        .category-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 16px; cursor: pointer; color: #9ca3af; font-size: 0.7rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-        .category-header:hover { background: #1a2332; color: #fbbf24; }
-        .category-header i.fa-chevron-down, .category-header i.fa-chevron-right { font-size: 10px; margin-right: 6px; }
-        .category-name { flex: 1; }
-        .add-channel-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 12px; padding: 0 4px; }
-        .add-channel-btn:hover { color: #fbbf24; }
-        .channels-container { overflow: hidden; transition: max-height 0.2s ease; }
+        .server-actions button:hover { background: #334155; }
+        .sidebar-channels { flex: 1; overflow-y: auto; overflow-x: hidden; }
+        .category-group { margin: 4px 0; }
+        .category-header { display: flex; align-items: center; padding: 6px 8px 6px 6px; cursor: pointer; color: #9ca3af; font-size: 0.68rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; gap: 4px; }
+        .category-header:hover { color: #fbbf24; }
+        .category-chevron { font-size: 9px; width: 12px; }
+        .category-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cat-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+        .cat-action-btn { background: none; border: none; color: #6b7280; cursor: pointer; font-size: 11px; padding: 2px 4px; border-radius: 4px; }
+        .cat-action-btn:hover { color: #fbbf24; background: #1f2937; }
         .channels-container.collapsed { display: none; }
-        .channel-item { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 32px; border-radius: 8px; cursor: pointer; color: #9ca3af; font-size: 0.85rem; transition: 0.1s; }
+        .channel-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 20px; border-radius: 6px; cursor: pointer; color: #9ca3af; font-size: 0.82rem; transition: 0.1s; margin: 1px 4px; position: relative; }
         .channel-item.active { background: #1f2937; color: #fbbf24; }
-        .channel-item:hover { background: #1f2937; }
+        .channel-item:hover { background: #1a2332; color: #e2e8f0; }
+        .channel-item:hover .ch-settings-btn { opacity: 1; }
+        .channel-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ch-settings-btn { opacity: 0; background: none; border: none; color: #6b7280; cursor: pointer; font-size: 11px; padding: 2px 4px; border-radius: 4px; flex-shrink: 0; }
+        .ch-settings-btn:hover { color: #fbbf24; background: #334155; }
         .voice-channel { color: #34d399; }
-        .voice-members-sidebar { padding: 2px 12px 4px 44px; font-size: 0.7rem; color: #6b7280; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .voice-members-sidebar { padding: 2px 8px 4px 30px; font-size: 0.68rem; color: #6b7280; display: flex; flex-wrap: wrap; gap: 4px; }
         .voice-member-chip { background: #1f2937; border-radius: 20px; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; }
-        .member-info { padding: 12px; border-top: 1px solid #1f2937; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
-        .crown { color: #fbbf24; margin-left: 4px; }
+        .member-info { padding: 10px 12px; border-top: 1px solid #1f2937; font-size: 13px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .owner-badge { background: #fbbf24; color: black; padding: 1px 6px; border-radius: 20px; font-size: 9px; margin-left: 4px; }
 
-        /* CHAT AREA */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: #0f172a; overflow: hidden; min-width: 0; }
-        .chat-header { padding: 12px 20px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between; background: #0f172a; }
-        .channel-info { display: flex; align-items: center; gap: 8px; }
-        .invite-btn { background: #1e293b; border: none; padding: 6px 14px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.8rem; }
-        .messages-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .message { display: flex; gap: 10px; max-width: 100%; animation: fadeIn 0.2s; }
-        .message-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-        .message-content { background: #1e293b; padding: 8px 14px; border-radius: 18px; word-break: break-word; flex: 1; }
-        .message-author { font-weight: 600; font-size: 0.75rem; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
-        .message-time { font-size: 0.6rem; color: #94a3b8; }
-        .message-text { font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
-        .input-area { padding: 12px; border-top: 1px solid #1e293b; background: #0f172a; display: flex; gap: 10px; }
-        .input-area input { flex: 1; background: #1e293b; border: none; padding: 12px 16px; border-radius: 30px; color: white; outline: none; }
-        .input-area button { background: #fbbf24; border: none; padding: 0 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        /* MAIN CONTENT */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; background: #0f172a; }
+        .chat-header { padding: 12px 16px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between; background: #0f172a; flex-shrink: 0; }
+        .channel-info { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .channel-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .header-btns { display: flex; gap: 8px; flex-shrink: 0; }
+        .header-btn { background: #1e293b; border: none; padding: 6px 12px; border-radius: 20px; color: #fbbf24; cursor: pointer; font-size: 0.78rem; }
+        .header-btn:hover { background: #334155; }
+        .hamburger-btn { display: none; background: none; border: none; color: #fbbf24; font-size: 18px; cursor: pointer; padding: 4px 8px; }
 
-        /* VOICE & SCREEN SHARE LAYOUT */
+        /* TEXT CHAT */
+        .text-chat-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .messages-container { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+        .message { display: flex; gap: 10px; animation: fadeIn 0.2s; }
+        .message-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .message-content { background: #1e293b; padding: 8px 12px; border-radius: 16px; word-break: break-word; min-width: 0; flex: 1; }
+        .message-author { font-weight: 600; font-size: 0.72rem; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+        .message-time { font-size: 0.58rem; color: #94a3b8; }
+        .message-text { font-size: 0.83rem; margin-top: 3px; line-height: 1.45; }
+        .input-area { padding: 10px 12px; border-top: 1px solid #1e293b; background: #0f172a; display: flex; gap: 8px; flex-shrink: 0; }
+        .input-area input { flex: 1; background: #1e293b; border: none; padding: 10px 14px; border-radius: 30px; color: white; outline: none; font-size: 0.9rem; min-width: 0; }
+        .input-area input::placeholder { color: #6b7280; }
+        .send-btn { background: #fbbf24; border: none; padding: 0 16px; border-radius: 30px; font-weight: bold; cursor: pointer; color: #0f172a; font-size: 0.85rem; flex-shrink: 0; }
+        .send-btn:hover { background: #f59e0b; }
+
+        /* VOICE VIEW */
         .voice-view { flex: 1; display: flex; flex-direction: column; background: #060b14; overflow: hidden; }
         .voice-view-body { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; position: relative; overflow-y: auto; padding: 20px; }
-        .voice-participants-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: center; max-width: 700px; }
-        .voice-participant-card { display: flex; flex-direction: column; align-items: center; gap: 8px; background: #11182780; padding: 12px; border-radius: 32px; backdrop-filter: blur(4px); }
-        .voice-participant-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid #1f2937; transition: 0.1s; }
-        .voice-participant-avatar.speaking { border-color: #34d399; box-shadow: 0 0 14px #34d39970; }
-        .voice-controls { display: flex; gap: 12px; align-items: center; padding: 14px 20px; background: #0d1727; border-top: 1px solid #1e293b; justify-content: center; }
-        .voice-ctrl-btn { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; background: #1e293b; color: white; font-size: 20px; transition: 0.1s; }
+        .voice-participants-grid { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: center; max-width: 700px; }
+        .voice-participant-card { display: flex; flex-direction: column; align-items: center; gap: 8px; background: #11182780; padding: 12px 16px; border-radius: 24px; }
+        .voice-participant-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #1f2937; }
+        .voice-participant-avatar.speaking { border-color: #34d399; box-shadow: 0 0 12px #34d39970; }
+        .voice-controls { display: flex; gap: 12px; align-items: center; padding: 14px 20px; background: #0d1727; border-top: 1px solid #1e293b; justify-content: center; flex-shrink: 0; }
+        .voice-ctrl-btn { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; background: #1e293b; color: white; font-size: 18px; transition: 0.15s; }
+        .voice-ctrl-btn:hover { background: #334155; }
         .btn-mic.muted { background: #3b1a1a; color: #ef4444; }
-        .btn-share-screen.active { background: #2563eb; color: white; }
+        .btn-share-screen.active { background: #1d4ed8; color: white; }
         .btn-leave { background: #3b1a1a; color: #ef4444; }
-        .screenshare-container { flex: 1; background: #000000cc; display: flex; flex-direction: column; min-height: 200px; border-radius: 20px; margin: 10px; overflow: hidden; }
-        .screenshare-video-wrap { flex: 1; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
-        .screenshare-video { width: 100%; height: 100%; object-fit: contain; max-height: 300px; background: #000; }
+        .screenshare-container { width: 100%; max-width: 800px; background: #000000cc; display: flex; flex-direction: column; min-height: 200px; border-radius: 16px; overflow: hidden; }
+        .screenshare-video-wrap { flex: 1; position: relative; background: #000; display: flex; align-items: center; justify-content: center; min-height: 160px; }
+        .screenshare-video { width: 100%; height: 100%; object-fit: contain; max-height: 320px; background: #000; }
         .screenshare-viewers { background: #0d1727; padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.7rem; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
+
+        /* MODALS */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; padding: 16px; }
         .modal.active { display: flex; }
-        .modal-content { background: #0f172a; border-radius: 28px; padding: 24px; width: 90%; max-width: 450px; border: 1px solid #334155; }
-        .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 8px 18px; border-radius: 30px; font-weight: bold; cursor: pointer; }
-        .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 30px; cursor: pointer; }
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; padding: 8px 20px; border-radius: 40px; z-index: 3000; border-left: 3px solid #fbbf24; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .modal-content { background: #0f172a; border-radius: 20px; padding: 24px; width: 100%; max-width: 440px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { font-size: 1.1rem; font-weight: 700; }
+        .modal-content input, .modal-content select, .modal-content textarea { background: #1e293b; border: 1px solid #334155; color: white; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; width: 100%; outline: none; font-family: inherit; }
+        .modal-content textarea { resize: vertical; min-height: 80px; }
+        .modal-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 8px 18px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+        .btn-gold:hover { background: #f59e0b; }
+        .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 0.85rem; }
+        .btn-outline:hover { background: #fbbf2420; }
+        .btn-danger { background: #3b1a1a; border: none; color: #ef4444; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 0.85rem; }
+
+        /* Channel settings rules list */
+        .rules-list { display: flex; flex-direction: column; gap: 8px; }
+        .rule-item { background: #1e293b; border-radius: 10px; padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px; }
+        .rule-item-text { flex: 1; font-size: 0.82rem; color: #e2e8f0; }
+        .rule-del-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; padding: 2px; }
+
+        /* Mic permission */
+        .mic-perm-body { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; padding: 8px 20px; border-radius: 40px; z-index: 9999; border-left: 3px solid #fbbf24; opacity: 0; transition: opacity 0.3s; pointer-events: none; font-size: 0.85rem; white-space: nowrap; }
         .toast.show { opacity: 1; }
-        .owner-badge { background: #fbbf24; color: black; padding: 2px 8px; border-radius: 20px; font-size: 10px; margin-left: 6px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile */
+        .overlay { position: fixed; inset: 0; background: #00000080; z-index: 1050; display: none; }
+        .overlay.active { display: block; }
+
         @media (max-width: 700px) {
-            .sidebar { position: fixed; left: 0; top: 0; height: 100%; transform: translateX(-100%); z-index: 1100; }
+            .server-list { width: 56px; min-width: 56px; }
+            .server-icon { width: 40px; height: 40px; font-size: 15px; }
+            .sidebar { position: fixed; left: 0; top: 0; height: 100%; width: 260px; min-width: 260px; transform: translateX(-260px); transition: transform 0.25s; z-index: 1100; }
             .sidebar.open { transform: translateX(0); }
-            .overlay { position: fixed; inset: 0; background: #00000080; z-index: 1050; display: none; }
-            .overlay.active { display: block; }
-            .voice-participant-avatar { width: 56px; height: 56px; }
+            .hamburger-btn { display: block; }
+            .voice-participant-avatar { width: 52px; height: 52px; }
+            .main-content { width: 100%; }
         }
     </style>
 </head>
 <body>
 <div class="app">
+    <!-- SERVER LIST -->
     <div class="server-list" id="serverListContainer"></div>
+
+    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebarPanel">
-        <div class="sidebar-header"><div class="server-name-header"><span id="currentServerName">Stonks Hub</span><span id="serverOwnerCrown"></span></div><div class="server-actions"><button id="createCategoryBtn" title="Create Category"><i class="fas fa-folder-plus"></i></button><button id="invitePeopleBtn" title="Invite"><i class="fas fa-user-plus"></i></button><button id="deleteServerBtn" title="Delete Server" style="color:#ef4444;"><i class="fas fa-trash"></i></button></div></div>
-        <div style="flex:1; overflow-y: auto;" id="channelsListContainer"></div>
-        <div class="member-info"><span><i class="fas fa-user-circle"></i> <span id="userDisplay"></span><span id="roleBadge"></span></span><button id="signOutBtn" style="background:none; border:none; color:#fbbf24; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button></div>
+        <div class="sidebar-header">
+            <div class="server-name-header">
+                <span id="currentServerName">Stonks Hub</span>
+                <span id="serverOwnerCrown"></span>
+            </div>
+            <div class="server-actions" id="ownerServerActions" style="display:none;">
+                <button id="createCategoryBtn" title="New Category"><i class="fas fa-folder-plus"></i></button>
+                <button id="invitePeopleBtn" title="Invite"><i class="fas fa-user-plus"></i></button>
+                <button id="deleteServerBtn" title="Delete" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="server-actions" id="memberServerActions">
+                <button id="invitePeopleBtnMember" title="Invite"><i class="fas fa-user-plus"></i></button>
+            </div>
+        </div>
+        <div class="sidebar-channels" id="channelsListContainer"></div>
+        <div class="member-info">
+            <span><i class="fas fa-user-circle"></i> <span id="userDisplay"></span><span id="roleBadge"></span></span>
+            <button id="signOutBtn" style="background:none;border:none;color:#fbbf24;cursor:pointer;" title="Sign out"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
     </div>
+
     <div class="overlay" id="mobileOverlay"></div>
-    <div class="chat-area">
-        <div class="chat-header"><div class="channel-info"><i class="fas fa-hashtag" id="channelTypeIcon"></i><span id="currentChannelName">general</span></div><button class="invite-btn" id="headerInviteBtn"><i class="fas fa-link"></i> Invite</button></div>
-        <div id="textChatView" style="display:flex; flex-direction:column; flex:1; overflow:hidden;"><div class="messages-container" id="messagesContainer"></div><div class="input-area"><input type="text" id="messageInput" placeholder="Message..."><button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button></div></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="chat-header">
+            <div class="channel-info">
+                <button class="hamburger-btn" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+                <i class="fas fa-hashtag" id="channelTypeIcon"></i>
+                <span id="currentChannelName">general</span>
+            </div>
+            <div class="header-btns">
+                <button class="header-btn" id="headerInviteBtn"><i class="fas fa-link"></i> Invite</button>
+            </div>
+        </div>
+
+        <!-- TEXT CHAT -->
+        <div class="text-chat-view" id="textChatView" style="display:flex;">
+            <div class="messages-container" id="messagesContainer"></div>
+            <div class="input-area">
+                <input type="text" id="messageInput" placeholder="Message...">
+                <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- VOICE VIEW -->
         <div id="voiceChatView" class="voice-view" style="display:none;">
             <div class="voice-view-body" id="voiceViewBody">
-                <div id="screenShareDynamicArea" style="width:100%; max-width: 800px; margin-bottom: 20px;"></div>
+                <div id="screenShareDynamicArea" style="width:100%;max-width:800px;"></div>
                 <div class="voice-participants-grid" id="voiceParticipantsGrid"></div>
             </div>
-            <div class="voice-controls"><button class="voice-ctrl-btn btn-mic" id="micToggleBtn"><i class="fas fa-microphone"></i></button><button class="voice-ctrl-btn btn-share-screen" id="shareScreenBtn"><i class="fas fa-desktop"></i></button><button class="voice-ctrl-btn btn-leave" id="leaveVoiceBtn"><i class="fas fa-phone-slash"></i></button></div>
+            <div class="voice-controls">
+                <button class="voice-ctrl-btn btn-mic" id="micToggleBtn" title="Mute/Unmute"><i class="fas fa-microphone"></i></button>
+                <button class="voice-ctrl-btn btn-share-screen" id="shareScreenBtn" title="Share Screen"><i class="fas fa-desktop"></i></button>
+                <button class="voice-ctrl-btn btn-leave" id="leaveVoiceBtn" title="Leave"><i class="fas fa-phone-slash"></i></button>
+            </div>
         </div>
     </div>
 </div>
 
-<div id="createServerModal" class="modal"><div class="modal-content"><h3>New Server</h3><input type="text" id="newServerName" placeholder="Server name"><button id="confirmCreateServer" class="btn-gold">Create</button><button id="closeCreateModal" class="btn-outline">Cancel</button></div></div>
-<div id="createCategoryModal" class="modal"><div class="modal-content"><h3>New Category</h3><input type="text" id="categoryName" placeholder="Category name"><button id="confirmCreateCategory" class="btn-gold">Add</button><button id="closeCatModal" class="btn-outline">Cancel</button></div></div>
-<div id="createChannelModal" class="modal"><div class="modal-content"><h3>New Channel</h3><input type="text" id="channelName" placeholder="Channel name"><select id="channelTypeSelect"><option value="text">📝 Text</option><option value="voice">🎙️ Voice</option></select><select id="categorySelect"></select><button id="confirmCreateChannel" class="btn-gold">Create</button><button id="closeChanModal" class="btn-outline">Cancel</button></div></div>
-<div id="inviteModal" class="modal"><div class="modal-content"><h3>Invite Link</h3><p>Share code: <strong id="inviteCodeDisplay"></strong></p><button id="closeInviteModal" class="btn-gold">Close</button></div></div>
-<div id="joinServerModal" class="modal"><div class="modal-content"><h3>Join Server</h3><input type="text" id="joinCodeInput" placeholder="Invite code"><button id="confirmJoinServer" class="btn-gold">Join</button><button id="closeJoinModal" class="btn-outline">Cancel</button></div></div>
-<div id="micPermModal" class="modal"><div class="modal-content"><i class="fas fa-microphone" style="font-size:40px;color:#fbbf24;"></i><h3 style="margin:10px 0">Microphone Access</h3><p>Enable mic so others can hear you.</p><button id="allowMicBtn" class="btn-gold">Allow Mic</button><button id="denyMicBtn" class="btn-outline">Join Muted</button></div></div>
+<!-- MODALS -->
+<div id="createServerModal" class="modal">
+    <div class="modal-content">
+        <h3>New Server</h3>
+        <input type="text" id="newServerName" placeholder="Server name">
+        <div class="modal-btns">
+            <button class="btn-gold" id="confirmCreateServer">Create</button>
+            <button class="btn-outline" id="closeCreateModal">Cancel</button>
+        </div>
+    </div>
+</div>
+<div id="createCategoryModal" class="modal">
+    <div class="modal-content">
+        <h3>New Category</h3>
+        <input type="text" id="categoryName" placeholder="Category name">
+        <div class="modal-btns">
+            <button class="btn-gold" id="confirmCreateCategory">Add</button>
+            <button class="btn-outline" id="closeCatModal">Cancel</button>
+        </div>
+    </div>
+</div>
+<div id="createChannelModal" class="modal">
+    <div class="modal-content">
+        <h3>New Channel</h3>
+        <input type="text" id="channelName" placeholder="Channel name">
+        <select id="channelTypeSelect"><option value="text">📝 Text</option><option value="voice">🎙️ Voice</option></select>
+        <select id="categorySelect"></select>
+        <div class="modal-btns">
+            <button class="btn-gold" id="confirmCreateChannel">Create</button>
+            <button class="btn-outline" id="closeChanModal">Cancel</button>
+        </div>
+    </div>
+</div>
+<div id="inviteModal" class="modal">
+    <div class="modal-content">
+        <h3>Invite Link</h3>
+        <p style="font-size:0.85rem;color:#9ca3af;">Share this code:</p>
+        <div style="background:#1e293b;padding:12px;border-radius:10px;font-size:1.2rem;font-weight:700;text-align:center;letter-spacing:2px;" id="inviteCodeDisplay"></div>
+        <div class="modal-btns">
+            <button class="btn-gold" id="copyInviteBtn"><i class="fas fa-copy"></i> Copy</button>
+            <button class="btn-outline" id="closeInviteModal">Close</button>
+        </div>
+    </div>
+</div>
+<div id="joinServerModal" class="modal">
+    <div class="modal-content">
+        <h3>Join Server</h3>
+        <input type="text" id="joinCodeInput" placeholder="Enter invite code">
+        <div class="modal-btns">
+            <button class="btn-gold" id="confirmJoinServer">Join</button>
+            <button class="btn-outline" id="closeJoinModal">Cancel</button>
+        </div>
+    </div>
+</div>
+<div id="micPermModal" class="modal">
+    <div class="modal-content">
+        <div class="mic-perm-body">
+            <i class="fas fa-microphone" style="font-size:40px;color:#fbbf24;"></i>
+            <h3>Microphone Access</h3>
+            <p style="color:#9ca3af;font-size:0.85rem;">Allow mic so others can hear you.</p>
+            <div class="modal-btns" style="justify-content:center;">
+                <button class="btn-gold" id="allowMicBtn">Allow Mic</button>
+                <button class="btn-outline" id="denyMicBtn">Join Muted</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHANNEL SETTINGS MODAL -->
+<div id="channelSettingsModal" class="modal">
+    <div class="modal-content">
+        <h3 id="chSettingsTitle">Channel Settings</h3>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:0.78rem;color:#9ca3af;">Channel Name</label>
+            <input type="text" id="chSettingsName" placeholder="Channel name">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:0.78rem;color:#9ca3af;">Channel Rules</label>
+            <div class="rules-list" id="rulesListContainer"></div>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="newRuleInput" placeholder="Add a rule...">
+                <button class="btn-gold" id="addRuleBtn" style="flex-shrink:0;">Add</button>
+            </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:0.78rem;color:#9ca3af;">Description</label>
+            <textarea id="chSettingsDesc" placeholder="Channel description..."></textarea>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-gold" id="saveChSettingsBtn">Save</button>
+            <button class="btn-outline" id="closeChSettingsBtn">Cancel</button>
+            <button class="btn-danger" id="deleteChBtn">Delete Channel</button>
+        </div>
+    </div>
+</div>
+
+<!-- CATEGORY SETTINGS MODAL -->
+<div id="categorySettingsModal" class="modal">
+    <div class="modal-content">
+        <h3>Category Settings</h3>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:0.78rem;color:#9ca3af;">Category Name</label>
+            <input type="text" id="catSettingsName" placeholder="Category name">
+        </div>
+        <div class="modal-btns">
+            <button class="btn-gold" id="saveCatSettingsBtn">Save</button>
+            <button class="btn-outline" id="closeChCatSettingsBtn">Cancel</button>
+            <button class="btn-danger" id="deleteCatBtn">Delete Category</button>
+        </div>
+    </div>
+</div>
+
 <div id="toastMsg" class="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc", authDomain: "vertexpaste.firebaseapp.com", projectId: "vertexpaste", storageBucket: "vertexpaste.firebasestorage.app", messagingSenderId: "255275350380", appId: "1:255275350380:web:7be4e8add2cb5b04045b49" };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.firestore();
-    const OWNER_EMAIL = "defnot67kid@gmail.com";
-    let currentUser = null, currentServerId = null, currentChannelId = null, currentChannelType = "text";
-    let unsubscribeMessages = null, unsubscribeVoicePresence = null, unsubscribeScreenShare = null;
-    let isGlobalOwner = false;
-    let localStream = null, screenStream = null;
-    let isMicMuted = false, isSharing = false;
-    let currentVoiceChannelId = null;
-    let sidebarVoiceUnsubs = {};
+const firebaseConfig = { apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc", authDomain: "vertexpaste.firebaseapp.com", projectId: "vertexpaste", storageBucket: "vertexpaste.firebasestorage.app", messagingSenderId: "255275350380", appId: "1:255275350380:web:7be4e8add2cb5b04045b49" };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth(), db = firebase.firestore();
 
-    function showToast(msg) { const t = document.getElementById('toastMsg'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-    function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
+const GLOBAL_OWNER_EMAIL = "defnot67kid@gmail.com";
+let currentUser = null, currentServerId = null, currentChannelId = null, currentChannelType = "text";
+let unsubMessages = null, unsubVoice = null, unsubScreenShare = null;
+let isGlobalOwner = false, isServerOwner = false;
+let localStream = null, screenStream = null;
+let isMicMuted = false, isSharing = false, currentVoiceChannelId = null;
+let rtcPeerConnections = {}, localAudioTrack = null;
+let sidebarVoiceUnsubs = {};
+let editingChannelId = null, editingChannelCatIndex = null;
+let editingCatIndex = null;
+let channelRulesCache = {};
 
-    // AUTH
-    function updateAuthUI(user) {
-        if (user) {
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('userDisplay').innerHTML = escapeHtml(user.displayName || user.email);
-            isGlobalOwner = (user.email === OWNER_EMAIL);
-            document.getElementById('roleBadge').innerHTML = isGlobalOwner ? '<span class="owner-badge"><i class="fas fa-crown"></i> OWNER</span>' : '';
-            renderServerList().then(async () => { const servers = await fetchUserServers(); if (servers.length && !currentServerId) await switchServer(servers[0].id); });
-        }
+// ---- UTILS ----
+function showToast(msg) {
+    const t = document.getElementById('toastMsg');
+    t.innerText = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+}
+function esc(s) {
+    return String(s || '').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+}
+function isOwner() { return isGlobalOwner || isServerOwner; }
+
+// ---- AUTH ----
+auth.onAuthStateChanged(user => {
+    currentUser = user;
+    if (user) {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('userDisplay').innerHTML = esc(user.displayName || user.email);
+        isGlobalOwner = user.email === GLOBAL_OWNER_EMAIL;
+        document.getElementById('roleBadge').innerHTML = isGlobalOwner ? '<span class="owner-badge"><i class="fas fa-crown"></i> OWNER</span>' : '';
+        initApp();
+    } else {
+        document.getElementById('authOverlay').style.display = 'flex';
     }
-    async function fetchUserServers() {
-        if (!currentUser) return [];
-        if (isGlobalOwner) { const all = await db.collection("servers").get(); return all.docs.map(d => ({ id: d.id, ...d.data() })); }
-        const memberSnap = await db.collection("serverMembers").where("userId", "==", currentUser.uid).get();
-        const serverIds = memberSnap.docs.map(d => d.data().serverId);
-        if (!serverIds.length) return [];
-        const servers = await Promise.all(serverIds.map(id => db.collection("servers").doc(id).get()));
-        return servers.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
+});
+
+async function initApp() {
+    await renderServerList();
+    const servers = await fetchUserServers();
+    if (servers.length && !currentServerId) await switchServer(servers[0].id);
+}
+
+async function fetchUserServers() {
+    if (!currentUser) return [];
+    if (isGlobalOwner) {
+        const all = await db.collection("servers").get();
+        return all.docs.map(d => ({ id: d.id, ...d.data() }));
     }
-    async function renderServerList() {
-        const servers = await fetchUserServers();
-        const container = document.getElementById('serverListContainer');
-        let html = '';
-        for (const sv of servers) html += `<div class="server-icon ${currentServerId === sv.id ? 'active' : ''}" data-server-id="${sv.id}"><span>${sv.name.charAt(0).toUpperCase()}</span><div class="server-tooltip">${escapeHtml(sv.name)}</div></div>`;
-        html += `<div class="server-icon add-server-btn" id="addServerBtn"><i class="fas fa-plus"></i><div class="server-tooltip">Create</div></div><div class="server-icon join-server-btn" id="joinServerBtn"><i class="fas fa-sign-in-alt"></i><div class="server-tooltip">Join</div></div>`;
-        container.innerHTML = html;
-        document.querySelectorAll('.server-icon[data-server-id]').forEach(el => el.addEventListener('click', () => switchServer(el.dataset.serverId)));
-        document.getElementById('addServerBtn')?.addEventListener('click', () => document.getElementById('createServerModal').classList.add('active'));
-        document.getElementById('joinServerBtn')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.add('active'));
+    const snap = await db.collection("serverMembers").where("userId", "==", currentUser.uid).get();
+    const ids = snap.docs.map(d => d.data().serverId);
+    if (!ids.length) return [];
+    const docs = await Promise.all(ids.map(id => db.collection("servers").doc(id).get()));
+    return docs.filter(d => d.exists).map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function renderServerList() {
+    const servers = await fetchUserServers();
+    const c = document.getElementById('serverListContainer');
+    let html = '';
+    for (const sv of servers) {
+        html += `<div class="server-icon ${currentServerId === sv.id ? 'active' : ''}" data-sid="${sv.id}">
+            <span>${esc(sv.name.charAt(0).toUpperCase())}</span>
+            <div class="server-tooltip">${esc(sv.name)}</div>
+        </div>`;
     }
-    async function switchServer(serverId) {
-        if (unsubscribeMessages) unsubscribeMessages();
-        await leaveVoiceIfIn();
-        currentServerId = serverId;
-        currentChannelId = null;
-        const serverDoc = await db.collection("servers").doc(serverId).get();
-        document.getElementById('currentServerName').innerHTML = escapeHtml(serverDoc.data()?.name || "Server");
-        await loadServerChannels(serverId);
-        await renderServerList();
-        closeSidebarMobile();
+    html += `<div class="server-icon add-server-btn" id="addServerBtn"><i class="fas fa-plus"></i><div class="server-tooltip">Create Server</div></div>`;
+    html += `<div class="server-icon join-server-btn" id="joinServerBtn"><i class="fas fa-sign-in-alt"></i><div class="server-tooltip">Join Server</div></div>`;
+    c.innerHTML = html;
+    c.querySelectorAll('[data-sid]').forEach(el => el.addEventListener('click', () => switchServer(el.dataset.sid)));
+    document.getElementById('addServerBtn')?.addEventListener('click', () => openModal('createServerModal'));
+    document.getElementById('joinServerBtn')?.addEventListener('click', () => openModal('joinServerModal'));
+}
+
+async function switchServer(serverId) {
+    if (unsubMessages) unsubMessages();
+    await leaveVoiceIfIn();
+    currentServerId = serverId;
+    currentChannelId = null;
+
+    const serverDoc = await db.collection("servers").doc(serverId).get();
+    const serverData = serverDoc.data() || {};
+    document.getElementById('currentServerName').innerHTML = esc(serverData.name || "Server");
+
+    // Check server ownership
+    isServerOwner = isGlobalOwner || (serverData.ownerId === currentUser?.uid);
+    updateOwnerUI();
+
+    await loadServerChannels(serverId);
+    await renderServerList();
+    closeSidebar();
+}
+
+function updateOwnerUI() {
+    const ownerActs = document.getElementById('ownerServerActions');
+    const memberActs = document.getElementById('memberServerActions');
+    if (isOwner()) {
+        ownerActs.style.display = 'flex';
+        memberActs.style.display = 'none';
+    } else {
+        ownerActs.style.display = 'none';
+        memberActs.style.display = 'flex';
     }
-    async function loadServerChannels(serverId) {
-        const structRef = db.collection("serverStructure").doc(serverId);
-        let struct = (await structRef.get()).data();
-        if (!struct) { struct = { categories: [{ name: "TEXT", channels: [{ id: "general", name: "general", type: "text" }] }] }; await structRef.set(struct); }
-        if (!currentChannelId) currentChannelId = "general";
+}
+
+async function loadServerChannels(serverId) {
+    const structRef = db.collection("serverStructure").doc(serverId);
+    let struct = (await structRef.get()).data();
+    if (!struct) {
+        struct = { categories: [{ name: "GENERAL", channels: [{ id: "general", name: "general", type: "text", rules: [], desc: "" }] }] };
+        await structRef.set(struct);
+    }
+    if (!currentChannelId) {
+        const first = struct.categories[0]?.channels[0];
+        currentChannelId = first?.id || "general";
+        currentChannelType = first?.type || "text";
+    } else {
         const ch = findChannel(struct, currentChannelId);
         currentChannelType = ch?.type || "text";
-        await renderSidebarChannels(struct);
-        if (currentChannelType === "text") { showTextView(); loadMessagesForChannel(currentServerId, currentChannelId); }
-        else if (currentChannelType === "voice") joinVoiceChannel(currentChannelId);
-        document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId);
-        updateChannelHeaderIcon();
     }
-    function findChannel(struct, chId) { for (const cat of struct.categories) for (const ch of cat.channels) if (ch.id === chId) return ch; return null; }
-    function getChannelNameById(struct, chId) { const ch = findChannel(struct, chId); return ch ? ch.name : chId; }
-    function updateChannelHeaderIcon() { const icon = document.getElementById('channelTypeIcon'); icon.className = currentChannelType === "voice" ? "fas fa-microphone-alt" : "fas fa-hashtag"; }
-    async function renderSidebarChannels(struct) {
-        Object.values(sidebarVoiceUnsubs).forEach(u => u && u()); sidebarVoiceUnsubs = {};
-        const container = document.getElementById('channelsListContainer');
-        let html = '';
-        for (let i=0; i<struct.categories.length; i++) {
-            const cat = struct.categories[i];
-            const isExpanded = localStorage.getItem(`collapse_${currentServerId}_${i}`) !== 'false';
-            html += `<div class="category-group"><div class="category-header" data-cat-index="${i}"><i class="fas fa-chevron-${isExpanded ? 'down' : 'right'}"></i><span class="category-name">${escapeHtml(cat.name)}</span><button class="add-channel-btn" data-category="${escapeHtml(cat.name)}"><i class="fas fa-plus-circle"></i></button></div><div class="channels-container ${isExpanded ? '' : 'collapsed'}" data-cat-body="${i}">`;
-            for (const ch of cat.channels) {
-                const iconClass = ch.type === "voice" ? "fa-microphone-alt" : "fa-hashtag";
-                const extraClass = ch.type === "voice" ? "voice-channel" : "";
-                html += `<div class="channel-item ${extraClass} ${currentChannelId === ch.id ? 'active' : ''}" data-channel-id="${ch.id}" data-channel-type="${ch.type || 'text'}"><i class="fas ${iconClass}"></i> ${escapeHtml(ch.name)}</div>`;
-                if (ch.type === "voice") html += `<div class="voice-members-sidebar" id="voice-members-${ch.id}"></div>`;
-            }
-            html += `</div></div>`;
-        }
-        container.innerHTML = html;
-        for (const cat of struct.categories) for (const ch of cat.channels) if (ch.type === "voice") listenVoiceMembersSidebar(ch.id);
-        document.querySelectorAll('.category-header').forEach(header => { header.addEventListener('click', (e) => { if(e.target.classList.contains('add-channel-btn')) return; const idx = header.dataset.catIndex; const body = document.querySelector(`.channels-container[data-cat-body="${idx}"]`); if(body){ const coll = body.classList.toggle('collapsed'); header.querySelector('i').className = `fas fa-chevron-${coll ? 'right' : 'down'}`; localStorage.setItem(`collapse_${currentServerId}_${idx}`, (!coll).toString()); } }); });
-        document.querySelectorAll('.channel-item').forEach(el => { el.addEventListener('click', () => { const chId = el.dataset.channelId, type = el.dataset.channelType; if(type !== "voice" && currentVoiceChannelId) leaveVoiceIfIn(); currentChannelId = chId; currentChannelType = type; loadServerChannels(currentServerId); closeSidebarMobile(); }); });
-        document.querySelectorAll('.add-channel-btn').forEach(btn => { btn.addEventListener('click', (e) => { e.stopPropagation(); openCreateChannelModal(btn.dataset.category); }); });
-    }
-    function listenVoiceMembersSidebar(channelId) {
-        if(!currentServerId) return;
-        const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members");
-        const unsub = ref.onSnapshot(snap => { const el = document.getElementById(`voice-members-${channelId}`); if(!el) return; if(snap.empty){ el.innerHTML=''; return; } let html=''; snap.forEach(doc=>{ const d=doc.data(); html+=`<div class="voice-member-chip"><i class="fas ${d.muted?'fa-microphone-slash':'fa-microphone'}" style="font-size:8px;"></i> ${escapeHtml(d.displayName||'User')}</div>`; }); el.innerHTML=html; });
-        sidebarVoiceUnsubs[channelId]=unsub;
-    }
-    function showTextView() { document.getElementById('textChatView').style.display='flex'; document.getElementById('voiceChatView').style.display='none'; }
-    function showVoiceView() { document.getElementById('textChatView').style.display='none'; document.getElementById('voiceChatView').style.display='flex'; }
-
-    // VOICE & SCREEN SHARE REAL
-    let peerConnection = null; // simplified: only local/remote audio via firestore signaling? For simplicity we'll do local mic only and "voice activity" but for actual audio transmission we use WebRTC via simple peer? But discord-like requires P2P. We'll implement basic WebRTC audio & screen sharing.
-    // Because of complexity we simulate full P2P audio using simple peer connections? Actually we will implement proper WebRTC audio using a simple signaling via Firestore. To keep functional, we'll implement "Hear others" using WebRTC audio tracks.
-    // For brevity I'll add a working WebRTC mesh: each user sends audio to all others. We'll store SDP offers/answers in Firestore.
-    let rtcPeerConnections = {}; // userId -> RTCPeerConnection
-    let localAudioTrack = null;
-    let localScreenTrack = null;
-    
-    async function joinVoiceChannel(channelId){
-        document.getElementById('micPermModal').classList.add('active');
-        const allow = async (withMic) => {
-            document.getElementById('micPermModal').classList.remove('active');
-            if(withMic){ try{ localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); localAudioTrack = localStream.getAudioTracks()[0]; isMicMuted = false; }catch(e){ showToast("Mic denied, muted"); isMicMuted=true; } }
-            else isMicMuted=true;
-            currentVoiceChannelId = channelId;
-            await registerVoicePresence(channelId, isMicMuted);
-            showVoiceView();
-            listenVoiceParticipants(channelId);
-            listenScreenShare(channelId);
-            updateMicBtnUI();
-            // start WebRTC signaling
-            initWebRTCForChannel(channelId);
-        };
-        const allowBtn = document.getElementById('allowMicBtn'), denyBtn = document.getElementById('denyMicBtn');
-        const newAllow = allowBtn.cloneNode(true), newDeny = denyBtn.cloneNode(true);
-        allowBtn.parentNode.replaceChild(newAllow, allowBtn); denyBtn.parentNode.replaceChild(newDeny, denyBtn);
-        newAllow.addEventListener('click',()=>allow(true)); newDeny.addEventListener('click',()=>allow(false));
-    }
-    async function initWebRTCForChannel(channelId){
-        if(!currentUser) return;
-        const membersRef = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members");
-        membersRef.onSnapshot(snap => {
-            snap.docChanges().forEach(change => {
-                const uid = change.doc.id;
-                if(uid === currentUser.uid) return;
-                if(change.type === 'added') createPeerConnection(uid);
-                if(change.type === 'removed') { if(rtcPeerConnections[uid]){ rtcPeerConnections[uid].close(); delete rtcPeerConnections[uid]; } }
-            });
-        });
-    }
-    async function createPeerConnection(remoteUid){
-        const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-        if(localAudioTrack && !isMicMuted) pc.addTrack(localAudioTrack);
-        pc.ontrack = event => { if(event.track.kind === 'audio'){ const audio = new Audio(); audio.srcObject = new MediaStream([event.track]); audio.play().catch(e=>{}); } };
-        pc.onicecandidate = event => { if(event.candidate) sendSignal(remoteUid, { candidate: event.candidate }); };
-        const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
-        sendSignal(remoteUid, { sdp: pc.localDescription });
-        rtcPeerConnections[remoteUid] = pc;
-    }
-    async function sendSignal(toUid, data){ if(!currentServerId || !currentVoiceChannelId) return; await db.collection("voiceSignals").doc(`${currentServerId}_${currentVoiceChannelId}`).collection(toUid).doc(currentUser.uid).set({ data, from: currentUser.uid, timestamp: Date.now() }); }
-    async function listenSignals(){
-        if(!currentVoiceChannelId || !currentUser) return;
-        const ref = db.collection("voiceSignals").doc(`${currentServerId}_${currentVoiceChannelId}`).collection(currentUser.uid);
-        ref.onSnapshot(snap => { snap.docChanges().forEach(async change => { if(change.type==='added'){ const fromUid=change.doc.id; const signalData=change.doc.data().data; if(signalData.sdp){ const pc = rtcPeerConnections[fromUid] || await createPeerConnection(fromUid); if(signalData.sdp.type==='offer'){ await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp)); const answer=await pc.createAnswer(); await pc.setLocalDescription(answer); sendSignal(fromUid,{sdp:pc.localDescription}); } else if(signalData.sdp.type==='answer') await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp)); } else if(signalData.candidate){ if(rtcPeerConnections[fromUid]) await rtcPeerConnections[fromUid].addIceCandidate(new RTCIceCandidate(signalData.candidate)); } change.doc.ref.delete(); } }); });
-    }
-    async function registerVoicePresence(channelId, muted){
-        if(!currentUser) return; const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members").doc(currentUser.uid);
-        await ref.set({ uid:currentUser.uid, displayName:currentUser.displayName||currentUser.email, photoURL:`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName||'U')}`, muted, joinedAt:firebase.firestore.FieldValue.serverTimestamp() });
-        listenSignals();
-    }
-    async function leaveVoiceIfIn(){
-        if(!currentVoiceChannelId || !currentUser) return;
-        await db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).delete();
-        if(unsubscribeVoicePresence) unsubscribeVoicePresence();
-        if(unsubscribeScreenShare) unsubscribeScreenShare();
-        if(isSharing) stopScreenShare();
-        if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; localAudioTrack=null; }
-        Object.values(rtcPeerConnections).forEach(pc=>pc.close());
-        rtcPeerConnections={};
-        currentVoiceChannelId=null;
+    await renderSidebarChannels(struct);
+    document.getElementById('currentChannelName').innerText = getChannelNameById(struct, currentChannelId);
+    updateChannelHeaderIcon();
+    if (currentChannelType === "text") {
         showTextView();
+        loadMessagesForChannel(currentServerId, currentChannelId);
+    } else if (currentChannelType === "voice") {
+        joinVoiceChannel(currentChannelId);
     }
-    function listenVoiceParticipants(channelId){
-        if(unsubscribeVoicePresence) unsubscribeVoicePresence();
-        const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members");
-        unsubscribeVoicePresence = ref.onSnapshot(snap => { const grid = document.getElementById('voiceParticipantsGrid'); if(snap.empty){ grid.innerHTML='<div style="color:#6b7280;">✨ No one here yet</div>'; return; } let html=''; snap.forEach(doc=>{ const d=doc.data(); html+=`<div class="voice-participant-card"><img src="${escapeHtml(d.photoURL)}" class="voice-participant-avatar"><div><i class="fas ${d.muted?'fa-microphone-slash':'fa-microphone'}" style="color:${d.muted?'#ef4444':'#34d399'}"></i> ${escapeHtml(d.displayName)}</div></div>`; }); grid.innerHTML=html; });
+}
+
+function findChannel(struct, chId) {
+    for (const cat of struct.categories) for (const ch of cat.channels) if (ch.id === chId) return ch;
+    return null;
+}
+function getChannelNameById(struct, chId) {
+    const ch = findChannel(struct, chId); return ch ? ch.name : chId;
+}
+function updateChannelHeaderIcon() {
+    const icon = document.getElementById('channelTypeIcon');
+    icon.className = currentChannelType === "voice" ? "fas fa-microphone-alt" : "fas fa-hashtag";
+}
+
+async function renderSidebarChannels(struct) {
+    Object.values(sidebarVoiceUnsubs).forEach(u => u && u());
+    sidebarVoiceUnsubs = {};
+    const container = document.getElementById('channelsListContainer');
+    const owner = isOwner();
+    let html = '';
+    struct.categories.forEach((cat, catIdx) => {
+        const isExp = localStorage.getItem(`col_${currentServerId}_${catIdx}`) !== 'false';
+        html += `<div class="category-group">
+          <div class="category-header" data-cat="${catIdx}">
+            <i class="fas fa-chevron-${isExp ? 'down' : 'right'} category-chevron"></i>
+            <span class="category-name">${esc(cat.name)}</span>
+            <div class="cat-actions">`;
+        if (owner) {
+            html += `<button class="cat-action-btn" data-cat-settings="${catIdx}" title="Category settings"><i class="fas fa-cog"></i></button>
+                     <button class="cat-action-btn" data-add-channel-cat="${catIdx}" data-add-channel-catname="${esc(cat.name)}" title="Add channel"><i class="fas fa-plus-circle"></i></button>`;
+        }
+        html += `</div></div>
+          <div class="channels-container ${isExp ? '' : 'collapsed'}" data-catbody="${catIdx}">`;
+        cat.channels.forEach(ch => {
+            const isVoice = ch.type === "voice";
+            const icon = isVoice ? "fa-microphone-alt" : "fa-hashtag";
+            const active = currentChannelId === ch.id;
+            html += `<div class="channel-item ${isVoice ? 'voice-channel' : ''} ${active ? 'active' : ''}"
+                         data-chid="${esc(ch.id)}" data-chtype="${esc(ch.type || 'text')}" data-cati="${catIdx}">
+                       <i class="fas ${icon}" style="font-size:12px;flex-shrink:0;"></i>
+                       <span class="channel-name">${esc(ch.name)}</span>`;
+            if (owner) {
+                html += `<button class="ch-settings-btn" data-ch-settings-id="${esc(ch.id)}" data-ch-settings-cat="${catIdx}" title="Channel settings"><i class="fas fa-cog"></i></button>`;
+            }
+            html += `</div>`;
+            if (isVoice) html += `<div class="voice-members-sidebar" id="vsb-${esc(ch.id)}"></div>`;
+        });
+        html += `</div></div>`;
+    });
+    container.innerHTML = html;
+
+    // Subscribe voice sidebar
+    struct.categories.forEach(cat => {
+        cat.channels.forEach(ch => {
+            if (ch.type === "voice") listenVoiceSidebar(ch.id);
+        });
+    });
+
+    // Category collapse toggle
+    container.querySelectorAll('.category-header').forEach(header => {
+        header.addEventListener('click', e => {
+            if (e.target.closest('.cat-actions')) return;
+            const idx = header.dataset.cat;
+            const body = container.querySelector(`.channels-container[data-catbody="${idx}"]`);
+            if (body) {
+                const collapsed = body.classList.toggle('collapsed');
+                header.querySelector('.category-chevron').className = `fas fa-chevron-${collapsed ? 'right' : 'down'} category-chevron`;
+                localStorage.setItem(`col_${currentServerId}_${idx}`, (!collapsed).toString());
+            }
+        });
+    });
+
+    // Channel click
+    container.querySelectorAll('.channel-item').forEach(el => {
+        el.addEventListener('click', e => {
+            if (e.target.closest('.ch-settings-btn')) return;
+            const chId = el.dataset.chid, type = el.dataset.chtype;
+            if (type !== "voice" && currentVoiceChannelId) leaveVoiceIfIn();
+            currentChannelId = chId; currentChannelType = type;
+            loadServerChannels(currentServerId);
+            closeSidebar();
+        });
+    });
+
+    // Channel settings
+    container.querySelectorAll('.ch-settings-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            openChannelSettings(btn.dataset.chSettingsId, parseInt(btn.dataset.chSettingsCat));
+        });
+    });
+
+    // Category settings
+    container.querySelectorAll('[data-cat-settings]').forEach(btn => {
+        btn.addEventListener('click', e => { e.stopPropagation(); openCategorySettings(parseInt(btn.dataset.catSettings)); });
+    });
+
+    // Add channel to category
+    container.querySelectorAll('[data-add-channel-cat]').forEach(btn => {
+        btn.addEventListener('click', e => { e.stopPropagation(); openCreateChannelModal(btn.dataset.addChannelCatname); });
+    });
+}
+
+function listenVoiceSidebar(chId) {
+    if (!currentServerId) return;
+    const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(chId).collection("members");
+    const unsub = ref.onSnapshot(snap => {
+        const el = document.getElementById(`vsb-${chId}`);
+        if (!el) return;
+        if (snap.empty) { el.innerHTML = ''; return; }
+        let html = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            html += `<div class="voice-member-chip"><i class="fas ${d.muted ? 'fa-microphone-slash' : 'fa-microphone'}" style="font-size:7px;"></i> ${esc(d.displayName || 'User')}</div>`;
+        });
+        el.innerHTML = html;
+    });
+    sidebarVoiceUnsubs[chId] = unsub;
+}
+
+// ---- CHANNEL SETTINGS ----
+async function openChannelSettings(chId, catIdx) {
+    const structRef = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await structRef.get()).data();
+    const cat = struct.categories[catIdx];
+    const ch = cat?.channels.find(c => c.id === chId);
+    if (!ch) return;
+    editingChannelId = chId;
+    editingChannelCatIndex = catIdx;
+    document.getElementById('chSettingsTitle').innerText = `⚙️ #${ch.name}`;
+    document.getElementById('chSettingsName').value = ch.name;
+    document.getElementById('chSettingsDesc').value = ch.desc || '';
+    channelRulesCache = { rules: [...(ch.rules || [])] };
+    renderRulesList();
+    openModal('channelSettingsModal');
+}
+
+function renderRulesList() {
+    const c = document.getElementById('rulesListContainer');
+    if (!channelRulesCache.rules.length) { c.innerHTML = '<div style="color:#6b7280;font-size:0.78rem;">No rules yet.</div>'; return; }
+    let html = '';
+    channelRulesCache.rules.forEach((rule, i) => {
+        html += `<div class="rule-item"><span class="rule-item-text"><strong>${i+1}.</strong> ${esc(rule)}</span><button class="rule-del-btn" data-rule-idx="${i}"><i class="fas fa-times"></i></button></div>`;
+    });
+    c.innerHTML = html;
+    c.querySelectorAll('.rule-del-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            channelRulesCache.rules.splice(parseInt(btn.dataset.ruleIdx), 1);
+            renderRulesList();
+        });
+    });
+}
+
+document.getElementById('addRuleBtn')?.addEventListener('click', () => {
+    const inp = document.getElementById('newRuleInput');
+    const val = inp.value.trim();
+    if (!val) return;
+    channelRulesCache.rules.push(val);
+    inp.value = '';
+    renderRulesList();
+});
+
+document.getElementById('saveChSettingsBtn')?.addEventListener('click', async () => {
+    const name = document.getElementById('chSettingsName').value.trim();
+    const desc = document.getElementById('chSettingsDesc').value.trim();
+    if (!name) return showToast("Name required");
+    const structRef = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await structRef.get()).data();
+    const ch = struct.categories[editingChannelCatIndex]?.channels.find(c => c.id === editingChannelId);
+    if (!ch) return;
+    ch.name = name; ch.desc = desc; ch.rules = channelRulesCache.rules;
+    await structRef.set(struct);
+    closeModal('channelSettingsModal');
+    showToast("Channel updated!");
+    loadServerChannels(currentServerId);
+});
+
+document.getElementById('deleteChBtn')?.addEventListener('click', async () => {
+    if (!confirm("Delete this channel?")) return;
+    const structRef = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await structRef.get()).data();
+    const cat = struct.categories[editingChannelCatIndex];
+    cat.channels = cat.channels.filter(c => c.id !== editingChannelId);
+    await structRef.set(struct);
+    closeModal('channelSettingsModal');
+    showToast("Channel deleted.");
+    if (currentChannelId === editingChannelId) {
+        currentChannelId = null; currentChannelType = "text";
     }
-    async function startScreenShare(){
-        if(!currentVoiceChannelId) return;
-        try{ screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }); isSharing=true; localScreenTrack = screenStream.getVideoTracks()[0]; await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({ sharerUid:currentUser.uid, active:true, viewers:[], updatedAt:firebase.firestore.FieldValue.serverTimestamp() }); document.getElementById('shareScreenBtn').classList.add('active'); showToast("Screen sharing started"); displayLocalScreen(); screenStream.getVideoTracks()[0].onended = ()=>stopScreenShare(); }catch(e){ showToast("Screen share cancelled"); }
+    loadServerChannels(currentServerId);
+});
+
+document.getElementById('closeChSettingsBtn')?.addEventListener('click', () => closeModal('channelSettingsModal'));
+
+// ---- CATEGORY SETTINGS ----
+async function openCategorySettings(catIdx) {
+    const structRef = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await structRef.get()).data();
+    const cat = struct.categories[catIdx];
+    if (!cat) return;
+    editingCatIndex = catIdx;
+    document.getElementById('catSettingsName').value = cat.name;
+    openModal('categorySettingsModal');
+}
+
+document.getElementById('saveCatSettingsBtn')?.addEventListener('click', async () => {
+    const name = document.getElementById('catSettingsName').value.trim();
+    if (!name) return showToast("Name required");
+    const structRef = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await structRef.get()).data();
+    struct.categories[editingCatIndex].name = name;
+    await structRef.set(struct);
+    closeModal('categorySettingsModal');
+    showToast("Category updated!");
+    loadServerChannels(currentServerId);
+});
+
+document.getElementById('deleteCatBtn')?.addEventListener('click', async () => {
+    if (!confirm("Delete this category and all its channels?")) return;
+    const structRef = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await structRef.get()).data();
+    struct.categories.splice(editingCatIndex, 1);
+    await structRef.set(struct);
+    closeModal('categorySettingsModal');
+    showToast("Category deleted.");
+    currentChannelId = null; currentChannelType = "text";
+    loadServerChannels(currentServerId);
+});
+
+document.getElementById('closeChCatSettingsBtn')?.addEventListener('click', () => closeModal('categorySettingsModal'));
+
+// ---- VIEWS ----
+function showTextView() { document.getElementById('textChatView').style.display = 'flex'; document.getElementById('voiceChatView').style.display = 'none'; }
+function showVoiceView() { document.getElementById('textChatView').style.display = 'none'; document.getElementById('voiceChatView').style.display = 'flex'; }
+
+// ---- MESSAGES ----
+async function loadMessagesForChannel(serverId, channelId) {
+    if (unsubMessages) unsubMessages();
+    const c = document.getElementById('messagesContainer');
+    unsubMessages = db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages")
+        .orderBy("createdAt", "asc").onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                const d = doc.data();
+                const time = d.createdAt ? new Date(d.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+                html += `<div class="message">
+                    <img src="${esc(d.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.displayName||'U')}`)}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U'">
+                    <div class="message-content">
+                        <div class="message-author">${esc(d.displayName)}<span class="message-time">${time}</span></div>
+                        <div class="message-text">${esc(d.text)}</div>
+                    </div>
+                </div>`;
+            });
+            if (!html) html = '<div style="text-align:center;color:#6b7280;padding:20px;">✨ No messages yet</div>';
+            c.innerHTML = html;
+            c.scrollTop = c.scrollHeight;
+        });
+}
+
+async function sendMessage() {
+    if (!currentUser || !currentServerId || !currentChannelId || currentChannelType !== "text") return;
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({
+        text, uid: currentUser.uid,
+        displayName: currentUser.displayName || currentUser.email,
+        photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'U')}`,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+}
+
+// ---- VOICE ----
+async function joinVoiceChannel(channelId) {
+    document.getElementById('micPermModal').classList.add('active');
+    const doJoin = async (withMic) => {
+        closeModal('micPermModal');
+        if (withMic) {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                localAudioTrack = localStream.getAudioTracks()[0];
+                isMicMuted = false;
+            } catch (e) { showToast("Mic denied, joining muted"); isMicMuted = true; }
+        } else isMicMuted = true;
+        currentVoiceChannelId = channelId;
+        await registerVoicePresence(channelId, isMicMuted);
+        showVoiceView();
+        listenVoiceParticipants(channelId);
+        listenScreenShare(channelId);
+        updateMicBtnUI();
+        initWebRTC(channelId);
+    };
+    const allow = document.getElementById('allowMicBtn');
+    const deny = document.getElementById('denyMicBtn');
+    const na = allow.cloneNode(true), nd = deny.cloneNode(true);
+    allow.parentNode.replaceChild(na, allow); deny.parentNode.replaceChild(nd, deny);
+    na.addEventListener('click', () => doJoin(true));
+    nd.addEventListener('click', () => doJoin(false));
+}
+
+async function registerVoicePresence(channelId, muted) {
+    if (!currentUser) return;
+    const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members").doc(currentUser.uid);
+    await ref.set({ uid: currentUser.uid, displayName: currentUser.displayName || currentUser.email, photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName||'U')}`, muted, joinedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    listenSignals();
+}
+
+async function leaveVoiceIfIn() {
+    if (!currentVoiceChannelId || !currentUser) return;
+    await db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).delete().catch(() => {});
+    if (unsubVoice) unsubVoice();
+    if (unsubScreenShare) unsubScreenShare();
+    if (isSharing) await stopScreenShare();
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; localAudioTrack = null; }
+    Object.values(rtcPeerConnections).forEach(pc => pc.close());
+    rtcPeerConnections = {};
+    currentVoiceChannelId = null;
+    showTextView();
+}
+
+function listenVoiceParticipants(channelId) {
+    if (unsubVoice) unsubVoice();
+    const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members");
+    unsubVoice = ref.onSnapshot(snap => {
+        const grid = document.getElementById('voiceParticipantsGrid');
+        if (snap.empty) { grid.innerHTML = '<div style="color:#6b7280;">✨ No one here yet</div>'; return; }
+        let html = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            html += `<div class="voice-participant-card">
+                <img src="${esc(d.photoURL)}" class="voice-participant-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U'">
+                <div style="font-size:0.78rem;text-align:center;">
+                    <i class="fas ${d.muted ? 'fa-microphone-slash' : 'fa-microphone'}" style="color:${d.muted ? '#ef4444' : '#34d399'}"></i>
+                    ${esc(d.displayName)}
+                </div>
+            </div>`;
+        });
+        grid.innerHTML = html;
+    });
+}
+
+async function initWebRTC(channelId) {
+    if (!currentUser) return;
+    const membersRef = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members");
+    membersRef.onSnapshot(snap => {
+        snap.docChanges().forEach(change => {
+            const uid = change.doc.id;
+            if (uid === currentUser.uid) return;
+            if (change.type === 'added' && !rtcPeerConnections[uid]) createPeerConn(uid);
+            if (change.type === 'removed' && rtcPeerConnections[uid]) { rtcPeerConnections[uid].close(); delete rtcPeerConnections[uid]; }
+        });
+    });
+}
+
+async function createPeerConn(remoteUid) {
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    if (localAudioTrack && !isMicMuted) pc.addTrack(localAudioTrack);
+    pc.ontrack = e => { if (e.track.kind === 'audio') { const a = new Audio(); a.srcObject = new MediaStream([e.track]); a.play().catch(() => {}); } };
+    pc.onicecandidate = e => { if (e.candidate) sendSignal(remoteUid, { candidate: e.candidate }); };
+    const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
+    sendSignal(remoteUid, { sdp: pc.localDescription });
+    rtcPeerConnections[remoteUid] = pc;
+    return pc;
+}
+
+async function sendSignal(toUid, data) {
+    if (!currentServerId || !currentVoiceChannelId || !currentUser) return;
+    await db.collection("voiceSignals").doc(`${currentServerId}_${currentVoiceChannelId}`).collection(toUid).doc(currentUser.uid).set({ data, from: currentUser.uid, timestamp: Date.now() });
+}
+
+function listenSignals() {
+    if (!currentVoiceChannelId || !currentUser) return;
+    const ref = db.collection("voiceSignals").doc(`${currentServerId}_${currentVoiceChannelId}`).collection(currentUser.uid);
+    ref.onSnapshot(snap => {
+        snap.docChanges().forEach(async change => {
+            if (change.type !== 'added') return;
+            const fromUid = change.doc.id, sig = change.doc.data().data;
+            let pc = rtcPeerConnections[fromUid];
+            if (sig.sdp) {
+                if (!pc) pc = await createPeerConn(fromUid);
+                if (sig.sdp.type === 'offer') {
+                    await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
+                    const ans = await pc.createAnswer(); await pc.setLocalDescription(ans);
+                    sendSignal(fromUid, { sdp: pc.localDescription });
+                } else if (sig.sdp.type === 'answer') await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
+            } else if (sig.candidate && pc) await pc.addIceCandidate(new RTCIceCandidate(sig.candidate));
+            change.doc.ref.delete();
+        });
+    });
+}
+
+function updateMicBtnUI() {
+    const btn = document.getElementById('micToggleBtn');
+    if (!btn) return;
+    btn.classList.toggle('muted', isMicMuted);
+    btn.innerHTML = isMicMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+    if (localAudioTrack) localAudioTrack.enabled = !isMicMuted;
+    if (currentVoiceChannelId && currentUser)
+        db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).update({ muted: isMicMuted }).catch(() => {});
+}
+
+// ---- SCREEN SHARE ----
+async function startScreenShare() {
+    if (!currentVoiceChannelId) return;
+    try {
+        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        isSharing = true; localScreenTrack = screenStream.getVideoTracks()[0];
+        await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({ sharerUid: currentUser.uid, active: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+        document.getElementById('shareScreenBtn').classList.add('active');
+        showToast("Screen sharing started");
+        displayLocalScreen();
+        screenStream.getVideoTracks()[0].onended = () => stopScreenShare();
+    } catch (e) { showToast("Screen share cancelled"); }
+}
+
+function displayLocalScreen() {
+    const area = document.getElementById('screenShareDynamicArea');
+    area.innerHTML = `<div class="screenshare-container">
+        <div class="screenshare-video-wrap"><video id="localScreenVideo" class="screenshare-video" autoplay muted playsinline></video></div>
+        <div class="screenshare-viewers"><i class="fas fa-eye"></i> You are sharing</div>
+        <button id="stopShareBtn" style="margin:8px;background:#ef4444;border:none;padding:6px 14px;border-radius:20px;color:white;cursor:pointer;">Stop Sharing</button>
+    </div>`;
+    document.getElementById('localScreenVideo').srcObject = screenStream;
+    document.getElementById('stopShareBtn')?.addEventListener('click', stopScreenShare);
+}
+
+async function stopScreenShare() {
+    if (screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
+    isSharing = false; localScreenTrack = null;
+    document.getElementById('shareScreenBtn').classList.remove('active');
+    if (currentServerId && currentVoiceChannelId)
+        await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({ active: false }, { merge: true });
+    document.getElementById('screenShareDynamicArea').innerHTML = '';
+    showToast("Stopped sharing");
+}
+
+function listenScreenShare(channelId) {
+    if (unsubScreenShare) unsubScreenShare();
+    const ref = db.collection("screenShares").doc(`${currentServerId}_${channelId}`);
+    unsubScreenShare = ref.onSnapshot(snap => {
+        if (!snap.exists || !snap.data()?.active) { if (!isSharing) document.getElementById('screenShareDynamicArea').innerHTML = ''; return; }
+        const data = snap.data();
+        if (data.sharerUid !== currentUser?.uid && !isSharing) {
+            document.getElementById('screenShareDynamicArea').innerHTML = `<div class="screenshare-container">
+                <div class="screenshare-video-wrap"><video id="remoteScreenVideo" class="screenshare-video" autoplay playsinline></video></div>
+                <div class="screenshare-viewers"><i class="fas fa-eye"></i> Watching screen...</div>
+            </div>`;
+        }
+    });
+}
+
+// ---- SERVER MANAGEMENT ----
+async function createServer(name) {
+    if (!currentUser) return;
+    const ref = db.collection("servers").doc();
+    await ref.set({ name, ownerId: currentUser.uid });
+    await db.collection("serverMembers").add({ serverId: ref.id, userId: currentUser.uid, role: "owner" });
+    await db.collection("serverStructure").doc(ref.id).set({ categories: [{ name: "GENERAL", channels: [{ id: "general", name: "general", type: "text", rules: [], desc: "" }] }] });
+    await switchServer(ref.id);
+    renderServerList();
+}
+
+async function deleteCurrentServer() {
+    if (!currentServerId) return;
+    const doc = await db.collection("servers").doc(currentServerId).get();
+    if (doc.data()?.name === "Stonks Hub") { showToast("Cannot delete Stonks Hub"); return; }
+    if (!confirm("Delete this server?")) return;
+    const members = await db.collection("serverMembers").where("serverId", "==", currentServerId).get();
+    members.forEach(d => d.ref.delete());
+    await db.collection("servers").doc(currentServerId).delete();
+    await db.collection("serverStructure").doc(currentServerId).delete();
+    currentServerId = null;
+    const servers = await fetchUserServers();
+    if (servers.length) await switchServer(servers[0].id);
+    renderServerList();
+}
+
+async function generateInvite() {
+    if (!currentServerId) return;
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    await db.collection("invites").doc(code).set({ serverId: currentServerId });
+    document.getElementById('inviteCodeDisplay').innerText = code;
+    openModal('inviteModal');
+}
+
+async function joinWithCode(code) {
+    const invite = await db.collection("invites").doc(code).get();
+    if (!invite.exists) { showToast("Invalid code"); return; }
+    const serverId = invite.data().serverId;
+    const existing = await db.collection("serverMembers").where("serverId", "==", serverId).where("userId", "==", currentUser.uid).get();
+    if (!existing.empty) { showToast("Already a member"); return; }
+    await db.collection("serverMembers").add({ serverId, userId: currentUser.uid, role: "member" });
+    await renderServerList(); await switchServer(serverId);
+    showToast("Joined server!");
+}
+
+async function createCategory(name) {
+    if (!currentServerId) return;
+    const ref = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await ref.get()).data() || { categories: [] };
+    struct.categories.push({ name, channels: [] });
+    await ref.set(struct);
+    loadServerChannels(currentServerId);
+}
+
+async function createChannel(name, type, categoryName) {
+    const ref = db.collection("serverStructure").doc(currentServerId);
+    const struct = (await ref.get()).data();
+    const cat = struct.categories.find(c => c.name === categoryName);
+    if (!cat) return;
+    const newId = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+    cat.channels.push({ id: newId, name, type, rules: [], desc: "" });
+    await ref.set(struct);
+    loadServerChannels(currentServerId);
+}
+
+function openCreateChannelModal(categoryName) {
+    db.collection("serverStructure").doc(currentServerId).get().then(doc => {
+        const struct = doc.data();
+        const sel = document.getElementById('categorySelect');
+        sel.innerHTML = '';
+        struct.categories.forEach(c => {
+            const opt = document.createElement('option'); opt.value = c.name; opt.innerText = c.name; sel.appendChild(opt);
+        });
+        sel.value = categoryName;
+    });
+    openModal('createChannelModal');
+}
+
+// ---- MODAL HELPERS ----
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// ---- SIDEBAR MOBILE ----
+function closeSidebar() { document.getElementById('sidebarPanel').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('active'); }
+function openSidebar() { document.getElementById('sidebarPanel').classList.add('open'); document.getElementById('mobileOverlay').classList.add('active'); }
+
+// ---- EVENT LISTENERS ----
+document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
+document.getElementById('messageInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+document.getElementById('signOutBtn')?.addEventListener('click', () => { leaveVoiceIfIn(); auth.signOut(); });
+document.getElementById('createCategoryBtn')?.addEventListener('click', () => openModal('createCategoryModal'));
+document.getElementById('invitePeopleBtn')?.addEventListener('click', generateInvite);
+document.getElementById('invitePeopleBtnMember')?.addEventListener('click', generateInvite);
+document.getElementById('headerInviteBtn')?.addEventListener('click', generateInvite);
+document.getElementById('deleteServerBtn')?.addEventListener('click', deleteCurrentServer);
+document.getElementById('hamburgerBtn')?.addEventListener('click', openSidebar);
+document.getElementById('mobileOverlay')?.addEventListener('click', closeSidebar);
+
+document.getElementById('confirmCreateServer')?.addEventListener('click', async () => {
+    const n = document.getElementById('newServerName').value.trim(); if (n) await createServer(n); closeModal('createServerModal');
+});
+document.getElementById('closeCreateModal')?.addEventListener('click', () => closeModal('createServerModal'));
+document.getElementById('confirmCreateCategory')?.addEventListener('click', async () => {
+    const n = document.getElementById('categoryName').value.trim(); if (n) await createCategory(n); closeModal('createCategoryModal');
+});
+document.getElementById('closeCatModal')?.addEventListener('click', () => closeModal('createCategoryModal'));
+document.getElementById('confirmCreateChannel')?.addEventListener('click', async () => {
+    const name = document.getElementById('channelName').value.trim();
+    const type = document.getElementById('channelTypeSelect').value;
+    const cat = document.getElementById('categorySelect').value;
+    if (name && cat) await createChannel(name, type, cat); closeModal('createChannelModal');
+});
+document.getElementById('closeChanModal')?.addEventListener('click', () => closeModal('createChannelModal'));
+document.getElementById('closeInviteModal')?.addEventListener('click', () => closeModal('inviteModal'));
+document.getElementById('copyInviteBtn')?.addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('inviteCodeDisplay').innerText); showToast("Copied!"); });
+document.getElementById('confirmJoinServer')?.addEventListener('click', async () => {
+    const c = document.getElementById('joinCodeInput').value.trim(); if (c) await joinWithCode(c); closeModal('joinServerModal');
+});
+document.getElementById('closeJoinModal')?.addEventListener('click', () => closeModal('joinServerModal'));
+document.getElementById('micToggleBtn')?.addEventListener('click', () => { isMicMuted = !isMicMuted; updateMicBtnUI(); });
+document.getElementById('leaveVoiceBtn')?.addEventListener('click', async () => { await leaveVoiceIfIn(); currentChannelId = null; loadServerChannels(currentServerId); });
+document.getElementById('shareScreenBtn')?.addEventListener('click', () => { isSharing ? stopScreenShare() : startScreenShare(); });
+
+// ---- INIT STONKS HUB ----
+setTimeout(async () => {
+    const all = await db.collection("servers").get();
+    const exists = all.docs.some(d => d.data().name === "Stonks Hub");
+    if (!exists) {
+        const hub = db.collection("servers").doc();
+        await hub.set({ name: "Stonks Hub", ownerId: "system" });
+        await db.collection("serverStructure").doc(hub.id).set({ categories: [
+            { name: "GENERAL", channels: [{ id: "welcome", name: "welcome", type: "text", rules: [], desc: "Welcome to Stonks Hub!" }] },
+            { name: "VOICE", channels: [{ id: "voice-lounge", name: "General Voice", type: "voice", rules: [], desc: "" }] }
+        ]});
     }
-    function displayLocalScreen(){ const area = document.getElementById('screenShareDynamicArea'); area.innerHTML = `<div class="screenshare-container"><div class="screenshare-video-wrap"><video id="localScreenVideo" class="screenshare-video" autoplay muted playsinline></video></div><div class="screenshare-viewers"><i class="fas fa-eye"></i> <span id="viewerCount">You are sharing</span></div><button id="stopShareInlineBtn" style="margin:8px; background:#ef4444; border:none; padding:6px; border-radius:20px;">Stop Sharing</button></div>`; document.getElementById('localScreenVideo').srcObject = screenStream; document.getElementById('stopShareInlineBtn')?.addEventListener('click',stopScreenShare); }
-    async function stopScreenShare(){ if(screenStream){ screenStream.getTracks().forEach(t=>t.stop()); screenStream=null; } isSharing=false; document.getElementById('shareScreenBtn').classList.remove('active'); await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({ active:false },{merge:true}); document.getElementById('screenShareDynamicArea').innerHTML=''; showToast("Stopped sharing"); }
-    function listenScreenShare(channelId){ if(unsubscribeScreenShare) unsubscribeScreenShare(); const docRef = db.collection("screenShares").doc(`${currentServerId}_${channelId}`); unsubscribeScreenShare = docRef.onSnapshot(snap=>{ if(!snap.exists || !snap.data()?.active){ if(!isSharing) document.getElementById('screenShareDynamicArea').innerHTML=''; return; } const data=snap.data(); if(data.sharerUid !== currentUser?.uid && !isSharing){ document.getElementById('screenShareDynamicArea').innerHTML = `<div class="screenshare-container"><div class="screenshare-video-wrap"><video id="remoteScreenVideo" class="screenshare-video" autoplay playsinline></video></div><div class="screenshare-viewers"><i class="fas fa-eye"></i> Watching screen...</div></div>`; } if(data.sharerUid === currentUser?.uid && isSharing) displayLocalScreen(); });
-    }
-    function updateMicBtnUI(){ const btn = document.getElementById('micToggleBtn'); if(!btn) return; btn.classList.toggle('muted', isMicMuted); btn.innerHTML = isMicMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>'; if(localAudioTrack) localAudioTrack.enabled = !isMicMuted; if(currentVoiceChannelId && currentUser) db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).update({ muted: isMicMuted }).catch(()=>{}); }
-    document.getElementById('micToggleBtn')?.addEventListener('click',()=>{ isMicMuted = !isMicMuted; updateMicBtnUI(); });
-    document.getElementById('leaveVoiceBtn')?.addEventListener('click',async()=>{ await leaveVoiceIfIn(); currentChannelId=null; loadServerChannels(currentServerId); });
-    document.getElementById('shareScreenBtn')?.addEventListener('click',()=>{ isSharing ? stopScreenShare() : startScreenShare(); });
-    async function loadMessagesForChannel(serverId,channelId){ if(unsubscribeMessages) unsubscribeMessages(); const container = document.getElementById('messagesContainer'); unsubscribeMessages = db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages").orderBy("createdAt","asc").onSnapshot(snap=>{ let html=''; snap.forEach(doc=>{ const d=doc.data(); html+=`<div class="message"><img src="${escapeHtml(d.photoURL)}" class="message-avatar"><div class="message-content"><div class="message-author">${escapeHtml(d.displayName)}<span class="message-time">${d.createdAt?new Date(d.createdAt.toDate()).toLocaleTimeString():''}</span></div><div class="message-text">${escapeHtml(d.text)}</div></div></div>`; }); if(!html) html='<div style="text-align:center;color:#6b7280;">✨ No messages</div>'; container.innerHTML=html; container.scrollTop=container.scrollHeight; }); }
-    async function sendMessage(){ if(!currentUser||!currentServerId||!currentChannelId||currentChannelType!=="text") return; const input=document.getElementById('messageInput'); const text=input.value.trim(); if(!text) return; input.value=''; await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({ text, uid:currentUser.uid, displayName:currentUser.displayName||currentUser.email, photoURL:currentUser.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName||'U')}`, createdAt:firebase.firestore.FieldValue.serverTimestamp() }); }
-    async function createServer(name){ if(!currentUser) return; const serverRef = db.collection("servers").doc(); await serverRef.set({ name, ownerId:currentUser.uid }); await db.collection("serverMembers").add({ serverId:serverRef.id, userId:currentUser.uid, role:"owner" }); await db.collection("serverStructure").doc(serverRef.id).set({ categories:[{ name:"GENERAL", channels:[{ id:"general", name:"general", type:"text" }] }] }); await switchServer(serverRef.id); renderServerList(); }
-    async function deleteCurrentServer(){ if(!currentServerId) return; const serverDoc=await db.collection("servers").doc(currentServerId).get(); if(serverDoc.data()?.name==="Stonks Hub"){ showToast("Cannot delete Stonks Hub"); return; } if(confirm("Delete?")){ const members=await db.collection("serverMembers").where("serverId","==",currentServerId).get(); members.forEach(d=>d.ref.delete()); await db.collection("servers").doc(currentServerId).delete(); await db.collection("serverStructure").doc(currentServerId).delete(); currentServerId=null; const servers=await fetchUserServers(); if(servers.length) await switchServer(servers[0].id); else loadServerChannels(null); renderServerList(); } }
-    async function generateInvite(){ if(!currentServerId) return; const code=Math.random().toString(36).substring(2,10).toUpperCase(); await db.collection("invites").doc(code).set({ serverId:currentServerId }); document.getElementById('inviteCodeDisplay').innerText=code; document.getElementById('inviteModal').classList.add('active'); }
-    async function joinWithCode(code){ const invite=await db.collection("invites").doc(code).get(); if(!invite.exists){ showToast("Invalid"); return; } const serverId=invite.data().serverId; const existing=await db.collection("serverMembers").where("serverId","==",serverId).where("userId","==",currentUser.uid).get(); if(!existing.empty){ showToast("Already member"); return; } await db.collection("serverMembers").add({ serverId, userId:currentUser.uid, role:"member" }); await renderServerList(); await switchServer(serverId); }
-    async function createCategory(name){ if(!currentServerId) return; const structRef=db.collection("serverStructure").doc(currentServerId); const struct=(await structRef.get()).data()||{ categories:[] }; struct.categories.push({ name, channels:[] }); await structRef.set(struct); loadServerChannels(currentServerId); }
-    async function createChannel(name,type,categoryName){ const structRef=db.collection("serverStructure").doc(currentServerId); const struct=(await structRef.get()).data(); const cat=struct.categories.find(c=>c.name===categoryName); if(!cat) return; const newId=name.toLowerCase().replace(/\s/g,'-')+Date.now(); cat.channels.push({ id:newId, name, type }); await structRef.set(struct); loadServerChannels(currentServerId); }
-    function openCreateChannelModal(categoryName){ const select=document.getElementById('categorySelect'); db.collection("serverStructure").doc(currentServerId).get().then(doc=>{ const struct=doc.data(); select.innerHTML=''; struct.categories.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.name; opt.innerText=c.name; select.appendChild(opt); }); select.value=categoryName; }); document.getElementById('createChannelModal').classList.add('active'); }
-    function closeSidebarMobile(){ document.getElementById('sidebarPanel').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('active'); }
-    document.getElementById('sendBtn')?.addEventListener('click',sendMessage); document.getElementById('messageInput')?.addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage();});
-    document.getElementById('signOutBtn')?.addEventListener('click',()=>{ leaveVoiceIfIn(); auth.signOut(); });
-    document.getElementById('createCategoryBtn')?.addEventListener('click',()=>document.getElementById('createCategoryModal').classList.add('active'));
-    document.getElementById('invitePeopleBtn')?.addEventListener('click',generateInvite); document.getElementById('headerInviteBtn')?.addEventListener('click',generateInvite);
-    document.getElementById('deleteServerBtn')?.addEventListener('click',deleteCurrentServer);
-    document.getElementById('confirmCreateServer')?.addEventListener('click',async()=>{ const n=document.getElementById('newServerName').value; if(n) await createServer(n); document.getElementById('createServerModal').classList.remove('active'); });
-    document.getElementById('closeCreateModal')?.addEventListener('click',()=>document.getElementById('createServerModal').classList.remove('active'));
-    document.getElementById('confirmCreateCategory')?.addEventListener('click',async()=>{ const n=document.getElementById('categoryName').value; if(n) await createCategory(n); document.getElementById('createCategoryModal').classList.remove('active'); });
-    document.getElementById('closeCatModal')?.addEventListener('click',()=>document.getElementById('createCategoryModal').classList.remove('active'));
-    document.getElementById('confirmCreateChannel')?.addEventListener('click',async()=>{ const name=document.getElementById('channelName').value, type=document.getElementById('channelTypeSelect').value, cat=document.getElementById('categorySelect').value; if(name&&cat) await createChannel(name,type,cat); document.getElementById('createChannelModal').classList.remove('active'); });
-    document.getElementById('closeChanModal')?.addEventListener('click',()=>document.getElementById('createChannelModal').classList.remove('active'));
-    document.getElementById('closeInviteModal')?.addEventListener('click',()=>document.getElementById('inviteModal').classList.remove('active'));
-    document.getElementById('confirmJoinServer')?.addEventListener('click',async()=>{ const c=document.getElementById('joinCodeInput').value; if(c) await joinWithCode(c); document.getElementById('joinServerModal').classList.remove('active'); });
-    document.getElementById('closeJoinModal')?.addEventListener('click',()=>document.getElementById('joinServerModal').classList.remove('active'));
-    document.getElementById('mobileOverlay')?.addEventListener('click',closeSidebarMobile);
-    const menuBtn = document.createElement('button'); menuBtn.innerHTML='<i class="fas fa-bars"></i>'; menuBtn.style.cssText="position:fixed;bottom:20px;left:20px;background:#fbbf24;border:none;border-radius:50%;width:48px;height:48px;z-index:1200;display:none;"; document.body.appendChild(menuBtn); const updateMenuBtn=()=>menuBtn.style.display=window.innerWidth<=700?'flex':'none'; updateMenuBtn(); menuBtn.addEventListener('click',()=>document.getElementById('sidebarPanel').classList.add('open'));
-    window.addEventListener('resize',updateMenuBtn);
-    auth.onAuthStateChanged(user=>{ currentUser=user; updateAuthUI(user); });
-    setTimeout(async()=>{ const all=await db.collection("servers").get(); if(all.empty){ const hub=db.collection("servers").doc(); await hub.set({ name:"Stonks Hub", ownerId:"system" }); await db.collection("serverStructure").doc(hub.id).set({ categories:[{ name:"GENERAL", channels:[{ id:"welcome", name:"welcome", type:"text" }] },{ name:"VOICE", channels:[{ id:"voice-lounge", name:"General Voice", type:"voice" }] }] }); } },1000);
+}, 1200);
 </script>
-<div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;"><div style="background:#1e293b;padding:30px;border-radius:28px;text-align:center;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2 style="margin:12px 0 8px;">Stonks Hub</h2><p style="margin-bottom:20px;">Voice & Screen Share • Real time</p><button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;cursor:pointer;"><i class="fab fa-google"></i> Sign in with Google</button></div></div>
-<script>document.getElementById('googleSignInBtn')?.addEventListener('click', () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()));</script>
+
+<!-- AUTH OVERLAY -->
+<div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;">
+    <div style="background:#1e293b;padding:36px 28px;border-radius:24px;text-align:center;border:1px solid #334155;max-width:340px;width:90%;">
+        <i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i>
+        <h2 style="margin:12px 0 8px;font-size:1.4rem;">Stonks Hub</h2>
+        <p style="margin-bottom:24px;color:#9ca3af;font-size:0.9rem;">Voice & Screen Share · Real time</p>
+        <button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:12px 28px;border-radius:40px;cursor:pointer;font-size:1rem;font-weight:700;color:#0f172a;">
+            <i class="fab fa-google"></i> Sign in with Google
+        </button>
+    </div>
+</div>
+<script>
+document.getElementById('googleSignInBtn')?.addEventListener('click', () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()));
+</script>
 </body>
 </html>
