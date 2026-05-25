@@ -3,179 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Stonks Hub · Mobile Voice & Screen Share</title>
+    <title>Stonks Hub · Voice & Screen Share</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-        body { font-family:'Inter',sans-serif; background:#0a0a0f; color:#e2e8f0; height:100vh; overflow:hidden; touch-action:pan-x pan-y; }
-        .app { display:flex; height:100%; width:100%; overflow:hidden; position:relative; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e2e8f0; height: 100vh; overflow: hidden; touch-action: pan-x pan-y; }
+        .app { display: flex; height: 100%; width: 100%; overflow: hidden; }
 
-        /* SERVER LIST */
-        .server-list { width:72px; background:#0f0f14; border-right:1px solid #1f2937; display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px 0; overflow-y:auto; flex-shrink:0; -webkit-overflow-scrolling:touch; }
-        .server-icon { width:52px; height:52px; background:#1e293b; border-radius:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s ease; position:relative; color:#fbbf24; font-weight:bold; font-size:1.2rem; touch-action:manipulation; }
-        .server-icon.active { border-radius:16px; background:linear-gradient(135deg,#fbbf24,#ef4444); color:white; transform:scale(1.02); }
-        .add-server-btn,.join-server-btn { background:#1f2937; border:2px dashed #fbbf24; }
+        /* SERVER LIST - always visible on desktop, hidden on mobile via media query */
+        .server-list { width: 72px; background: #0f0f14; border-right: 1px solid #1f2937; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 0; overflow-y: auto; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
+        .server-icon { width: 52px; height: 52px; background: #1e293b; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; position: relative; color: #fbbf24; font-weight: bold; font-size: 1.2rem; touch-action: manipulation; }
+        .server-icon.active { border-radius: 16px; background: linear-gradient(135deg, #fbbf24, #ef4444); color: white; transform: scale(1.02); }
+        .add-server-btn, .join-server-btn { background: #1f2937; border: 2px dashed #fbbf24; }
 
-        /* MOBILE BOTTOM NAV */
-        .mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; background:#0f0f14e6; backdrop-filter:blur(12px); border-top:1px solid #1f2937; padding:8px 20px; justify-content:space-around; z-index:1200; gap:16px; }
-        .mobile-nav-item { flex:1; text-align:center; padding:10px 0; border-radius:32px; background:#1e293b; color:#94a3b8; font-size:0.75rem; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; transition:all 0.1s; touch-action:manipulation; }
-        .mobile-nav-item.active { background:#fbbf24; color:#0f172a; }
-
-        /* SIDEBAR */
-        .sidebar { width:280px; background:#111827; border-right:1px solid #1f2937; display:flex; flex-direction:column; flex-shrink:0; transition:transform 0.25s cubic-bezier(0.2,0.9,0.4,1.1); z-index:1100; box-shadow:4px 0 20px rgba(0,0,0,0.5); }
-        .overlay { position:fixed; inset:0; background:#00000080; z-index:1050; display:none; backdrop-filter:blur(2px); }
-        .overlay.active { display:block; }
+        /* SIDEBAR - always part of layout on desktop, slide-out on mobile */
+        .sidebar { width: 280px; background: #111827; border-right: 1px solid #1f2937; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1); z-index: 1100; }
+        .overlay { position: fixed; inset: 0; background: #00000080; z-index: 1050; display: none; backdrop-filter: blur(2px); }
+        .overlay.active { display: block; }
 
         /* CHAT AREA */
-        .chat-area { flex:1; display:flex; flex-direction:column; background:#0f172a; overflow:hidden; min-width:0; }
-        .chat-header { padding:12px 16px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; background:#0f172a; gap:12px; flex-wrap:wrap; }
-        .channel-info { display:flex; align-items:center; gap:8px; font-weight:600; font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .invite-btn { background:#1e293b; border:none; padding:8px 16px; border-radius:40px; color:#fbbf24; cursor:pointer; font-size:0.75rem; touch-action:manipulation; }
-
-        /* MESSAGES */
-        .messages-container { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; -webkit-overflow-scrolling:touch; }
-        .message { display:flex; gap:10px; max-width:100%; animation:fadeIn 0.2s; }
-        .message-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; flex-shrink:0; }
-        .message-content { background:#1e293b; padding:10px 14px; border-radius:20px; word-break:break-word; flex:1; }
-
-        /* INPUT AREA - CRITICAL FIX: always visible on mobile */
-        .input-area { padding:12px; border-top:1px solid #1e293b; background:#0f172a; display:flex; gap:10px; align-items:center; flex-shrink:0; }
-        .input-area input { flex:1; background:#1e293b; border:none; padding:14px 18px; border-radius:40px; color:white; outline:none; font-size:1rem; min-width:0; }
-        .input-area input::placeholder { color:#6b7280; }
-
-        /* TEXT CHAT VIEW - must fill and show input */
-        #textChatView { display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #0f172a; overflow: hidden; min-width: 0; }
+        .chat-header { padding: 12px 16px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between; background: #0f172a; gap: 12px; flex-wrap: wrap; }
+        .channel-info { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .invite-btn { background: #1e293b; border: none; padding: 8px 16px; border-radius: 40px; color: #fbbf24; cursor: pointer; font-size: 0.75rem; touch-action: manipulation; }
+        .messages-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
+        .message { display: flex; gap: 10px; max-width: 100%; animation: fadeIn 0.2s; }
+        .message-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .message-content { background: #1e293b; padding: 10px 14px; border-radius: 20px; word-break: break-word; flex: 1; }
+        .input-area { padding: 12px; border-top: 1px solid #1e293b; background: #0f172a; display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+        .input-area input { flex: 1; background: #1e293b; border: none; padding: 14px 18px; border-radius: 40px; color: white; outline: none; font-size: 1rem; min-width: 0; }
 
         /* VOICE VIEW */
-        .voice-view { flex:1; display:flex; flex-direction:column; background:#060b14; overflow:hidden; }
-        .voice-view-body { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:20px; align-items:center; -webkit-overflow-scrolling:touch; }
-
-        /* SCREEN SHARE: video on top, participants below left-to-right wrapping */
-        .screenshare-container { width:100%; background:#000; border-radius:24px; overflow:hidden; margin-bottom:12px; }
-        .screenshare-video { width:100%; max-height:240px; object-fit:contain; background:#000; display:block; }
-
-        /* PARTICIPANTS GRID: left-to-right, wrap rows */
-        .voice-participants-grid { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:16px; width:100%; padding:4px 0; }
-        .voice-participant-card { display:flex; flex-direction:column; align-items:center; gap:8px; background:#111827cc; padding:12px 14px; border-radius:20px; backdrop-filter:blur(8px); width:90px; flex-shrink:0; }
-        .voice-participant-avatar { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid #fbbf24; }
-        .voice-participant-name { font-size:0.65rem; color:#cbd5e1; text-align:center; word-break:break-word; max-width:80px; }
-
-        .voice-controls { display:flex; gap:20px; align-items:center; padding:16px 20px; background:#0d1727; border-top:1px solid #1e293b; justify-content:center; flex-shrink:0; }
-        .voice-ctrl-btn { width:60px; height:60px; border-radius:50%; border:none; cursor:pointer; background:#1e293b; color:white; font-size:26px; transition:0.1s; touch-action:manipulation; }
-        .btn-mic.muted { background:#3b1a1a; color:#ef4444; }
-        .btn-share-screen.active { background:#2563eb; color:white; }
+        .voice-view { flex: 1; display: flex; flex-direction: column; background: #060b14; overflow: hidden; }
+        .voice-view-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 20px; align-items: center; -webkit-overflow-scrolling: touch; }
+        .voice-participants-grid { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 16px; width: 100%; }
+        .voice-participant-card { display: flex; flex-direction: column; align-items: center; gap: 8px; background: #111827cc; padding: 12px 14px; border-radius: 20px; backdrop-filter: blur(8px); width: 90px; flex-shrink: 0; }
+        .voice-participant-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid #fbbf24; }
+        .voice-participant-name { font-size: 0.65rem; color: #cbd5e1; text-align: center; }
+        .voice-controls { display: flex; gap: 20px; align-items: center; padding: 16px 20px; background: #0d1727; border-top: 1px solid #1e293b; justify-content: center; flex-shrink: 0; }
+        .voice-ctrl-btn { width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; background: #1e293b; color: white; font-size: 26px; transition: 0.1s; touch-action: manipulation; }
+        .btn-mic.muted { background: #3b1a1a; color: #ef4444; }
+        .btn-share-screen.active { background: #2563eb; color: white; }
+        .screenshare-container { width: 100%; background: #000; border-radius: 24px; overflow: hidden; margin-bottom: 12px; }
+        .screenshare-video { width: 100%; max-height: 240px; object-fit: contain; background: #000; display: block; }
 
         /* MODALS */
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.96); z-index:2000; align-items:center; justify-content:center; padding:16px; }
-        .modal.active { display:flex; }
-        .modal-content { background:#0f172a; border-radius:32px; padding:28px 24px; width:100%; max-width:400px; border:1px solid #334155; }
-        .btn-gold { background:#fbbf24; color:#0f172a; border:none; padding:12px 22px; border-radius:40px; font-weight:bold; cursor:pointer; font-size:1rem; margin-top:12px; width:100%; }
-        .btn-outline { background:transparent; border:1px solid #fbbf24; color:#fbbf24; padding:10px 18px; border-radius:40px; cursor:pointer; width:100%; margin-top:8px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000; align-items: center; justify-content: center; padding: 16px; }
+        .modal.active { display: flex; }
+        .modal-content { background: #0f172a; border-radius: 32px; padding: 28px 24px; width: 100%; max-width: 400px; border: 1px solid #334155; }
+        .btn-gold { background: #fbbf24; color: #0f172a; border: none; padding: 12px 22px; border-radius: 40px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 12px; width: 100%; }
+        .btn-outline { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 10px 18px; border-radius: 40px; cursor: pointer; width: 100%; margin-top: 8px; }
 
-        /* TOAST */
-        .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#1e293b; padding:10px 24px; border-radius:40px; z-index:3000; border-left:4px solid #fbbf24; opacity:0; transition:opacity 0.2s; pointer-events:none; white-space:nowrap; font-size:0.85rem; }
-        .toast.show { opacity:1; }
-
-        @keyframes fadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+        /* CHANNEL SETTINGS FULLSCREEN */
+        .ch-settings-overlay { display: none; position: fixed; inset: 0; background: #0a0a0f; z-index: 5000; flex-direction: column; overflow: hidden; }
+        .ch-settings-overlay.active { display: flex; }
+        .ch-settings-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid #1e293b; background: #0f172a; flex-shrink: 0; }
+        .ch-settings-header h2 { flex: 1; font-size: 1.1rem; font-weight: 700; }
+        .ch-settings-close-btn { background: #1e293b; border: none; color: #e2e8f0; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+        .settings-save-btn { background: #fbbf24; color: #0f172a; border: none; padding: 8px 20px; border-radius: 40px; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+        .ch-settings-tabs { display: flex; gap: 4px; padding: 12px 20px; border-bottom: 1px solid #1e293b; background: #0f172a; flex-shrink: 0; overflow-x: auto; }
+        .ch-tab-btn { background: none; border: none; color: #6b7280; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 0.85rem; font-weight: 600; white-space: nowrap; transition: all 0.15s; }
+        .ch-tab-btn.active { background: #1e293b; color: #fbbf24; }
+        .ch-settings-body { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        .settings-section { margin-bottom: 28px; }
+        .settings-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 8px; }
+        .settings-input, .settings-select { width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 16px; color: #e2e8f0; font-size: 0.95rem; outline: none; }
+        .settings-desc { font-size: 0.78rem; color: #6b7280; margin-top: 6px; line-height: 1.5; }
+        .toggle-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 0; }
+        .toggle-info { flex: 1; }
+        .toggle-info .toggle-title { font-weight: 600; font-size: 0.95rem; }
+        .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-slider { position: absolute; inset: 0; background: #334155; border-radius: 24px; cursor: pointer; transition: background 0.2s; }
+        .toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+        .toggle-switch input:checked + .toggle-slider { background: #fbbf24; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+        .private-access-section { background: #1a2234; border-radius: 16px; padding: 16px; margin-top: 12px; display: none; }
+        .private-access-section.visible { display: block; }
+        .access-add-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+        .access-add-input { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 30px; padding: 10px 16px; color: #e2e8f0; font-size: 0.85rem; outline: none; }
+        .access-add-btn { background: #fbbf24; border: none; border-radius: 30px; padding: 10px 16px; color: #0f172a; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+        .access-list-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #6b7280; margin-bottom: 8px; }
+        .access-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #0f172a; border-radius: 12px; margin-bottom: 6px; }
+        .access-item-name { flex: 1; font-size: 0.85rem; }
+        .access-item-remove { background: none; border: none; color: #6b7280; cursor: pointer; font-size: 0.8rem; }
+        .ch-tab-panel { display: none; }
+        .ch-tab-panel.active { display: block; }
 
         /* SIDEBAR CHANNELS */
-        .category-group { margin-bottom:4px; }
-        .category-header { display:flex; align-items:center; gap:8px; padding:8px 12px; cursor:pointer; border-radius:8px; transition:background 0.15s; user-select:none; }
-        .category-header:hover { background:#1f2937; }
-        .category-header .category-name { flex:1; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af; }
-        .add-channel-btn { background:none; border:none; color:#9ca3af; cursor:pointer; padding:2px 6px; border-radius:6px; font-size:0.8rem; touch-action:manipulation; }
-        .add-channel-btn:hover { color:#fbbf24; }
-        /* Settings icon for owners */
-        .cat-settings-btn { background:none; border:none; color:#6b7280; cursor:pointer; padding:2px 6px; border-radius:6px; font-size:0.8rem; touch-action:manipulation; transition:color 0.15s; }
-        .cat-settings-btn:hover { color:#fbbf24; }
-        .channels-container { margin-left:8px; }
-        .channel-item { padding:8px 10px 8px 28px; border-radius:10px; display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.88rem; color:#9ca3af; transition:all 0.1s; position:relative; }
-        .channel-item:hover { background:#1e293b; color:#e2e8f0; }
-        .channel-item.active { background:#1e293b; color:#fbbf24; }
-        .channel-item .ch-settings-btn { display:none; background:none; border:none; color:#6b7280; cursor:pointer; padding:2px 4px; margin-left:auto; font-size:0.75rem; touch-action:manipulation; }
-        .channel-item:hover .ch-settings-btn { display:block; }
-        .ch-settings-btn:hover { color:#fbbf24; }
-        .voice-members-sidebar { padding-left:44px; font-size:0.7rem; color:#9ca3af; }
+        .category-group { margin-bottom: 4px; }
+        .category-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-radius: 8px; }
+        .category-header:hover { background: #1f2937; }
+        .category-name { flex: 1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; }
+        .add-channel-btn, .cat-settings-btn { background: none; border: none; color: #6b7280; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; touch-action: manipulation; }
+        .add-channel-btn:hover, .cat-settings-btn:hover { color: #fbbf24; }
+        .channels-container { margin-left: 8px; }
+        .channel-item { padding: 8px 10px 8px 28px; border-radius: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.88rem; color: #9ca3af; transition: all 0.1s; }
+        .channel-item:hover { background: #1e293b; color: #e2e8f0; }
+        .channel-item.active { background: #1e293b; color: #fbbf24; }
+        .ch-settings-btn { background: none; border: none; color: #6b7280; cursor: pointer; padding: 2px 6px; margin-left: auto; font-size: 0.7rem; border-radius: 6px; }
+        .ch-settings-btn:hover { color: #fbbf24; }
+        .voice-members-sidebar { padding-left: 44px; font-size: 0.7rem; color: #9ca3af; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .sidebar-header { padding: 16px; border-bottom: 1px solid #1f2937; }
+        .server-name-header { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
+        .server-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .server-actions button { background: #1f2937; border: none; padding: 8px 10px; border-radius: 16px; color: #9ca3af; cursor: pointer; font-size: 0.8rem; transition: color 0.15s; }
+        .server-actions button:hover { color: #fbbf24; }
+        .member-info { padding: 12px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1f2937; }
+        .owner-badge { background: #fbbf24; color: #000; border-radius: 20px; padding: 2px 8px; margin-left: 6px; font-size: 0.7rem; font-weight: 700; }
 
-        /* CHANNEL SETTINGS FULL-SCREEN MODAL */
-        .ch-settings-overlay { display:none; position:fixed; inset:0; background:#0a0a0f; z-index:5000; flex-direction:column; overflow:hidden; }
-        .ch-settings-overlay.active { display:flex; }
-        .ch-settings-header { display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid #1e293b; background:#0f172a; flex-shrink:0; }
-        .ch-settings-header h2 { flex:1; font-size:1.1rem; font-weight:700; }
-        .ch-settings-close-btn { background:#1e293b; border:none; color:#e2e8f0; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; touch-action:manipulation; }
-        .ch-settings-tabs { display:flex; gap:4px; padding:12px 20px; border-bottom:1px solid #1e293b; background:#0f172a; flex-shrink:0; overflow-x:auto; }
-        .ch-tab-btn { background:none; border:none; color:#6b7280; padding:8px 16px; border-radius:30px; cursor:pointer; font-size:0.85rem; font-weight:600; white-space:nowrap; transition:all 0.15s; touch-action:manipulation; }
-        .ch-tab-btn.active { background:#1e293b; color:#fbbf24; }
-        .ch-settings-body { flex:1; overflow-y:auto; padding:20px; -webkit-overflow-scrolling:touch; }
-        .settings-section { margin-bottom:28px; }
-        .settings-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; margin-bottom:8px; }
-        .settings-input { width:100%; background:#1e293b; border:1px solid #334155; border-radius:12px; padding:12px 16px; color:#e2e8f0; font-size:0.95rem; outline:none; transition:border-color 0.15s; }
-        .settings-input:focus { border-color:#fbbf24; }
-        .settings-select { width:100%; background:#1e293b; border:1px solid #334155; border-radius:12px; padding:12px 16px; color:#e2e8f0; font-size:0.95rem; outline:none; appearance:none; cursor:pointer; }
-        .settings-desc { font-size:0.78rem; color:#6b7280; margin-top:6px; line-height:1.5; }
-        .settings-save-btn { background:#fbbf24; color:#0f172a; border:none; padding:12px 28px; border-radius:40px; font-weight:700; cursor:pointer; font-size:0.95rem; touch-action:manipulation; }
-
-        /* TOGGLE SWITCH */
-        .toggle-row { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:14px 0; }
-        .toggle-info { flex:1; }
-        .toggle-info .toggle-title { font-weight:600; font-size:0.95rem; color:#e2e8f0; }
-        .toggle-info .toggle-desc { font-size:0.78rem; color:#6b7280; margin-top:4px; line-height:1.5; }
-        .toggle-switch { position:relative; width:44px; height:24px; flex-shrink:0; }
-        .toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
-        .toggle-slider { position:absolute; inset:0; background:#334155; border-radius:24px; cursor:pointer; transition:background 0.2s; }
-        .toggle-slider:before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:white; border-radius:50%; transition:transform 0.2s; }
-        .toggle-switch input:checked + .toggle-slider { background:#fbbf24; }
-        .toggle-switch input:checked + .toggle-slider:before { transform:translateX(20px); }
-
-        /* Private channel expanded section */
-        .private-access-section { background:#1a2234; border-radius:16px; padding:16px; margin-top:12px; border:1px solid #2a3a54; display:none; animation:fadeIn 0.2s; }
-        .private-access-section.visible { display:block; }
-        .access-add-input-row { display:flex; gap:8px; margin-bottom:14px; }
-        .access-add-input { flex:1; background:#1e293b; border:1px solid #334155; border-radius:30px; padding:10px 16px; color:#e2e8f0; font-size:0.85rem; outline:none; }
-        .access-add-btn { background:#fbbf24; border:none; border-radius:30px; padding:10px 16px; color:#0f172a; font-weight:700; cursor:pointer; font-size:0.85rem; white-space:nowrap; touch-action:manipulation; }
-        .access-list-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#6b7280; margin-bottom:8px; }
-        .access-item { display:flex; align-items:center; gap:10px; padding:8px 10px; background:#0f172a; border-radius:12px; margin-bottom:6px; }
-        .access-item-icon { width:30px; height:30px; border-radius:50%; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:#fbbf24; flex-shrink:0; }
-        .access-item-name { flex:1; font-size:0.85rem; color:#e2e8f0; }
-        .access-item-remove { background:none; border:none; color:#6b7280; cursor:pointer; padding:4px 8px; border-radius:8px; font-size:0.8rem; touch-action:manipulation; transition:color 0.15s; }
-        .access-item-remove:hover { color:#ef4444; }
-
-        /* Sidebar modal inputs */
-        .modal-content input, .modal-content select { width:100%; padding:12px; margin:6px 0; border-radius:20px; background:#1e293b; border:1px solid #334155; color:white; outline:none; font-size:0.95rem; }
-
-        /* Mobile adjustments */
-        @media (max-width:700px) {
-            .sidebar { position:fixed; left:0; top:0; height:100%; transform:translateX(-100%); z-index:1100; }
-            .sidebar.open { transform:translateX(0); }
-            .server-list { display:none; }
-            .mobile-bottom-nav { display:flex; }
-            /* KEY FIX: ensure chat area leaves room for bottom nav but input stays */
-            .chat-area { padding-bottom:70px; }
-            .voice-view .voice-controls { padding-bottom:calc(16px + 70px); }
-            #textChatView { height:100%; }
-            .voice-participant-card { width:80px; }
-            .voice-participant-avatar { width:50px; height:50px; }
-            .voice-ctrl-btn { width:52px; height:52px; font-size:22px; }
+        /* MOBILE ADJUSTMENTS */
+        @media (max-width: 700px) {
+            .server-list { display: none; }
+            .sidebar { position: fixed; left: 0; top: 0; height: 100%; transform: translateX(-100%); z-index: 1100; }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: #0f0f14e6; backdrop-filter: blur(12px); border-top: 1px solid #1f2937; padding: 8px 20px; justify-content: space-around; z-index: 1200; }
+            .mobile-nav-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 32px; background: #1e293b; color: #94a3b8; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+            .chat-area { margin-bottom: 70px; }
+            .voice-controls { margin-bottom: 60px; }
         }
+        @media (min-width: 701px) { .mobile-bottom-nav { display: none; } }
 
-        @media (min-width:701px) {
-            .mobile-bottom-nav { display:none; }
-        }
-
-        /* Sidebar header */
-        .sidebar-header { padding:16px; border-bottom:1px solid #1f2937; }
-        .server-name-header { display:flex; align-items:center; gap:8px; font-weight:700; font-size:1rem; margin-bottom:10px; }
-        .server-actions { display:flex; gap:6px; flex-wrap:wrap; }
-        .server-actions button { background:#1f2937; border:none; padding:8px 10px; border-radius:16px; color:#9ca3af; cursor:pointer; font-size:0.8rem; touch-action:manipulation; transition:color 0.15s; }
-        .server-actions button:hover { color:#fbbf24; }
-        #deleteServerBtn:hover { color:#ef4444 !important; }
-        .member-info { padding:12px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #1f2937; }
-        .owner-badge { background:#fbbf24; color:#000; border-radius:20px; padding:2px 8px; margin-left:6px; font-size:0.7rem; font-weight:700; }
-
-        /* Tab panels */
-        .ch-tab-panel { display:none; }
-        .ch-tab-panel.active { display:block; }
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; padding: 10px 24px; border-radius: 40px; z-index: 3000; border-left: 4px solid #fbbf24; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; font-size: 0.85rem; }
+        .toast.show { opacity: 1; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -190,7 +142,7 @@
                 <button id="deleteServerBtn" title="Delete Server"><i class="fas fa-trash"></i></button>
             </div>
         </div>
-        <div style="flex:1; overflow-y:auto;" id="channelsListContainer"></div>
+        <div style="flex:1; overflow-y: auto;" id="channelsListContainer"></div>
         <div class="member-info">
             <span><i class="fas fa-user-circle"></i> <span id="userDisplay"></span><span id="roleBadge"></span></span>
             <button id="signOutBtn" style="background:none;border:none;color:#fbbf24;font-size:1.2rem;"><i class="fas fa-sign-out-alt"></i></button>
@@ -199,25 +151,25 @@
     <div class="overlay" id="mobileOverlay"></div>
     <div class="chat-area">
         <div class="chat-header">
-            <div class="channel-info"><i class="fas fa-hashtag" id="channelTypeIcon"></i><span id="currentChannelName">general</span></div>
+            <div class="channel-info"><i class="fas fa-hashtag" id="channelTypeIcon"></i><span id="currentChannelName">general</span><button id="openChannelSettingsBtn" style="background:none; border:none; color:#fbbf24; margin-left:6px;"><i class="fas fa-cog"></i></button></div>
             <button class="invite-btn" id="headerInviteBtn"><i class="fas fa-link"></i> Invite</button>
         </div>
-        <div id="textChatView">
+        <div id="textChatView" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
             <div class="messages-container" id="messagesContainer"></div>
             <div class="input-area">
                 <input type="text" id="messageInput" placeholder="Message...">
-                <button id="sendBtn" style="background:#fbbf24;border:none;border-radius:40px;padding:0 18px;height:46px;font-weight:bold;color:#0f172a;cursor:pointer;touch-action:manipulation;"><i class="fas fa-paper-plane"></i></button>
+                <button id="sendBtn" style="background:#fbbf24; border:none; border-radius:40px; padding:0 18px; height:46px; font-weight:bold; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
         <div id="voiceChatView" class="voice-view" style="display:none;">
-            <div class="voice-view-body" id="voiceViewBody">
+            <div class="voice-view-body">
                 <div id="screenShareDynamicArea" style="width:100%;"></div>
                 <div class="voice-participants-grid" id="voiceParticipantsGrid"></div>
             </div>
             <div class="voice-controls">
                 <button class="voice-ctrl-btn btn-mic" id="micToggleBtn"><i class="fas fa-microphone"></i></button>
                 <button class="voice-ctrl-btn btn-share-screen" id="shareScreenBtn"><i class="fas fa-desktop"></i></button>
-                <button class="voice-ctrl-btn btn-leave" style="background:#7f1d1d;color:#fca5a5;" id="leaveVoiceBtn"><i class="fas fa-phone-slash"></i></button>
+                <button class="voice-ctrl-btn btn-leave" id="leaveVoiceBtn"><i class="fas fa-phone-slash"></i></button>
             </div>
         </div>
     </div>
@@ -228,7 +180,7 @@
     </div>
 </div>
 
-<!-- CHANNEL SETTINGS FULLSCREEN -->
+<!-- Channel Settings Fullscreen -->
 <div id="chSettingsOverlay" class="ch-settings-overlay">
     <div class="ch-settings-header">
         <button class="ch-settings-close-btn" id="chSettingsCloseBtn"><i class="fas fa-times"></i></button>
@@ -240,75 +192,17 @@
         <button class="ch-tab-btn" data-tab="permissions">Permissions</button>
     </div>
     <div class="ch-settings-body">
-        <!-- Overview Tab -->
         <div class="ch-tab-panel active" id="tab-overview">
-            <div class="settings-section">
-                <div class="settings-label">Channel Name</div>
-                <input type="text" class="settings-input" id="chSettingsName" placeholder="channel-name">
-                <div class="settings-desc">The name of the channel as it appears in the sidebar.</div>
-            </div>
-            <div class="settings-section">
-                <div class="settings-label">Channel Topic</div>
-                <input type="text" class="settings-input" id="chSettingsTopic" placeholder="Set a topic...">
-                <div class="settings-desc">Let members know what this channel is about at a glance.</div>
-            </div>
-            <div class="settings-section">
-                <div class="settings-label">Slow Mode</div>
-                <select class="settings-select" id="chSettingsSlowMode">
-                    <option value="0">Off</option>
-                    <option value="5">5 seconds</option>
-                    <option value="10">10 seconds</option>
-                    <option value="15">15 seconds</option>
-                    <option value="30">30 seconds</option>
-                    <option value="60">1 minute</option>
-                    <option value="120">2 minutes</option>
-                    <option value="300">5 minutes</option>
-                    <option value="600">10 minutes</option>
-                    <option value="900">15 minutes</option>
-                    <option value="1800">30 minutes</option>
-                    <option value="3600">1 hour</option>
-                    <option value="7200">2 hours</option>
-                    <option value="21600">6 hours</option>
-                </select>
-                <div class="settings-desc">Limit how often members can send messages in this channel.</div>
-            </div>
+            <div class="settings-section"><div class="settings-label">Channel Name</div><input type="text" class="settings-input" id="chSettingsName" placeholder="channel-name"><div class="settings-desc">The name of the channel as it appears in the sidebar.</div></div>
+            <div class="settings-section"><div class="settings-label">Channel Topic</div><input type="text" class="settings-input" id="chSettingsTopic" placeholder="Set a topic..."><div class="settings-desc">Let members know what this channel is about.</div></div>
+            <div class="settings-section"><div class="settings-label">Slow Mode</div><select class="settings-select" id="chSettingsSlowMode"><option value="0">Off</option><option value="5">5 seconds</option><option value="10">10s</option><option value="15">15s</option><option value="30">30s</option><option value="60">1 minute</option><option value="120">2m</option><option value="300">5m</option><option value="600">10m</option><option value="900">15m</option><option value="1800">30m</option><option value="3600">1 hour</option><option value="7200">2h</option><option value="21600">6h</option></select><div class="settings-desc">Limit how often members can send messages.</div></div>
         </div>
-
-        <!-- Permissions Tab -->
         <div class="ch-tab-panel" id="tab-permissions">
-            <div class="settings-section">
-                <div style="font-size:1rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;">Channel Permissions</div>
-                <div class="settings-desc" style="margin-bottom:16px;">Control who can see and interact with this channel.</div>
-
-                <div class="toggle-row">
-                    <div class="toggle-info">
-                        <div class="toggle-title">Private Channel</div>
-                        <div class="toggle-desc">Make your channel visible only to certain people. When enabled you can specify which roles and members have access.</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="privateChannelToggle">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-
-                <div class="private-access-section" id="privateAccessSection">
-                    <div class="access-add-input-row">
-                        <input type="text" class="access-add-input" id="accessAddInput" placeholder="Add member or role...">
-                        <button class="access-add-btn" id="accessAddBtn">Add</button>
-                    </div>
-                    <div class="access-list-label">Roles</div>
-                    <div id="accessRolesList">
-                        <div class="access-item">
-                            <div class="access-item-icon"><i class="fas fa-shield-alt"></i></div>
-                            <div class="access-item-name">@everyone</div>
-                            <button class="access-item-remove" onclick="removeAccessItem(this)"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>
-                    <div class="access-list-label" style="margin-top:12px;">Allowed Members</div>
-                    <div id="accessMembersList">
-                        <div style="color:#6b7280;font-size:0.8rem;padding:8px 0;">No specific members added.</div>
-                    </div>
-                </div>
+            <div class="settings-section"><div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Private Channel</div><div class="toggle-desc">Make channel visible only to selected roles/members.</div></div><label class="toggle-switch"><input type="checkbox" id="privateChannelToggle"><span class="toggle-slider"></span></label></div>
+            <div class="private-access-section" id="privateAccessSection">
+                <div class="access-add-input-row"><input type="text" class="access-add-input" id="accessAddInput" placeholder="Role (@role) or member email"><button class="access-add-btn" id="accessAddBtn">Add</button></div>
+                <div class="access-list-label">Roles with access</div><div id="accessRolesList"></div>
+                <div class="access-list-label" style="margin-top:12px;">Allowed Members</div><div id="accessMembersList"></div>
             </div>
         </div>
     </div>
@@ -320,470 +214,334 @@
 <div id="createChannelModal" class="modal"><div class="modal-content"><h3>🔊 New Channel</h3><input type="text" id="channelName" placeholder="Channel name"><select id="channelTypeSelect"><option value="text">📝 Text</option><option value="voice">🎙️ Voice</option></select><select id="categorySelect"></select><button id="confirmCreateChannel" class="btn-gold">Create</button><button id="closeChanModal" class="btn-outline">Cancel</button></div></div>
 <div id="inviteModal" class="modal"><div class="modal-content"><h3>🔗 Invite Link</h3><p>Share code: <strong id="inviteCodeDisplay"></strong></p><button id="closeInviteModal" class="btn-gold">Close</button></div></div>
 <div id="joinServerModal" class="modal"><div class="modal-content"><h3>🚀 Join Server</h3><input type="text" id="joinCodeInput" placeholder="Invite code"><button id="confirmJoinServer" class="btn-gold">Join</button><button id="closeJoinModal" class="btn-outline">Cancel</button></div></div>
-<div id="micPermModal" class="modal"><div class="modal-content" style="text-align:center;"><i class="fas fa-microphone" style="font-size:48px;color:#fbbf24;"></i><h3 style="margin:12px 0">Microphone Access</h3><p>Enable mic for crystal voice</p><button id="allowMicBtn" class="btn-gold">Allow Mic</button><button id="denyMicBtn" class="btn-outline">Join Muted</button></div></div>
+<div id="micPermModal" class="modal"><div class="modal-content"><i class="fas fa-microphone" style="font-size:48px;color:#fbbf24;"></i><h3 style="margin:12px 0">Microphone Access</h3><p>Enable mic for crystal voice</p><button id="allowMicBtn" class="btn-gold">Allow Mic</button><button id="denyMicBtn" class="btn-outline">Join Muted</button></div></div>
 <div id="toastMsg" class="toast"></div>
-
-<!-- Auth Overlay -->
-<div id="authOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#1e293b;padding:32px 28px;border-radius:28px;text-align:center;max-width:340px;width:100%;margin:16px;">
-        <i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i>
-        <h2 style="margin:12px 0 8px;">Stonks Hub</h2>
-        <p style="margin-bottom:20px;color:#94a3b8;">Voice & Screen Share · Real time</p>
-        <button id="googleSignInBtn" style="background:#fbbf24;border:none;padding:14px 28px;border-radius:40px;cursor:pointer;font-size:1rem;font-weight:700;width:100%;"><i class="fab fa-google"></i> Sign in with Google</button>
-    </div>
-</div>
+<div id="authOverlay" style="position:fixed; inset:0; background:#0a0a0f; z-index:9999; display:flex; align-items:center; justify-content:center;"><div style="background:#1e293b; padding:32px 28px; border-radius:28px; text-align:center; max-width:340px;"><i class="fas fa-chart-line" style="font-size:48px;color:#fbbf24;"></i><h2 style="margin:12px 0 8px;">Stonks Hub</h2><p style="margin-bottom:20px;">Voice & Screen Share · Real time</p><button id="googleSignInBtn" style="background:#fbbf24; border:none; padding:14px 28px; border-radius:40px; width:100%; font-weight:700;"><i class="fab fa-google"></i> Sign in with Google</button></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig = { apiKey:"AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc", authDomain:"vertexpaste.firebaseapp.com", projectId:"vertexpaste", storageBucket:"vertexpaste.firebasestorage.app", messagingSenderId:"255275350380", appId:"1:255275350380:web:7be4e8add2cb5b04045b49" };
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth(), db = firebase.firestore();
-const OWNER_EMAIL = "defnot67kid@gmail.com";
-let currentUser=null, currentServerId=null, currentChannelId=null, currentChannelType="text";
-let unsubscribeMessages=null, unsubscribeVoicePresence=null, unsubscribeScreenShare=null;
-let isGlobalOwner=false, localStream=null, screenStream=null, isMicMuted=false, isSharing=false;
-let currentVoiceChannelId=null, localAudioTrack=null;
-// Channel settings state
-let chSettingsServerId=null, chSettingsCategoryName=null, chSettingsChannelId=null;
+    const firebaseConfig = { apiKey: "AIzaSyAupBkllyicDPD9O6CmX4mS4sF5z96mqxc", authDomain: "vertexpaste.firebaseapp.com", projectId: "vertexpaste", storageBucket: "vertexpaste.firebasestorage.app", messagingSenderId: "255275350380", appId: "1:255275350380:web:7be4e8add2cb5b04045b49" };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth(), db = firebase.firestore();
+    const OWNER_EMAIL = "defnot67kid@gmail.com";
+    let currentUser = null, currentServerId = null, currentChannelId = null, currentChannelType = "text";
+    let unsubscribeMessages = null, unsubscribeVoicePresence = null, unsubscribeScreenShare = null;
+    let isGlobalOwner = false, localStream = null, screenStream = null, isMicMuted = false, isSharing = false;
+    let currentVoiceChannelId = null, localAudioTrack = null;
+    let currentSlowMode = 0, lastMsgTime = 0;
+    let currentEditingChannelId = null, currentEditingCatName = null;
 
-function showToast(msg){ const t=document.getElementById('toastMsg'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
-function escapeHtml(s){ return String(s||'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
+    function showToast(msg) { const t = document.getElementById('toastMsg'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+    function escapeHtml(s) { return String(s || '').replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[m])); }
 
-// Auth
-document.getElementById('googleSignInBtn')?.addEventListener('click',()=>firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()));
-
-function updateAuthUI(user){
-    if(user){
-        document.getElementById('authOverlay').style.display='none';
-        document.getElementById('userDisplay').innerText=user.displayName||user.email;
-        isGlobalOwner=(user.email===OWNER_EMAIL);
-        document.getElementById('roleBadge').innerHTML=isGlobalOwner?'<span class="owner-badge"><i class="fas fa-crown"></i> OWNER</span>':'';
-        renderServerList().then(async()=>{ const servers=await fetchUserServers(); if(servers.length&&!currentServerId) await switchServer(servers[0].id); });
+    // AUTH & SERVERS
+    document.getElementById('googleSignInBtn')?.addEventListener('click', () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()));
+    function updateAuthUI(user) {
+        if (!user) return;
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('userDisplay').innerText = user.displayName || user.email;
+        isGlobalOwner = (user.email === OWNER_EMAIL);
+        document.getElementById('roleBadge').innerHTML = isGlobalOwner ? '<span class="owner-badge"><i class="fas fa-crown"></i> OWNER</span>' : '';
+        renderServerList().then(async () => { const servers = await fetchUserServers(); if (servers.length && !currentServerId) await switchServer(servers[0].id); });
     }
-}
-async function fetchUserServers(){
-    if(!currentUser) return [];
-    if(isGlobalOwner){ const all=await db.collection("servers").get(); return all.docs.map(d=>({id:d.id,...d.data()})); }
-    const memberSnap=await db.collection("serverMembers").where("userId","==",currentUser.uid).get();
-    const serverIds=memberSnap.docs.map(d=>d.data().serverId);
-    if(!serverIds.length) return [];
-    const servers=await Promise.all(serverIds.map(id=>db.collection("servers").doc(id).get()));
-    return servers.filter(s=>s.exists).map(s=>({id:s.id,...s.data()}));
-}
-async function renderServerList(){
-    const servers=await fetchUserServers();
-    const container=document.getElementById('serverListContainer');
-    let html='';
-    for(const sv of servers) html+=`<div class="server-icon ${currentServerId===sv.id?'active':''}" data-server-id="${sv.id}" title="${escapeHtml(sv.name)}"><span>${sv.name.charAt(0).toUpperCase()}</span></div>`;
-    html+=`<div class="server-icon add-server-btn" id="addServerBtn" title="Create Server"><i class="fas fa-plus"></i></div><div class="server-icon join-server-btn" id="joinServerBtn" title="Join Server"><i class="fas fa-sign-in-alt"></i></div>`;
-    container.innerHTML=html;
-    container.querySelectorAll('[data-server-id]').forEach(el=>el.addEventListener('click',()=>switchServer(el.dataset.serverId)));
-    document.getElementById('addServerBtn')?.addEventListener('click',()=>document.getElementById('createServerModal').classList.add('active'));
-    document.getElementById('joinServerBtn')?.addEventListener('click',()=>document.getElementById('joinServerModal').classList.add('active'));
-}
-async function switchServer(serverId){
-    if(unsubscribeMessages) unsubscribeMessages();
-    await leaveVoiceIfIn();
-    currentServerId=serverId;
-    const serverDoc=await db.collection("servers").doc(serverId).get();
-    document.getElementById('currentServerName').innerText=serverDoc.data()?.name||"Server";
-    currentChannelId=null;
-    await loadServerChannels(serverId);
-    await renderServerList();
-    closeSidebarMobile();
-}
-async function loadServerChannels(serverId){
-    const structRef=db.collection("serverStructure").doc(serverId);
-    let struct=(await structRef.get()).data();
-    if(!struct){ struct={categories:[{name:"GENERAL",channels:[{id:"general",name:"general",type:"text"}]}]}; await structRef.set(struct); }
-    if(!currentChannelId){ const firstText=struct.categories.flatMap(c=>c.channels).find(c=>c.type==='text'||!c.type); currentChannelId=firstText?.id||struct.categories[0]?.channels[0]?.id||"general"; }
-    const ch=findChannel(struct,currentChannelId);
-    currentChannelType=ch?.type||"text";
-    await renderSidebarChannels(struct);
-    if(currentChannelType==="text"){ showTextView(); loadMessagesForChannel(currentServerId,currentChannelId); }
-    else if(currentChannelType==="voice") joinVoiceChannel(currentChannelId);
-    const chName=getChannelNameById(struct,currentChannelId);
-    document.getElementById('currentChannelName').innerText=chName;
-    document.getElementById('channelTypeIcon').className=currentChannelType==="voice"?"fas fa-microphone-alt":"fas fa-hashtag";
-}
-function findChannel(struct,chId){ for(const cat of struct.categories) for(const ch of cat.channels) if(ch.id===chId) return ch; return null; }
-function getChannelNameById(struct,chId){ const ch=findChannel(struct,chId); return ch?ch.name:chId; }
-async function renderSidebarChannels(struct){
-    const container=document.getElementById('channelsListContainer');
-    let html='';
-    for(let i=0;i<struct.categories.length;i++){
-        const cat=struct.categories[i];
-        const settingsBtn=isGlobalOwner?`<button class="cat-settings-btn" data-cat-name="${escapeHtml(cat.name)}" title="Category Settings"><i class="fas fa-cog"></i></button>`:'';
-        html+=`<div class="category-group"><div class="category-header"><i class="fas fa-chevron-right" style="font-size:0.7rem;color:#6b7280;"></i><span class="category-name">${escapeHtml(cat.name)}</span>${settingsBtn}<button class="add-channel-btn" data-category="${escapeHtml(cat.name)}" title="Add Channel"><i class="fas fa-plus-circle"></i></button></div><div class="channels-container">`;
-        for(const ch of cat.channels){
-            const icon=ch.type==="voice"?"fa-microphone-alt":"fa-hashtag";
-            const settingsIconBtn=isGlobalOwner?`<button class="ch-settings-btn" data-channel-id="${ch.id}" data-cat-name="${escapeHtml(cat.name)}" title="Channel Settings"><i class="fas fa-cog"></i></button>`:'';
-            html+=`<div class="channel-item ${currentChannelId===ch.id?'active':''}" data-channel-id="${ch.id}" data-channel-type="${ch.type||'text'}"><i class="fas ${icon}" style="font-size:0.85rem;"></i><span style="flex:1;">${escapeHtml(ch.name)}</span>${settingsIconBtn}</div>`;
-            if(ch.type==="voice") html+=`<div class="voice-members-sidebar" id="voice-members-${ch.id}"></div>`;
+    async function fetchUserServers() {
+        if (!currentUser) return [];
+        if (isGlobalOwner) { const all = await db.collection("servers").get(); return all.docs.map(d => ({ id: d.id, ...d.data() })); }
+        const memberSnap = await db.collection("serverMembers").where("userId", "==", currentUser.uid).get();
+        const serverIds = memberSnap.docs.map(d => d.data().serverId);
+        if (!serverIds.length) return [];
+        const servers = await Promise.all(serverIds.map(id => db.collection("servers").doc(id).get()));
+        return servers.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
+    }
+    async function renderServerList() {
+        const servers = await fetchUserServers();
+        const container = document.getElementById('serverListContainer');
+        let html = '';
+        for (const sv of servers) html += `<div class="server-icon ${currentServerId === sv.id ? 'active' : ''}" data-server-id="${sv.id}" title="${escapeHtml(sv.name)}"><span>${sv.name.charAt(0).toUpperCase()}</span></div>`;
+        html += `<div class="server-icon add-server-btn" id="addServerBtn" title="Create Server"><i class="fas fa-plus"></i></div><div class="server-icon join-server-btn" id="joinServerBtn" title="Join Server"><i class="fas fa-sign-in-alt"></i></div>`;
+        container.innerHTML = html;
+        container.querySelectorAll('[data-server-id]').forEach(el => el.addEventListener('click', () => switchServer(el.dataset.serverId)));
+        document.getElementById('addServerBtn')?.addEventListener('click', () => document.getElementById('createServerModal').classList.add('active'));
+        document.getElementById('joinServerBtn')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.add('active'));
+    }
+    async function switchServer(serverId) {
+        if (unsubscribeMessages) unsubscribeMessages();
+        await leaveVoiceIfIn();
+        currentServerId = serverId;
+        const serverDoc = await db.collection("servers").doc(serverId).get();
+        document.getElementById('currentServerName').innerText = serverDoc.data()?.name || "Server";
+        currentChannelId = null;
+        await loadServerChannels(serverId);
+        await renderServerList();
+        closeSidebarMobile();
+    }
+    async function loadServerChannels(serverId) {
+        const structRef = db.collection("serverStructure").doc(serverId);
+        let struct = (await structRef.get()).data();
+        if (!struct) { struct = { categories: [{ name: "GENERAL", channels: [{ id: "general", name: "general", type: "text" }] }] }; await structRef.set(struct); }
+        if (!currentChannelId) { const first = struct.categories.flatMap(c => c.channels).find(c => c.type === 'text'); currentChannelId = first?.id || struct.categories[0]?.channels[0]?.id || "general"; }
+        const ch = findChannel(struct, currentChannelId);
+        currentChannelType = ch?.type || "text";
+        await renderSidebarChannels(struct);
+        if (currentChannelType === "text") { showTextView(); loadMessagesForChannel(currentServerId, currentChannelId); }
+        else if (currentChannelType === "voice") joinVoiceChannel(currentChannelId);
+        const chName = getChannelNameById(struct, currentChannelId);
+        document.getElementById('currentChannelName').innerText = chName;
+        document.getElementById('channelTypeIcon').className = currentChannelType === "voice" ? "fas fa-microphone-alt" : "fas fa-hashtag";
+    }
+    function findChannel(struct, chId) { for (const cat of struct.categories) for (const ch of cat.channels) if (ch.id === chId) return ch; return null; }
+    function getChannelNameById(struct, chId) { const ch = findChannel(struct, chId); return ch ? ch.name : chId; }
+    async function renderSidebarChannels(struct) {
+        const container = document.getElementById('channelsListContainer');
+        let html = '';
+        for (let i = 0; i < struct.categories.length; i++) {
+            const cat = struct.categories[i];
+            html += `<div class="category-group"><div class="category-header"><i class="fas fa-chevron-right" style="font-size:0.7rem;color:#6b7280;"></i><span class="category-name">${escapeHtml(cat.name)}</span><button class="cat-settings-btn" data-cat-name="${escapeHtml(cat.name)}" title="Category Settings"><i class="fas fa-cog"></i></button><button class="add-channel-btn" data-category="${escapeHtml(cat.name)}" title="Add Channel"><i class="fas fa-plus-circle"></i></button></div><div class="channels-container">`;
+            for (const ch of cat.channels) {
+                const icon = ch.type === "voice" ? "fa-microphone-alt" : "fa-hashtag";
+                html += `<div class="channel-item ${currentChannelId === ch.id ? 'active' : ''}" data-channel-id="${ch.id}" data-channel-type="${ch.type || 'text'}"><i class="fas ${icon}" style="font-size:0.85rem;"></i><span style="flex:1;">${escapeHtml(ch.name)}</span><button class="ch-settings-btn" data-channel-id="${ch.id}" data-cat-name="${escapeHtml(cat.name)}" title="Channel Settings"><i class="fas fa-cog"></i></button></div>`;
+                if (ch.type === "voice") html += `<div class="voice-members-sidebar" id="voice-members-${ch.id}"></div>`;
+            }
+            html += `</div></div>`;
         }
-        html+=`</div></div>`;
-    }
-    container.innerHTML=html;
-    container.querySelectorAll('.channel-item').forEach(el=>{
-        el.addEventListener('click',(e)=>{
-            if(e.target.closest('.ch-settings-btn')) return;
-            const chId=el.dataset.channelId, type=el.dataset.channelType;
-            if(type!=="voice"&&currentVoiceChannelId) leaveVoiceIfIn();
-            currentChannelId=chId; currentChannelType=type;
-            loadServerChannels(currentServerId);
-            closeSidebarMobile();
+        container.innerHTML = html;
+        container.querySelectorAll('.channel-item').forEach(el => {
+            el.addEventListener('click', (e) => { if (e.target.closest('.ch-settings-btn')) return; const chId = el.dataset.channelId, type = el.dataset.channelType; if (type !== "voice" && currentVoiceChannelId) leaveVoiceIfIn(); currentChannelId = chId; currentChannelType = type; loadServerChannels(currentServerId); closeSidebarMobile(); });
         });
-    });
-    container.querySelectorAll('.add-channel-btn').forEach(btn=>{ btn.addEventListener('click',(e)=>{ e.stopPropagation(); openCreateChannelModal(btn.dataset.category); }); });
-    // Channel settings buttons
-    container.querySelectorAll('.ch-settings-btn').forEach(btn=>{
-        btn.addEventListener('click',(e)=>{ e.stopPropagation(); openChannelSettings(btn.dataset.channelId, btn.dataset.catName); });
-    });
-    // Category settings buttons
-    container.querySelectorAll('.cat-settings-btn').forEach(btn=>{
-        btn.addEventListener('click',(e)=>{ e.stopPropagation(); openCategorySettings(btn.dataset.catName); });
-    });
-}
-
-// ========== CHANNEL SETTINGS ==========
-async function openChannelSettings(channelId, catName){
-    chSettingsServerId=currentServerId;
-    chSettingsCategoryName=catName;
-    chSettingsChannelId=channelId;
-    // Load channel data
-    const structRef=db.collection("serverStructure").doc(currentServerId);
-    const struct=(await structRef.get()).data();
-    const cat=struct.categories.find(c=>c.name===catName);
-    const ch=cat?.channels.find(c=>c.id===channelId);
-    if(!ch) return;
-    // Load settings from Firestore if exists
-    const settingsRef=db.collection("channelSettings").doc(`${currentServerId}_${channelId}`);
-    const settingsDoc=await settingsRef.get();
-    const settings=settingsDoc.exists?settingsDoc.data():{};
-    document.getElementById('chSettingsTitle').innerText=`# ${ch.name}`;
-    document.getElementById('chSettingsName').value=ch.name;
-    document.getElementById('chSettingsTopic').value=settings.topic||'';
-    document.getElementById('chSettingsSlowMode').value=String(settings.slowMode||0);
-    // Permissions
-    const isPrivate=settings.private||false;
-    document.getElementById('privateChannelToggle').checked=isPrivate;
-    document.getElementById('privateAccessSection').classList.toggle('visible',isPrivate);
-    // Load access lists
-    renderAccessLists(settings);
-    // Switch to overview tab
-    switchChTab('overview');
-    document.getElementById('chSettingsOverlay').classList.add('active');
-}
-async function openCategorySettings(catName){
-    // For category settings, use a dummy channel id
-    chSettingsServerId=currentServerId;
-    chSettingsCategoryName=catName;
-    chSettingsChannelId='__category__'+catName;
-    document.getElementById('chSettingsTitle').innerText=`📁 ${catName}`;
-    document.getElementById('chSettingsName').value=catName;
-    document.getElementById('chSettingsTopic').value='';
-    document.getElementById('chSettingsSlowMode').value='0';
-    const settingsRef=db.collection("channelSettings").doc(`${currentServerId}_cat_${catName}`);
-    const settingsDoc=await settingsRef.get();
-    const settings=settingsDoc.exists?settingsDoc.data():{};
-    document.getElementById('privateChannelToggle').checked=settings.private||false;
-    document.getElementById('privateAccessSection').classList.toggle('visible',settings.private||false);
-    renderAccessLists(settings);
-    switchChTab('overview');
-    document.getElementById('chSettingsOverlay').classList.add('active');
-}
-function renderAccessLists(settings){
-    const roles=settings.allowedRoles||['@everyone'];
-    const members=settings.allowedMembers||[];
-    const rolesList=document.getElementById('accessRolesList');
-    const membersList=document.getElementById('accessMembersList');
-    rolesList.innerHTML=roles.map(r=>`<div class="access-item"><div class="access-item-icon"><i class="fas fa-shield-alt"></i></div><div class="access-item-name">${escapeHtml(r)}</div><button class="access-item-remove" onclick="removeRoleAccess(this,'${escapeHtml(r)}')"><i class="fas fa-times"></i></button></div>`).join('');
-    membersList.innerHTML=members.length?members.map(m=>`<div class="access-item"><div class="access-item-icon"><i class="fas fa-user"></i></div><div class="access-item-name">${escapeHtml(m)}</div><button class="access-item-remove" onclick="removeMemberAccess(this,'${escapeHtml(m)}')"><i class="fas fa-times"></i></button></div>`).join(''):'<div style="color:#6b7280;font-size:0.8rem;padding:8px 0;">No specific members added.</div>';
-}
-function removeRoleAccess(btn, role){
-    btn.closest('.access-item').remove();
-}
-function removeMemberAccess(btn, member){
-    btn.closest('.access-item').remove();
-}
-function removeAccessItem(btn){
-    btn.closest('.access-item').remove();
-}
-document.getElementById('accessAddBtn')?.addEventListener('click',()=>{
-    const val=document.getElementById('accessAddInput').value.trim();
-    if(!val) return;
-    const isRole=val.startsWith('@');
-    const list=isRole?document.getElementById('accessRolesList'):document.getElementById('accessMembersList');
-    const emptyMsg=list.querySelector('div[style]');
-    if(emptyMsg) emptyMsg.remove();
-    const icon=isRole?'fa-shield-alt':'fa-user';
-    list.insertAdjacentHTML('beforeend',`<div class="access-item"><div class="access-item-icon"><i class="fas ${icon}"></i></div><div class="access-item-name">${escapeHtml(val)}</div><button class="access-item-remove" onclick="this.closest('.access-item').remove()"><i class="fas fa-times"></i></button></div>`);
-    document.getElementById('accessAddInput').value='';
-});
-document.getElementById('privateChannelToggle')?.addEventListener('change',function(){
-    document.getElementById('privateAccessSection').classList.toggle('visible',this.checked);
-});
-document.getElementById('chSettingsSaveBtn')?.addEventListener('click',async()=>{
-    if(!chSettingsServerId||!chSettingsChannelId) return;
-    const isCategory=chSettingsChannelId.startsWith('__category__');
-    const newName=document.getElementById('chSettingsName').value.trim();
-    const topic=document.getElementById('chSettingsTopic').value.trim();
-    const slowMode=parseInt(document.getElementById('chSettingsSlowMode').value)||0;
-    const isPrivate=document.getElementById('privateChannelToggle').checked;
-    // Collect roles and members
-    const allowedRoles=Array.from(document.getElementById('accessRolesList').querySelectorAll('.access-item-name')).map(el=>el.innerText);
-    const allowedMembers=Array.from(document.getElementById('accessMembersList').querySelectorAll('.access-item-name')).map(el=>el.innerText);
-    const settingsKey=isCategory?`${chSettingsServerId}_cat_${chSettingsCategoryName}`:`${chSettingsServerId}_${chSettingsChannelId}`;
-    await db.collection("channelSettings").doc(settingsKey).set({ topic, slowMode, private:isPrivate, allowedRoles, allowedMembers },{ merge:true });
-    if(newName&&!isCategory){
-        const structRef=db.collection("serverStructure").doc(chSettingsServerId);
-        const struct=(await structRef.get()).data();
-        const cat=struct.categories.find(c=>c.name===chSettingsCategoryName);
-        if(cat){ const ch=cat.channels.find(c=>c.id===chSettingsChannelId); if(ch) ch.name=newName; await structRef.set(struct); }
-        if(currentChannelId===chSettingsChannelId) document.getElementById('currentChannelName').innerText=newName;
-    } else if(newName&&isCategory&&newName!==chSettingsCategoryName){
-        const structRef=db.collection("serverStructure").doc(chSettingsServerId);
-        const struct=(await structRef.get()).data();
-        const cat=struct.categories.find(c=>c.name===chSettingsCategoryName);
-        if(cat) cat.name=newName;
-        await structRef.set(struct);
+        container.querySelectorAll('.add-channel-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openCreateChannelModal(btn.dataset.category); }));
+        container.querySelectorAll('.ch-settings-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openChannelSettings(btn.dataset.channelId, btn.dataset.catName); }));
+        container.querySelectorAll('.cat-settings-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openCategorySettings(btn.dataset.catName); }));
     }
-    document.getElementById('chSettingsOverlay').classList.remove('active');
-    showToast("Settings saved!");
-    loadServerChannels(currentServerId);
-});
-document.getElementById('chSettingsCloseBtn')?.addEventListener('click',()=>document.getElementById('chSettingsOverlay').classList.remove('active'));
-function switchChTab(tabName){
-    document.querySelectorAll('.ch-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tabName));
-    document.querySelectorAll('.ch-tab-panel').forEach(p=>p.classList.toggle('active',p.id===`tab-${tabName}`));
-}
-document.querySelectorAll('.ch-tab-btn').forEach(btn=>btn.addEventListener('click',()=>switchChTab(btn.dataset.tab)));
+    async function openChannelSettings(channelId, catName) {
+        if (!isGlobalOwner) { showToast("Only server owner can edit settings"); return; }
+        currentEditingChannelId = channelId; currentEditingCatName = catName;
+        const struct = (await db.collection("serverStructure").doc(currentServerId).get()).data();
+        const cat = struct.categories.find(c => c.name === catName);
+        const ch = cat?.channels.find(c => c.id === channelId);
+        const settingsRef = db.collection("channelSettings").doc(`${currentServerId}_${channelId}`);
+        const settingsDoc = await settingsRef.get();
+        const settings = settingsDoc.exists ? settingsDoc.data() : {};
+        document.getElementById('chSettingsTitle').innerHTML = `# ${ch?.name || 'channel'}`;
+        document.getElementById('chSettingsName').value = ch?.name || '';
+        document.getElementById('chSettingsTopic').value = settings.topic || '';
+        document.getElementById('chSettingsSlowMode').value = settings.slowMode || 0;
+        const isPrivate = settings.private || false;
+        document.getElementById('privateChannelToggle').checked = isPrivate;
+        document.getElementById('privateAccessSection').classList.toggle('visible', isPrivate);
+        const allowedRoles = settings.allowedRoles || [];
+        const allowedMembers = settings.allowedMembers || [];
+        const rolesHtml = allowedRoles.map(r => `<div class="access-item"><div class="access-item-icon"><i class="fas fa-shield-alt"></i></div><div class="access-item-name">${escapeHtml(r)}</div><button class="access-item-remove" onclick="this.closest('.access-item').remove()"><i class="fas fa-times"></i></button></div>`).join('');
+        const membersHtml = allowedMembers.map(m => `<div class="access-item"><div class="access-item-icon"><i class="fas fa-user"></i></div><div class="access-item-name">${escapeHtml(m)}</div><button class="access-item-remove" onclick="this.closest('.access-item').remove()"><i class="fas fa-times"></i></button></div>`).join('');
+        document.getElementById('accessRolesList').innerHTML = rolesHtml || '<div style="color:#6b7280;font-size:0.8rem;">No roles added</div>';
+        document.getElementById('accessMembersList').innerHTML = membersHtml || '<div style="color:#6b7280;font-size:0.8rem;">No members added</div>';
+        document.getElementById('chSettingsOverlay').classList.add('active');
+        document.querySelectorAll('.ch-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === 'overview'));
+        document.querySelectorAll('.ch-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-overview'));
+    }
+    async function openCategorySettings(catName) {
+        if (!isGlobalOwner) { showToast("Only server owner can edit settings"); return; }
+        currentEditingChannelId = null; currentEditingCatName = catName;
+        const settingsRef = db.collection("channelSettings").doc(`${currentServerId}_cat_${catName}`);
+        const settingsDoc = await settingsRef.get();
+        const settings = settingsDoc.exists ? settingsDoc.data() : {};
+        document.getElementById('chSettingsTitle').innerHTML = `📁 ${catName}`;
+        document.getElementById('chSettingsName').value = catName;
+        document.getElementById('chSettingsTopic').value = settings.topic || '';
+        document.getElementById('chSettingsSlowMode').value = '0';
+        const isPrivate = settings.private || false;
+        document.getElementById('privateChannelToggle').checked = isPrivate;
+        document.getElementById('privateAccessSection').classList.toggle('visible', isPrivate);
+        const allowedRoles = settings.allowedRoles || [];
+        const allowedMembers = settings.allowedMembers || [];
+        document.getElementById('accessRolesList').innerHTML = allowedRoles.map(r => `<div class="access-item"><div class="access-item-icon"><i class="fas fa-shield-alt"></i></div><div class="access-item-name">${escapeHtml(r)}</div><button class="access-item-remove" onclick="this.closest('.access-item').remove()"><i class="fas fa-times"></i></button></div>`).join('') || '<div style="color:#6b7280;">No roles</div>';
+        document.getElementById('accessMembersList').innerHTML = allowedMembers.map(m => `<div class="access-item"><div class="access-item-icon"><i class="fas fa-user"></i></div><div class="access-item-name">${escapeHtml(m)}</div><button class="access-item-remove" onclick="this.closest('.access-item').remove()"><i class="fas fa-times"></i></button></div>`).join('') || '<div style="color:#6b7280;">No members</div>';
+        document.getElementById('chSettingsOverlay').classList.add('active');
+    }
+    document.getElementById('chSettingsSaveBtn')?.addEventListener('click', async () => {
+        const newName = document.getElementById('chSettingsName').value.trim();
+        const topic = document.getElementById('chSettingsTopic').value.trim();
+        const slowMode = parseInt(document.getElementById('chSettingsSlowMode').value);
+        const isPrivate = document.getElementById('privateChannelToggle').checked;
+        const allowedRoles = Array.from(document.querySelectorAll('#accessRolesList .access-item-name')).map(el => el.innerText);
+        const allowedMembers = Array.from(document.querySelectorAll('#accessMembersList .access-item-name')).map(el => el.innerText);
+        if (currentEditingChannelId) {
+            const settingsKey = `${currentServerId}_${currentEditingChannelId}`;
+            await db.collection("channelSettings").doc(settingsKey).set({ topic, slowMode, private: isPrivate, allowedRoles, allowedMembers }, { merge: true });
+            const structRef = db.collection("serverStructure").doc(currentServerId);
+            const struct = (await structRef.get()).data();
+            const cat = struct.categories.find(c => c.name === currentEditingCatName);
+            const ch = cat?.channels.find(c => c.id === currentEditingChannelId);
+            if (ch && newName) ch.name = newName;
+            if (ch && newName) await structRef.set(struct);
+            if (currentChannelId === currentEditingChannelId) document.getElementById('currentChannelName').innerText = newName;
+        } else if (currentEditingCatName) {
+            const settingsKey = `${currentServerId}_cat_${currentEditingCatName}`;
+            await db.collection("channelSettings").doc(settingsKey).set({ topic, private: isPrivate, allowedRoles, allowedMembers }, { merge: true });
+            if (newName && newName !== currentEditingCatName) {
+                const structRef = db.collection("serverStructure").doc(currentServerId);
+                const struct = (await structRef.get()).data();
+                const cat = struct.categories.find(c => c.name === currentEditingCatName);
+                if (cat) cat.name = newName;
+                await structRef.set(struct);
+            }
+        }
+        document.getElementById('chSettingsOverlay').classList.remove('active');
+        showToast("Settings saved!");
+        loadServerChannels(currentServerId);
+    });
+    document.getElementById('chSettingsCloseBtn')?.addEventListener('click', () => document.getElementById('chSettingsOverlay').classList.remove('active'));
+    document.getElementById('privateChannelToggle')?.addEventListener('change', function () { document.getElementById('privateAccessSection').classList.toggle('visible', this.checked); });
+    document.getElementById('accessAddBtn')?.addEventListener('click', () => {
+        const val = document.getElementById('accessAddInput').value.trim();
+        if (!val) return;
+        const isRole = val.startsWith('@');
+        const listId = isRole ? 'accessRolesList' : 'accessMembersList';
+        const list = document.getElementById(listId);
+        if (list.innerText.includes('No roles') || list.innerText.includes('No members')) list.innerHTML = '';
+        const icon = isRole ? 'fa-shield-alt' : 'fa-user';
+        list.insertAdjacentHTML('beforeend', `<div class="access-item"><div class="access-item-icon"><i class="fas ${icon}"></i></div><div class="access-item-name">${escapeHtml(val)}</div><button class="access-item-remove" onclick="this.closest('.access-item').remove()"><i class="fas fa-times"></i></button></div>`);
+        document.getElementById('accessAddInput').value = '';
+    });
+    document.querySelectorAll('.ch-tab-btn').forEach(btn => btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.ch-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.ch-tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+    }));
+    document.getElementById('openChannelSettingsBtn')?.addEventListener('click', async () => { if (isGlobalOwner && currentChannelId && currentServerId) openChannelSettings(currentChannelId, null); else showToast("Only owner can edit"); });
 
-// ========== VOICE ==========
-async function joinVoiceChannel(channelId){
-    document.getElementById('micPermModal').classList.add('active');
-    const allow=async(withMic)=>{
-        document.getElementById('micPermModal').classList.remove('active');
-        if(withMic){ try{ localStream=await navigator.mediaDevices.getUserMedia({audio:true}); localAudioTrack=localStream.getAudioTracks()[0]; isMicMuted=false; }catch(e){ isMicMuted=true; } } else isMicMuted=true;
-        currentVoiceChannelId=channelId;
-        await db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members").doc(currentUser.uid).set({ uid:currentUser.uid, displayName:currentUser.displayName||currentUser.email, photoURL:currentUser.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName||'U')}`, muted:isMicMuted, joinedAt:firebase.firestore.FieldValue.serverTimestamp() });
-        showVoiceView(); listenVoiceParticipants(channelId); listenScreenShare(channelId); updateMicBtnUI();
-    };
-    document.getElementById('allowMicBtn').onclick=()=>allow(true);
-    document.getElementById('denyMicBtn').onclick=()=>allow(false);
-}
-function listenVoiceParticipants(channelId){
-    if(unsubscribeVoicePresence) unsubscribeVoicePresence();
-    const ref=db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members");
-    unsubscribeVoicePresence=ref.onSnapshot(snap=>{
-        const grid=document.getElementById('voiceParticipantsGrid');
-        if(snap.empty){ grid.innerHTML='<div style="color:#6b7280;padding:12px;">✨ No one here yet</div>'; return; }
-        let html='';
-        snap.forEach(doc=>{
-            const d=doc.data();
-            html+=`<div class="voice-participant-card"><img src="${escapeHtml(d.photoURL)}" class="voice-participant-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U'"><div style="display:flex;align-items:center;gap:4px;"><i class="fas ${d.muted?'fa-microphone-slash':'fa-microphone'}" style="color:${d.muted?'#ef4444':'#34d399'};font-size:0.75rem;"></i></div><div class="voice-participant-name">${escapeHtml(d.displayName)}</div></div>`;
+    // CHAT & MESSAGES
+    async function loadMessagesForChannel(serverId, channelId) {
+        if (unsubscribeMessages) unsubscribeMessages();
+        const settingsDoc = await db.collection("channelSettings").doc(`${serverId}_${channelId}`).get();
+        currentSlowMode = settingsDoc.exists ? (settingsDoc.data().slowMode || 0) : 0;
+        const container = document.getElementById('messagesContainer');
+        unsubscribeMessages = db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages").orderBy("createdAt", "asc").onSnapshot(snap => {
+            let html = '';
+            snap.forEach(doc => {
+                const d = doc.data();
+                const time = d.createdAt ? new Date(d.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                const avatar = d.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.displayName || 'U')}`;
+                html += `<div class="message"><img src="${escapeHtml(avatar)}" class="message-avatar"><div class="message-content"><div style="display:flex;gap:8px;margin-bottom:4px;"><span style="font-weight:600;">${escapeHtml(d.displayName)}</span><span style="font-size:0.7rem;color:#6b7280;">${time}</span></div><div>${escapeHtml(d.text)}</div></div></div>`;
+            });
+            container.innerHTML = html || '<div style="text-align:center;color:#6b7280;">✨ No messages</div>';
+            container.scrollTop = container.scrollHeight;
         });
-        grid.innerHTML=html;
-    });
-}
-async function startScreenShare(){
-    if(!currentVoiceChannelId) return;
-    try{
-        screenStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
-        isSharing=true;
-        await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({sharerUid:currentUser.uid,active:true});
-        document.getElementById('shareScreenBtn').classList.add('active');
-        displayLocalScreen();
-        screenStream.getVideoTracks()[0].onended=()=>stopScreenShare();
-    }catch(e){ showToast("Screen share cancelled"); }
-}
-function displayLocalScreen(){
-    const area=document.getElementById('screenShareDynamicArea');
-    area.innerHTML=`<div class="screenshare-container"><video id="localScreenVideo" class="screenshare-video" autoplay muted playsinline></video><button id="stopShareInlineBtn" style="margin:10px 12px;background:#ef4444;border:none;padding:8px 20px;border-radius:40px;color:white;cursor:pointer;font-size:0.85rem;"><i class="fas fa-stop"></i> Stop Sharing</button></div>`;
-    document.getElementById('localScreenVideo').srcObject=screenStream;
-    document.getElementById('stopShareInlineBtn')?.addEventListener('click',stopScreenShare);
-}
-async function stopScreenShare(){
-    if(screenStream){ screenStream.getTracks().forEach(t=>t.stop()); screenStream=null; }
-    isSharing=false;
-    document.getElementById('shareScreenBtn').classList.remove('active');
-    await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({active:false},{merge:true});
-    document.getElementById('screenShareDynamicArea').innerHTML='';
-    showToast("Sharing stopped");
-}
-function listenScreenShare(channelId){
-    if(unsubscribeScreenShare) unsubscribeScreenShare();
-    const docRef=db.collection("screenShares").doc(`${currentServerId}_${channelId}`);
-    unsubscribeScreenShare=docRef.onSnapshot(snap=>{
-        if(!snap.exists||!snap.data()?.active){ if(!isSharing) document.getElementById('screenShareDynamicArea').innerHTML=''; return; }
-        const data=snap.data();
-        if(data.sharerUid!==currentUser?.uid&&!isSharing){ document.getElementById('screenShareDynamicArea').innerHTML=`<div class="screenshare-container"><video id="remoteScreenVideo" class="screenshare-video" autoplay playsinline></video><div style="padding:8px;text-align:center;font-size:0.8rem;color:#94a3b8;">🔴 Live screen</div></div>`; }
-        if(data.sharerUid===currentUser?.uid&&isSharing) displayLocalScreen();
-    });
-}
-async function leaveVoiceIfIn(){
-    if(!currentVoiceChannelId||!currentUser) return;
-    await db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).delete();
-    if(unsubscribeVoicePresence) unsubscribeVoicePresence();
-    if(unsubscribeScreenShare) unsubscribeScreenShare();
-    if(isSharing) stopScreenShare();
-    if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; localAudioTrack=null; }
-    currentVoiceChannelId=null;
-    showTextView();
-}
-function updateMicBtnUI(){
-    const btn=document.getElementById('micToggleBtn');
-    if(!btn) return;
-    btn.classList.toggle('muted',isMicMuted);
-    btn.innerHTML=isMicMuted?'<i class="fas fa-microphone-slash"></i>':'<i class="fas fa-microphone"></i>';
-    if(localAudioTrack) localAudioTrack.enabled=!isMicMuted;
-    if(currentVoiceChannelId&&currentUser) db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).update({muted:isMicMuted}).catch(()=>{});
-}
-document.getElementById('micToggleBtn')?.addEventListener('click',()=>{ isMicMuted=!isMicMuted; updateMicBtnUI(); });
-document.getElementById('leaveVoiceBtn')?.addEventListener('click',async()=>{ await leaveVoiceIfIn(); currentChannelId=null; loadServerChannels(currentServerId); });
-document.getElementById('shareScreenBtn')?.addEventListener('click',()=>{ isSharing?stopScreenShare():startScreenShare(); });
-
-// ========== MESSAGING ==========
-let slowModeTimeout=null, lastMessageTime=0, currentSlowMode=0;
-async function loadMessagesForChannel(serverId,channelId){
-    if(unsubscribeMessages) unsubscribeMessages();
-    const container=document.getElementById('messagesContainer');
-    // Load slow mode setting
-    const settingsDoc=await db.collection("channelSettings").doc(`${serverId}_${channelId}`).get();
-    currentSlowMode=settingsDoc.exists?(settingsDoc.data().slowMode||0):0;
-    unsubscribeMessages=db.collection("servers").doc(serverId).collection("channels").doc(channelId).collection("messages").orderBy("createdAt","asc").onSnapshot(snap=>{
-        let html='';
-        snap.forEach(doc=>{
-            const d=doc.data();
-            const time=d.createdAt?new Date(d.createdAt.toDate()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'';
-            const avatar=d.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(d.displayName||'U')}`;
-            html+=`<div class="message"><img src="${escapeHtml(avatar)}" class="message-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U'"><div class="message-content"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-weight:600;font-size:0.85rem;">${escapeHtml(d.displayName||'User')}</span><span style="font-size:0.7rem;color:#6b7280;">${time}</span></div><div style="font-size:0.9rem;line-height:1.5;">${escapeHtml(d.text)}</div></div></div>`;
+    }
+    async function sendMessage() {
+        if (!currentUser || !currentServerId || !currentChannelId || currentChannelType !== "text") return;
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text) return;
+        if (currentSlowMode > 0 && (Date.now() - lastMsgTime) / 1000 < currentSlowMode) { showToast(`Slow mode: wait ${currentSlowMode}s`); return; }
+        lastMsgTime = Date.now();
+        input.value = '';
+        await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({
+            text, uid: currentUser.uid,
+            displayName: currentUser.displayName || currentUser.email,
+            photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'U')}`,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        if(!html) html='<div style="text-align:center;color:#6b7280;padding:20px;">✨ Be the first to say something!</div>';
-        container.innerHTML=html;
-        container.scrollTop=container.scrollHeight;
-    });
-}
-async function sendMessage(){
-    if(!currentUser||!currentServerId||!currentChannelId||currentChannelType!=="text") return;
-    const input=document.getElementById('messageInput');
-    const text=input.value.trim();
-    if(!text) return;
-    // Slow mode check
-    if(currentSlowMode>0){
-        const now=Date.now();
-        const elapsed=(now-lastMessageTime)/1000;
-        if(elapsed<currentSlowMode){ showToast(`Slow mode: wait ${Math.ceil(currentSlowMode-elapsed)}s`); return; }
     }
-    input.value='';
-    lastMessageTime=Date.now();
-    await db.collection("servers").doc(currentServerId).collection("channels").doc(currentChannelId).collection("messages").add({
-        text, uid:currentUser.uid,
-        displayName:currentUser.displayName||currentUser.email,
-        photoURL:currentUser.photoURL||`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName||'U')}`,
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-}
-document.getElementById('sendBtn')?.addEventListener('click',sendMessage);
-document.getElementById('messageInput')?.addEventListener('keypress',e=>{ if(e.key==='Enter') sendMessage(); });
+    document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
+    document.getElementById('messageInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
-// ========== VIEWS ==========
-function showTextView(){ document.getElementById('textChatView').style.display='flex'; document.getElementById('voiceChatView').style.display='none'; }
-function showVoiceView(){ document.getElementById('textChatView').style.display='none'; document.getElementById('voiceChatView').style.display='flex'; }
-
-// ========== SERVER OPS ==========
-async function createServer(name){
-    if(!currentUser) return;
-    const serverRef=db.collection("servers").doc();
-    await serverRef.set({name,ownerId:currentUser.uid});
-    await db.collection("serverMembers").add({serverId:serverRef.id,userId:currentUser.uid,role:"owner"});
-    await db.collection("serverStructure").doc(serverRef.id).set({categories:[{name:"GENERAL",channels:[{id:"general",name:"general",type:"text"}]},{name:"VOICE",channels:[{id:"voice-lounge",name:"General Voice",type:"voice"}]}]});
-    await switchServer(serverRef.id);
-    renderServerList();
-}
-async function createCategory(name){
-    const structRef=db.collection("serverStructure").doc(currentServerId);
-    const struct=(await structRef.get()).data()||{categories:[]};
-    struct.categories.push({name,channels:[]});
-    await structRef.set(struct);
-    loadServerChannels(currentServerId);
-}
-async function createChannel(name,type,categoryName){
-    const structRef=db.collection("serverStructure").doc(currentServerId);
-    const struct=(await structRef.get()).data();
-    const cat=struct.categories.find(c=>c.name===categoryName);
-    if(!cat) return;
-    const newId=name.toLowerCase().replace(/\s/g,'-')+'-'+Date.now();
-    cat.channels.push({id:newId,name,type});
-    await structRef.set(struct);
-    loadServerChannels(currentServerId);
-}
-async function generateInvite(){
-    if(!currentServerId) return;
-    const code=Math.random().toString(36).substring(2,10).toUpperCase();
-    await db.collection("invites").doc(code).set({serverId:currentServerId});
-    document.getElementById('inviteCodeDisplay').innerText=code;
-    document.getElementById('inviteModal').classList.add('active');
-}
-async function joinWithCode(code){
-    const invite=await db.collection("invites").doc(code).get();
-    if(!invite.exists){ showToast("Invalid code"); return; }
-    const serverId=invite.data().serverId;
-    const existing=await db.collection("serverMembers").where("serverId","==",serverId).where("userId","==",currentUser.uid).get();
-    if(!existing.empty){ showToast("Already a member"); return; }
-    await db.collection("serverMembers").add({serverId,userId:currentUser.uid,role:"member"});
-    await renderServerList();
-    await switchServer(serverId);
-}
-function openCreateChannelModal(categoryName){
-    const select=document.getElementById('categorySelect');
-    db.collection("serverStructure").doc(currentServerId).get().then(doc=>{
-        const struct=doc.data();
-        select.innerHTML='';
-        struct.categories.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.name; opt.innerText=c.name; select.appendChild(opt); });
-        select.value=categoryName;
-    });
-    document.getElementById('createChannelModal').classList.add('active');
-}
-function closeSidebarMobile(){ document.getElementById('sidebarPanel').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('active'); }
-
-// ========== EVENT LISTENERS ==========
-document.getElementById('signOutBtn')?.addEventListener('click',()=>{ leaveVoiceIfIn(); auth.signOut(); window.location.reload(); });
-document.getElementById('createCategoryBtn')?.addEventListener('click',()=>document.getElementById('createCategoryModal').classList.add('active'));
-document.getElementById('invitePeopleBtn')?.addEventListener('click',generateInvite);
-document.getElementById('headerInviteBtn')?.addEventListener('click',generateInvite);
-document.getElementById('deleteServerBtn')?.addEventListener('click',async()=>{ if(currentServerId&&confirm("Delete this server? This cannot be undone.")){ await db.collection("servers").doc(currentServerId).delete(); currentServerId=null; await renderServerList(); } });
-document.getElementById('confirmCreateServer')?.addEventListener('click',async()=>{ const n=document.getElementById('newServerName').value.trim(); if(n) await createServer(n); document.getElementById('createServerModal').classList.remove('active'); });
-document.getElementById('closeCreateModal')?.addEventListener('click',()=>document.getElementById('createServerModal').classList.remove('active'));
-document.getElementById('confirmCreateCategory')?.addEventListener('click',async()=>{ const n=document.getElementById('categoryName').value.trim(); if(n) await createCategory(n); document.getElementById('createCategoryModal').classList.remove('active'); });
-document.getElementById('closeCatModal')?.addEventListener('click',()=>document.getElementById('createCategoryModal').classList.remove('active'));
-document.getElementById('confirmCreateChannel')?.addEventListener('click',async()=>{ const name=document.getElementById('channelName').value.trim(),type=document.getElementById('channelTypeSelect').value,cat=document.getElementById('categorySelect').value; if(name&&cat) await createChannel(name,type,cat); document.getElementById('createChannelModal').classList.remove('active'); });
-document.getElementById('closeChanModal')?.addEventListener('click',()=>document.getElementById('createChannelModal').classList.remove('active'));
-document.getElementById('confirmJoinServer')?.addEventListener('click',async()=>{ const c=document.getElementById('joinCodeInput').value.trim(); if(c) await joinWithCode(c); document.getElementById('joinServerModal').classList.remove('active'); });
-document.getElementById('closeJoinModal')?.addEventListener('click',()=>document.getElementById('joinServerModal').classList.remove('active'));
-document.getElementById('closeInviteModal')?.addEventListener('click',()=>document.getElementById('inviteModal').classList.remove('active'));
-document.getElementById('mobileOverlay')?.addEventListener('click',closeSidebarMobile);
-document.querySelectorAll('.mobile-nav-item').forEach(item=>{
-    item.addEventListener('click',()=>{
-        if(item.dataset.nav==='servers') document.getElementById('joinServerModal').classList.add('active');
-        if(item.dataset.nav==='channels'){ document.getElementById('sidebarPanel').classList.add('open'); document.getElementById('mobileOverlay').classList.add('active'); }
-        if(item.dataset.nav==='voice'&&currentServerId) loadServerChannels(currentServerId);
-    });
-});
-
-auth.onAuthStateChanged(user=>{ currentUser=user; updateAuthUI(user); });
-
-// Seed default server if empty
-setTimeout(async()=>{
-    const all=await db.collection("servers").get();
-    if(all.empty){
-        const hub=db.collection("servers").doc();
-        await hub.set({name:"Stonks Hub",ownerId:"system"});
-        await db.collection("serverStructure").doc(hub.id).set({categories:[{name:"GENERAL",channels:[{id:"welcome",name:"welcome",type:"text"},{id:"general",name:"general",type:"text"}]},{name:"VOICE",channels:[{id:"voice-lounge",name:"General Voice",type:"voice"}]}]});
+    // VOICE
+    async function joinVoiceChannel(channelId) {
+        document.getElementById('micPermModal').classList.add('active');
+        const allow = async (withMic) => {
+            document.getElementById('micPermModal').classList.remove('active');
+            if (withMic) { try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); localAudioTrack = localStream.getAudioTracks()[0]; isMicMuted = false; } catch (e) { isMicMuted = true; } } else isMicMuted = true;
+            currentVoiceChannelId = channelId;
+            await db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members").doc(currentUser.uid).set({ uid: currentUser.uid, displayName: currentUser.displayName || currentUser.email, photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'U')}`, muted: isMicMuted });
+            showVoiceView(); listenVoiceParticipants(channelId); listenScreenShare(channelId); updateMicBtnUI();
+        };
+        document.getElementById('allowMicBtn').onclick = () => allow(true);
+        document.getElementById('denyMicBtn').onclick = () => allow(false);
     }
-},1200);
+    function listenVoiceParticipants(channelId) {
+        if (unsubscribeVoicePresence) unsubscribeVoicePresence();
+        const ref = db.collection("voicePresence").doc(currentServerId).collection("channels").doc(channelId).collection("members");
+        unsubscribeVoicePresence = ref.onSnapshot(snap => {
+            const grid = document.getElementById('voiceParticipantsGrid');
+            if (snap.empty) { grid.innerHTML = '<div style="color:#6b7280;">✨ No one here</div>'; return; }
+            let html = '';
+            snap.forEach(doc => {
+                const d = doc.data();
+                html += `<div class="voice-participant-card"><img src="${escapeHtml(d.photoURL)}" class="voice-participant-avatar"><i class="fas ${d.muted ? 'fa-microphone-slash' : 'fa-microphone'}" style="color:${d.muted ? '#ef4444' : '#34d399'};font-size:0.8rem;"></i><div class="voice-participant-name">${escapeHtml(d.displayName)}</div></div>`;
+            });
+            grid.innerHTML = html;
+        });
+    }
+    async function startScreenShare() {
+        if (!currentVoiceChannelId) return;
+        try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }); isSharing = true; await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({ sharerUid: currentUser.uid, active: true }); document.getElementById('shareScreenBtn').classList.add('active'); displayLocalScreen(); screenStream.getVideoTracks()[0].onended = () => stopScreenShare(); } catch (e) { showToast("Share cancelled"); }
+    }
+    function displayLocalScreen() {
+        const area = document.getElementById('screenShareDynamicArea');
+        area.innerHTML = `<div class="screenshare-container"><video id="localScreenVideo" class="screenshare-video" autoplay muted playsinline></video><button id="stopShareInlineBtn" style="margin:10px auto;display:block;background:#ef4444;border:none;padding:8px 20px;border-radius:40px;color:white;">Stop Sharing</button></div>`;
+        document.getElementById('localScreenVideo').srcObject = screenStream;
+        document.getElementById('stopShareInlineBtn')?.addEventListener('click', stopScreenShare);
+    }
+    async function stopScreenShare() { if (screenStream) screenStream.getTracks().forEach(t => t.stop()); screenStream = null; isSharing = false; document.getElementById('shareScreenBtn').classList.remove('active'); await db.collection("screenShares").doc(`${currentServerId}_${currentVoiceChannelId}`).set({ active: false }, { merge: true }); document.getElementById('screenShareDynamicArea').innerHTML = ''; showToast("Stopped"); }
+    function listenScreenShare(channelId) {
+        if (unsubscribeScreenShare) unsubscribeScreenShare();
+        const docRef = db.collection("screenShares").doc(`${currentServerId}_${channelId}`);
+        unsubscribeScreenShare = docRef.onSnapshot(snap => {
+            if (!snap.exists || !snap.data()?.active) { if (!isSharing) document.getElementById('screenShareDynamicArea').innerHTML = ''; return; }
+            const data = snap.data();
+            if (data.sharerUid !== currentUser?.uid && !isSharing) document.getElementById('screenShareDynamicArea').innerHTML = `<div class="screenshare-container"><video id="remoteScreenVideo" class="screenshare-video" autoplay playsinline></video><div style="padding:8px;text-align:center;">🔴 Live screen</div></div>`;
+            if (data.sharerUid === currentUser?.uid && isSharing) displayLocalScreen();
+        });
+    }
+    async function leaveVoiceIfIn() {
+        if (!currentVoiceChannelId || !currentUser) return;
+        await db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).delete();
+        if (unsubscribeVoicePresence) unsubscribeVoicePresence();
+        if (unsubscribeScreenShare) unsubscribeScreenShare();
+        if (isSharing) stopScreenShare();
+        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; localAudioTrack = null; }
+        currentVoiceChannelId = null;
+        showTextView();
+    }
+    function updateMicBtnUI() { const btn = document.getElementById('micToggleBtn'); if (!btn) return; btn.classList.toggle('muted', isMicMuted); btn.innerHTML = isMicMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>'; if (localAudioTrack) localAudioTrack.enabled = !isMicMuted; if (currentVoiceChannelId && currentUser) db.collection("voicePresence").doc(currentServerId).collection("channels").doc(currentVoiceChannelId).collection("members").doc(currentUser.uid).update({ muted: isMicMuted }).catch(() => { }); }
+    document.getElementById('micToggleBtn')?.addEventListener('click', () => { isMicMuted = !isMicMuted; updateMicBtnUI(); });
+    document.getElementById('leaveVoiceBtn')?.addEventListener('click', async () => { await leaveVoiceIfIn(); currentChannelId = null; loadServerChannels(currentServerId); });
+    document.getElementById('shareScreenBtn')?.addEventListener('click', () => { isSharing ? stopScreenShare() : startScreenShare(); });
+    function showTextView() { document.getElementById('textChatView').style.display = 'flex'; document.getElementById('voiceChatView').style.display = 'none'; }
+    function showVoiceView() { document.getElementById('textChatView').style.display = 'none'; document.getElementById('voiceChatView').style.display = 'flex'; }
+
+    // SERVER OPS
+    async function createServer(name) { if (!currentUser) return; const serverRef = db.collection("servers").doc(); await serverRef.set({ name, ownerId: currentUser.uid }); await db.collection("serverMembers").add({ serverId: serverRef.id, userId: currentUser.uid, role: "owner" }); await db.collection("serverStructure").doc(serverRef.id).set({ categories: [{ name: "GENERAL", channels: [{ id: "general", name: "general", type: "text" }] }, { name: "VOICE", channels: [{ id: "voice-lounge", name: "General Voice", type: "voice" }] }] }); await switchServer(serverRef.id); renderServerList(); }
+    async function createCategory(name) { const structRef = db.collection("serverStructure").doc(currentServerId); const struct = (await structRef.get()).data() || { categories: [] }; struct.categories.push({ name, channels: [] }); await structRef.set(struct); loadServerChannels(currentServerId); }
+    async function createChannel(name, type, categoryName) { const structRef = db.collection("serverStructure").doc(currentServerId); const struct = (await structRef.get()).data(); const cat = struct.categories.find(c => c.name === categoryName); if (!cat) return; const newId = name.toLowerCase().replace(/\s/g, '-') + '-' + Date.now(); cat.channels.push({ id: newId, name, type }); await structRef.set(struct); loadServerChannels(currentServerId); }
+    async function generateInvite() { if (!currentServerId) return; const code = Math.random().toString(36).substring(2, 10).toUpperCase(); await db.collection("invites").doc(code).set({ serverId: currentServerId }); document.getElementById('inviteCodeDisplay').innerText = code; document.getElementById('inviteModal').classList.add('active'); }
+    async function joinWithCode(code) { const invite = await db.collection("invites").doc(code).get(); if (!invite.exists) { showToast("Invalid code"); return; } const serverId = invite.data().serverId; const existing = await db.collection("serverMembers").where("serverId", "==", serverId).where("userId", "==", currentUser.uid).get(); if (!existing.empty) { showToast("Already member"); return; } await db.collection("serverMembers").add({ serverId, userId: currentUser.uid, role: "member" }); await renderServerList(); await switchServer(serverId); }
+    function openCreateChannelModal(categoryName) { const select = document.getElementById('categorySelect'); db.collection("serverStructure").doc(currentServerId).get().then(doc => { const struct = doc.data(); select.innerHTML = ''; struct.categories.forEach(c => { const opt = document.createElement('option'); opt.value = c.name; opt.innerText = c.name; select.appendChild(opt); }); select.value = categoryName; }); document.getElementById('createChannelModal').classList.add('active'); }
+    function closeSidebarMobile() { document.getElementById('sidebarPanel').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('active'); }
+
+    document.getElementById('signOutBtn')?.addEventListener('click', () => { leaveVoiceIfIn(); auth.signOut(); window.location.reload(); });
+    document.getElementById('createCategoryBtn')?.addEventListener('click', () => document.getElementById('createCategoryModal').classList.add('active'));
+    document.getElementById('invitePeopleBtn')?.addEventListener('click', generateInvite);
+    document.getElementById('headerInviteBtn')?.addEventListener('click', generateInvite);
+    document.getElementById('deleteServerBtn')?.addEventListener('click', async () => { if (currentServerId && confirm("Delete server?")) { await db.collection("servers").doc(currentServerId).delete(); currentServerId = null; renderServerList(); } });
+    document.getElementById('confirmCreateServer')?.addEventListener('click', async () => { const n = document.getElementById('newServerName').value.trim(); if (n) await createServer(n); document.getElementById('createServerModal').classList.remove('active'); });
+    document.getElementById('confirmCreateCategory')?.addEventListener('click', async () => { const n = document.getElementById('categoryName').value.trim(); if (n) await createCategory(n); document.getElementById('createCategoryModal').classList.remove('active'); });
+    document.getElementById('confirmCreateChannel')?.addEventListener('click', async () => { const name = document.getElementById('channelName').value.trim(), type = document.getElementById('channelTypeSelect').value, cat = document.getElementById('categorySelect').value; if (name && cat) await createChannel(name, type, cat); document.getElementById('createChannelModal').classList.remove('active'); });
+    document.getElementById('confirmJoinServer')?.addEventListener('click', async () => { const c = document.getElementById('joinCodeInput').value.trim(); if (c) await joinWithCode(c); document.getElementById('joinServerModal').classList.remove('active'); });
+    document.getElementById('mobileOverlay')?.addEventListener('click', closeSidebarMobile);
+    document.querySelectorAll('.mobile-nav-item').forEach(item => { item.addEventListener('click', () => { if (item.dataset.nav === 'servers') document.getElementById('joinServerModal').classList.add('active'); if (item.dataset.nav === 'channels') { document.getElementById('sidebarPanel').classList.add('open'); document.getElementById('mobileOverlay').classList.add('active'); } if (item.dataset.nav === 'voice' && currentServerId) loadServerChannels(currentServerId); }); });
+    document.getElementById('closeCreateModal')?.addEventListener('click', () => document.getElementById('createServerModal').classList.remove('active'));
+    document.getElementById('closeCatModal')?.addEventListener('click', () => document.getElementById('createCategoryModal').classList.remove('active'));
+    document.getElementById('closeChanModal')?.addEventListener('click', () => document.getElementById('createChannelModal').classList.remove('active'));
+    document.getElementById('closeInviteModal')?.addEventListener('click', () => document.getElementById('inviteModal').classList.remove('active'));
+    document.getElementById('closeJoinModal')?.addEventListener('click', () => document.getElementById('joinServerModal').classList.remove('active'));
+
+    auth.onAuthStateChanged(user => { currentUser = user; updateAuthUI(user); });
+    setTimeout(async () => { const all = await db.collection("servers").get(); if (all.empty) { const hub = db.collection("servers").doc(); await hub.set({ name: "Stonks Hub", ownerId: "system" }); await db.collection("serverStructure").doc(hub.id).set({ categories: [{ name: "GENERAL", channels: [{ id: "welcome", name: "welcome", type: "text" }] }, { name: "VOICE", channels: [{ id: "voice-lounge", name: "General Voice", type: "voice" }] }] }); } }, 1200);
 </script>
 </body>
 </html>
